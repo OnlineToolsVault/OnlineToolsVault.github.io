@@ -22,7 +22,7 @@ import NotFound from './pages/NotFound'
 function App() {
     return (
         <HelmetProvider>
-            <Router basename={import.meta.env.BASE_URL}>
+            <Router basename={import.meta.env.BASE_URL.replace(/\/$/, '')}>
                 <Layout>
                     <Routes>
                         <Route path="/" element={<Home />} />
