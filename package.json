@@ -7,7 +7,10 @@
     "dev": "vite",
     "build": "vite build",
     "lint": "eslint .",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "validate-routes": "node scripts/validate-routes.js",
+    "prepare-deploy": "npm run validate-routes && npm run build && node generate-sitemap.js",
+    "deploy-local-test": "npm run prepare-deploy && npm run preview"
   },
   "dependencies": {
     "@imgly/background-removal": "^1.4.5",

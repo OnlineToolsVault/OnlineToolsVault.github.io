@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Page Not Found - Redirecting...</title>
+    <meta name="robots" content="noindex">
+    <script>
+        // Smart 404 Redirect
+        // This page is shown when GitHub Pages can't find a file (truly invalid URL).
+        // It immediately attempts to redirect to the home page or  a clean URL.
+        (function() {
+            var path = window.location.pathname;
+            var base = '/Free-Tools/';
+            
+            // If we are on a path that SHOULD exist but triggered 404 (rare with Multi-Entry),
+            // we redirect to the clean URL of that path (stripping trailing stuff).
+            // But mostly, this catches typos.
+            
+            console.log('404 triggered for:', path);
+            
+            // Redirect to home with the path as a query param (optional, for debugging)
+            // or just simple redirect to home.
+            // Let's go to home to let React Router handle "NotFound" if it wants, 
+            // but since this IS a 404 from GitHub, the React app hasn't loaded.
+            
+            // Strategy: Redirect to root. React App loads at root.
+            // We can pass the path to let React Router show the 404 component.
+            // URL: /Free-Tools/ -> React Router -> "/"
+            // If we want to show 404 component, we need to pass the bad path.
+            // URL: /Free-Tools/?redirect=/bad-path
+            
+            // For now, simpler: Just go home.
+            window.location.replace(base);
+        })();
+    </script>
+</head>
+
+<body>
+    <p>Redirecting to home...</p>
+</body>
+
+</html>

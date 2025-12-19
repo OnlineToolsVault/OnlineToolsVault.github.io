@@ -1,5 +1,5 @@
 import React from 'react'
-import { HashRouter as Router, Routes, Route } from 'react-router-dom'
+import { BrowserRouter as Router, Routes, Route } from 'react-router-dom'
 import { HelmetProvider } from 'react-helmet-async'
 import Layout from './components/layout/Layout'
 import Home from './pages/Home'
@@ -22,7 +22,7 @@ import NotFound from './pages/NotFound'
 function App() {
     return (
         <HelmetProvider>
-            <Router>
+            <Router basename={import.meta.env.BASE_URL.replace(/\/$/, '')}>
                 <Layout>
                     <Routes>
                         <Route path="/" element={<Home />} />

@@ -5,11 +5,49 @@
   <meta charset="UTF-8" />
   <link rel="icon" type="image/svg+xml" href="/vite.svg" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Free Online Tools - PDF, Image & Utility Tools</title>
+  <meta name="description"
+    content="100% Free, Secure, and Client-Side Online Tools for PDF, Images, and more. No file uploads to servers, everything happens in your browser." />
+
+  <!-- SEO & Social Meta Tags -->
+  <meta name="robots" content="index, follow" />
+  <link rel="canonical" href="https://singhsidhukuldeep.github.io/Free-Tools/" />
+
+  <meta property="og:type" content="website" />
+  <meta property="og:title" content="Free Online Tools - PDF, Image & Utility Tools" />
+  <meta property="og:description"
+    content="100% Free, Secure, and Client-Side Online Tools for PDF, Images, and more. Privacy focused." />
+  <meta property="og:url" content="https://singhsidhukuldeep.github.io/Free-Tools/" />
+  <meta property="og:site_name" content="FreeTools" />
+
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content="Free Online Tools - PDF, Image & Utility Tools" />
+  <meta name="twitter:description"
+    content="100% Free, Secure, and Client-Side Online Tools for PDF, Images, and more." />
+  <meta name="twitter:creator" content="@kuldeep_s_s" />
+
+  <!-- Structured Data (JSON-LD) -->
+  <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "WebApplication",
+      "name": "FreeTools",
+      "url": "https://singhsidhukuldeep.github.io/Free-Tools/",
+      "description": "Collection of free online client-side tools for PDF and image processing.",
+      "applicationCategory": "Utility",
+      "operatingSystem": "All",
+      "author": {
+        "@type": "Person",
+        "name": "Kuldeep Singh Sidhu"
+      }
+    }
+  </script>
+
   <!-- Preconnect to Google Fonts -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+  <!-- Analytics & Ads -->
   <script async src="https://www.googletagmanager.com/gtag/js?id=G-EVGNTG49J7"></script>
   <script>
     window.dataLayer = window.dataLayer || [];
@@ -19,6 +57,49 @@
   </script>
   <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-4988388949365963"
     crossorigin="anonymous"></script>
+
+  <!-- Smart Hash URL Redirect (handles legacy #/ URLs) -->
+  <script>
+    (function () {
+      try {
+        var hash = window.location.hash;
+
+        // Check if this is a hash-based route (e.g., #/word-counter)
+        if (hash && hash.startsWith('#/')) {
+          var path = hash.slice(2); // Remove '#/'
+          var search = window.location.search || '';
+
+          // Auto-detect base path (works in dev and production)
+          // In dev: localhost:5173 → base = '/'
+          // In prod: .../Free-Tools → base = '/Free-Tools/'
+          var base = document.querySelector('base')?.getAttribute('href') || '/';
+
+          // If no base tag, check current path for /Free-Tools/
+          if (base === '/' && window.location.pathname.includes('/Free-Tools/')) {
+            base = '/Free-Tools/';
+          }
+
+          // Clean up the path (remove trailing/leading slashes)
+          path = path.replace(/^\/+|\/+$/g, '');
+
+          // Build redirect URL
+          var redirectUrl;
+          if (path) {
+            redirectUrl = base + path + search;
+          } else {
+            // Just '#/' with no path - go to home
+            redirectUrl = base;
+          }
+
+          // Redirect using replace (doesn't add to history)
+          window.location.replace(redirectUrl);
+        }
+      } catch (error) {
+        // Silently fail - the app will load normally
+        console.error('[Hash Redirect] Error:', error);
+      }
+    })();
+  </script>
 </head>
 
 <body>

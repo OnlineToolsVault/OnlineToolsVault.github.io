@@ -101,10 +101,57 @@ This project is licensed under a Proprietary License. Unauthorized copying, modi
 
 For the full license terms, please visit: [License Terms](https://github.com/singhsidhukuldeep/Free-Tools?tab=License-1-ov-file)
 
-## 👨‍💻 About the Author
-
-**Kuldeep Singh**
-- 🌐 [LinkedIn](https://www.linkedin.com/in/singhsidhukuldeep/)
-- 🐙 [GitHub](https://github.com/singhsidhukuldeep)
-- 🐦 [Twitter](https://twitter.com/kuldeep_s_s)
 - 💻 [Project Repository](https://github.com/singhsidhukuldeep/Free-Tools)
+
+---
+
+## 🏗️ Architecture & Deployment
+
+This project uses a **Multi-Entry SPA** architecture to ensure perfect compatibility with GitHub Pages, Google AdSense, and SEO crawlers.
+
+### The Problem it Solves
+GitHub Pages is a static host. By default, visiting a deep link like `/Free-Tools/word-counter` returns a **404 Not Found** because that physical file doesn't exist. This breaks AdSense (which requires HTTP 200 OK) and hurts SEO.
+
+### The Solution: Multi-Entry SPA
+During the build process (`npm run build`), we programmatically generate physical directories and `index.html` files for every route:
+
+```text
+dist/
+├── index.html              (Root entry point)
+├── .nojekyll              (Prevents Jekyll processing)
+├── 404.html               (Smart fallback for typos)
+├── word-counter/
+│   └── index.html         (Copy of main index.html)
+└── ...
+```
+
+When a user requests `/Free-Tools/word-counter`, GitHub Pages serves the physical file at `dist/word-counter/index.html` with **HTTP 200 OK**.
+
+### 🛠️ Automated Workflow
+
+We have automated the entire process to prevent errors:
+
+1.  **`npm run validate-routes`**: Checks that every route defined in `src/App.jsx` matches the routes in `generate-sitemap.js`. Runs automatically before build.
+2.  **`node generate-sitemap.js`**:
+    *   Generates `sitemap.xml`.
+    *   Creates the physical folder structure in `dist/`.
+    *   Creates `.nojekyll` and `404.html`.
+3.  **Use `npm run prepare-deploy`**: Runs the full sequence: Validate → Build → Generate.
+
+### ➕ Adding a New Tool
+
+1.  Add the route in `src/App.jsx`.
+2.  Add the route to the `routes` array in `generate-sitemap.js`.
+3.  Run `npm run validate-routes` to verify.
+
+---
+
+## 📜 Implementation Summary (Dec 2025)
+
+**Objective**: Fix 404 errors on GitHub Pages for AdSense & SEO.
+
+**Key Changes:**
+*   **Physical Route Generation**: `generate-sitemap.js` now creates real folders for every route.
+*   **Smart Fallback**: `public/404.html` handles typos gracefully; `public/.nojekyll` bypasses Jekyll.
+*   **Safety**: `scripts/validate-routes.js` ensures `App.jsx` and `sitemap` are always in sync.
+*   **Result**: **Zero 404s**, full AdSense compatibility, and perfect SEO tags.
