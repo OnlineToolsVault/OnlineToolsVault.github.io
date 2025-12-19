@@ -83,6 +83,12 @@
     display: flex;
     flex-direction: column;
     height: 100%;
+    text-decoration: none;
+    color: inherit;
+    position: relative;
+    overflow: hidden;
+    text-align: left;
+    /* Explicit left alignment */
 }
 
 .tool-card:hover {
@@ -91,28 +97,50 @@
     border-color: var(--primary);
 }
 
+.tool-card-header {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    margin-bottom: 1rem;
+}
+
+.tool-title {
+    font-size: 1.25rem;
+    font-weight: 700;
+    margin-bottom: 0;
+    /* Remove bottom margin as it's in a flex row */
+    color: var(--foreground);
+    line-height: 1.2;
+}
+
+.tool-description {
+    font-size: 0.95rem;
+    color: #64748b;
+    line-height: 1.6;
+    margin-bottom: 1.5rem;
+    flex-grow: 1;
+}
+
 .tool-icon-wrapper {
-    width: 48px;
-    height: 48px;
-    background: var(--secondary);
-    border-radius: 12px;
+    width: 44px;
+    height: 44px;
+    background: rgba(99, 102, 241, 0.1);
+    /* Subtle brand tint */
+    border-radius: 10px;
     display: flex;
     align-items: center;
     justify-content: center;
-    margin-bottom: 1rem;
     color: var(--primary);
+    flex-shrink: 0;
 }
 
-.tool-info h3 {
-    font-size: 1.125rem;
-    font-weight: 600;
-    margin-bottom: 0.5rem;
-}
-
-.tool-info p {
-    font-size: 0.875rem;
-    color: #64748b;
-    line-height: 1.5;
+.tool-seo-text {
+    font-size: 0.75rem;
+    color: #94a3b8;
+    line-height: 1.4;
+    border-top: 1px solid var(--border);
+    padding-top: 1rem;
+    margin-top: auto;
 }
 
 @keyframes fadeIn {

@@ -17,6 +17,9 @@ import PdfEditor from './pages/tools/PdfEditor'
 import HumanizeAi from './pages/tools/HumanizeAi'
 import PasteToMarkdown from './pages/tools/PasteToMarkdown'
 import Terms from './pages/Terms'
+import About from './pages/About'
+import Contact from './pages/Contact'
+import PrivacyPolicy from './pages/PrivacyPolicy'
 import NotFound from './pages/NotFound'
 
 function App() {
@@ -40,6 +43,9 @@ function App() {
                         <Route path="/humanize-text" element={<HumanizeAi />} />
                         <Route path="/paste-to-markdown" element={<PasteToMarkdown />} />
                         <Route path="/terms" element={<Terms />} />
+                        <Route path="/about" element={<About />} />
+                        <Route path="/contact" element={<Contact />} />
+                        <Route path="/privacy" element={<PrivacyPolicy />} />
                         <Route path="*" element={<NotFound />} />
                     </Routes>
                 </Layout>

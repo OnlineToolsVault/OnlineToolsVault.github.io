@@ -11,11 +11,33 @@ const Home = () => {
         ? tools
         : tools.filter(tool => tool.category === activeCategory)
 
+    const structuredData = {
+        "@context": "https://schema.org",
+        "@type": "ItemList",
+        "itemListElement": tools.map((tool, index) => ({
+            "@type": "SoftwareApplication",
+            "position": index + 1,
+            "name": tool.name,
+            "description": tool.seoDescription || tool.description,
+            "applicationCategory": "UtilityApplication",
+            "operatingSystem": "Web",
+            "url": `https://freetools.com${tool.path}`,
+            "offers": {
+                "@type": "Offer",
+                "price": "0",
+                "priceCurrency": "USD"
+            }
+        }))
+    }
+
     return (
         <>
             <Helmet>
                 <title>Free Online Tools - PDF, Image, and Text Utilities</title>
                 <meta name="description" content="Free, fast, and secure online tools. Convert PDFs, compress images, generate QR codes, and more directly in your browser." />
+                <script type="application/ld+json">
+                    {JSON.stringify(structuredData)}
+                </script>
             </Helmet>
 
             <div className="home-page">
@@ -46,13 +68,14 @@ const Home = () => {
                         <div className="tools-grid">
                             {filteredTools.map(tool => (
                                 <Link to={tool.path} key={tool.id} className="tool-card">
-                                    <div className="tool-icon-wrapper">
-                                        <tool.icon size={24} />
+                                    <div className="tool-card-header">
+                                        <div className="tool-icon-wrapper">
+                                            <tool.icon size={24} />
+                                        </div>
+                                        <h3 className="tool-title">{tool.name}</h3>
                                     </div>
-                                    <div className="tool-info">
-                                        <h3>{tool.name}</h3>
-                                        <p>{tool.description}</p>
-                                    </div>
+                                    <p className="tool-description">{tool.description}</p>
+                                    <p className="tool-seo-text">{tool.seoDescription}</p>
                                 </Link>
                             ))}
                         </div>

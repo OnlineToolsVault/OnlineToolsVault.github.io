@@ -1,6 +1,6 @@
 import React from 'react'
 import { Helmet } from 'react-helmet-async'
-import './Terms.css'
+import './StandardPage.css'
 
 const Terms = () => {
     return (
@@ -10,14 +10,14 @@ const Terms = () => {
                 <meta name="description" content="Read our terms of service and proprietary license details." />
             </Helmet>
 
-            <div className="terms-page">
-                <div className="terms-container">
-                    <header className="terms-header">
+            <div className="standard-page">
+                <div className="standard-container">
+                    <header className="standard-header">
                         <h1>Terms of Service</h1>
                         <p>Last updated: December 2025</p>
                     </header>
 
-                    <div className="terms-content">
+                    <div className="standard-content">
                         <p className="copyright">PROPRIETARY LICENSE</p>
                         <p className="copyright">Copyright (c) 2025 Kuldeep Singh Sidhu. All Rights Reserved.</p>
 
@@ -72,7 +72,7 @@ const Terms = () => {
                             USE OR OTHER DEALINGS IN THE SOFTWARE.
                         </p>
 
-                        <div className="terms-footer">
+                        <div className="standard-footer">
                             <p>For permissions beyond the scope of this license, contact Kuldeep Singh Sidhu.</p>
                         </div>
                     </div>

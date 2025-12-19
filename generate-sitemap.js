@@ -28,7 +28,11 @@ const routes = [
   '/merge-images',
   '/compress-pdf',
   '/pdf-editor',
-  '/terms'
+  '/pdf-editor',
+  '/terms',
+  '/about',
+  '/contact',
+  '/privacy'
 ];
 
 // =============================================================================
