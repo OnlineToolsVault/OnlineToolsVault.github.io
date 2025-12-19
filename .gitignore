@@ -133,3 +133,6 @@ Thumbs.db
 
 # Debug
 test-humanize.js
+
+# Local Development
+LOCAL_CHANGELOGS.MD

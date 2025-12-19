@@ -146,12 +146,4 @@ We have automated the entire process to prevent errors:
 
 ---
 
-## 📜 Implementation Summary (Dec 2025)
-
-**Objective**: Fix 404 errors on GitHub Pages for AdSense & SEO.
-
-**Key Changes:**
-*   **Physical Route Generation**: `generate-sitemap.js` now creates real folders for every route.
-*   **Smart Fallback**: `public/404.html` handles typos gracefully; `public/.nojekyll` bypasses Jekyll.
-*   **Safety**: `scripts/validate-routes.js` ensures `App.jsx` and `sitemap` are always in sync.
-*   **Result**: **Zero 404s**, full AdSense compatibility, and perfect SEO tags.
+For detailed implementation notes and changelogs, see the deployment documentation.
