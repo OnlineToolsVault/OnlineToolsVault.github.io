@@ -29,6 +29,10 @@ const routes = [
   '/compress-pdf',
   '/pdf-editor',
   '/pdf-editor',
+  '/image-cropper',
+  '/markdown-previewer',
+  '/code-formatter',
+  '/json-formatter',
   '/terms',
   '/about',
   '/contact',
@@ -55,6 +59,13 @@ function generateSitemap() {
 
     const sitemapPath = path.resolve(publicPath, 'sitemap.xml');
     fs.writeFileSync(sitemapPath, sitemap);
+
+    // Also write to dist if it exists
+    if (fs.existsSync(distPath)) {
+      const distSitemapPath = path.resolve(distPath, 'sitemap.xml');
+      fs.writeFileSync(distSitemapPath, sitemap);
+      console.log(`   Location (Dist): ${distSitemapPath}`);
+    }
 
     console.log('✅ Sitemap generated successfully');
     console.log(`   Location: ${sitemapPath}`);

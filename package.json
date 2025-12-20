@@ -13,7 +13,11 @@
     "deploy-local-test": "npm run prepare-deploy && npm run preview"
   },
   "dependencies": {
+    "@astral-sh/ruff-wasm-web": "^0.14.10",
     "@imgly/background-removal": "^1.4.5",
+    "@monaco-editor/react": "^4.7.0",
+    "@prettier/plugin-php": "^0.24.0",
+    "@prettier/plugin-xml": "^3.4.2",
     "browser-image-compression": "^2.0.2",
     "file-saver": "^2.0.5",
     "humanize-ai-lib": "^1.0.0",
@@ -22,13 +26,23 @@
     "lucide-react": "^0.344.0",
     "pdf-lib": "^1.17.1",
     "pdfjs-dist": "^4.0.379",
+    "prettier": "^3.7.4",
+    "prettier-plugin-java": "^2.7.7",
+    "prettier-plugin-kotlin": "^2.1.0",
+    "prettier-plugin-rust": "^0.1.9",
+    "prettier-plugin-sql": "^0.19.2",
     "qrcode": "^1.5.3",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
     "react-dropzone": "^14.2.3",
     "react-helmet-async": "^2.0.4",
+    "react-image-crop": "^11.0.10",
+    "react-markdown": "^10.1.0",
     "react-router-dom": "^6.22.3",
-    "turndown": "^7.2.2"
+    "remark-gfm": "^4.0.1",
+    "turndown": "^7.2.2",
+    "vite-plugin-top-level-await": "^1.6.0",
+    "vite-plugin-wasm": "^3.5.0"
   },
   "devDependencies": {
     "@types/react": "^18.2.64",

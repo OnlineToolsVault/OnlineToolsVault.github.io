@@ -10,7 +10,10 @@ import {
     Maximize, // Resizer
     Settings, // Compress PDF
     Edit3, // PDF Editor
-    Sparkles // Humanize AI
+    Sparkles, // Humanize AI
+    Crop, // Image Cropper
+    Code, // Code Formatter
+    FileJson // Advanced JSON Formatter
 } from 'lucide-react'
 
 export const tools = [
@@ -72,6 +75,46 @@ export const tools = [
         path: '/bg-remover',
         icon: Scissors,
         category: 'image',
+        featured: true
+    },
+    {
+        id: 'image-cropper',
+        name: 'Image Cropper',
+        description: 'Crop images to custom sizes and aspect ratios.',
+        seoDescription: 'Free online image cropper. Crop JPG, PNG, and WebP images to exact pixel dimensions or fixed aspect ratios instantly.',
+        path: '/image-cropper',
+        icon: Crop,
+        category: 'image',
+        featured: true
+    },
+    {
+        id: 'markdown-previewer',
+        name: 'Markdown Previewer',
+        description: 'Real-time Markdown to HTML renderer.',
+        seoDescription: 'Live Markdown editor and previewer. Write Markdown and instantly see the rendered HTML output.',
+        path: '/markdown-previewer',
+        icon: FileText,
+        category: 'text',
+        featured: true
+    },
+    {
+        id: 'code-formatter',
+        name: 'Code Formatter',
+        description: 'Beautify HTML, CSS, and JavaScript code.',
+        seoDescription: 'Free online code formatter. Beautify and format HTML, CSS, and JS code with one click.',
+        path: '/code-formatter',
+        icon: Code,
+        category: 'utility',
+        featured: true
+    },
+    {
+        id: 'json-formatter',
+        name: 'JSON Formatter',
+        description: 'Validate, pretty print, and minify JSON data.',
+        seoDescription: 'Free online advanced JSON formatter. Validate, pretty print, minify, and explore JSON data with collapsible trees and path finding.',
+        path: '/json-formatter',
+        icon: FileJson,
+        category: 'utility',
         featured: true
     },
     // PDF Section

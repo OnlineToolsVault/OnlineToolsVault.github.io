@@ -16,6 +16,10 @@ import CompressPdf from './pages/tools/CompressPdf'
 import PdfEditor from './pages/tools/PdfEditor'
 import HumanizeAi from './pages/tools/HumanizeAi'
 import PasteToMarkdown from './pages/tools/PasteToMarkdown'
+import ImageCropper from './pages/tools/ImageCropper'
+import MarkdownPreviewer from './pages/tools/MarkdownPreviewer'
+import CodeFormatter from './pages/tools/CodeFormatter'
+import JsonFormatter from './pages/tools/JsonFormatter'
 import Terms from './pages/Terms'
 import About from './pages/About'
 import Contact from './pages/Contact'
@@ -42,6 +46,10 @@ function App() {
                         <Route path="/pdf-editor" element={<PdfEditor />} />
                         <Route path="/humanize-text" element={<HumanizeAi />} />
                         <Route path="/paste-to-markdown" element={<PasteToMarkdown />} />
+                        <Route path="/image-cropper" element={<ImageCropper />} />
+                        <Route path="/markdown-previewer" element={<MarkdownPreviewer />} />
+                        <Route path="/code-formatter" element={<CodeFormatter />} />
+                        <Route path="/json-formatter" element={<JsonFormatter />} />
                         <Route path="/terms" element={<Terms />} />
                         <Route path="/about" element={<About />} />
                         <Route path="/contact" element={<Contact />} />
