@@ -129,6 +129,16 @@ export const tools = [
         featured: true
     },
     {
+        id: 'pdf-to-png',
+        name: 'PDF to PNG',
+        description: 'Convert PDF pages to high-quality PNG images.',
+        seoDescription: 'Extract pages from PDF files and convert them to lossless PNG images. Free, secure, and client-side.',
+        path: '/pdf-to-png',
+        icon: FileImage,
+        category: 'pdf',
+        featured: true
+    },
+    {
         id: 'jpg-to-pdf',
         name: 'JPG to PDF',
         description: 'Convert images to a single PDF document.',
