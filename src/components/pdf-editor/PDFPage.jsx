@@ -8,6 +8,7 @@ const PDFPage = ({ page, pageIndex }) => {
     const canvasRef = useRef(null);
     const {
         scale, registerCanvas, unregisterCanvas, activeTool, activeColor, activeSize,
+        activeStrokeColor, activeStrokeWidth,
         setSelectedObjectId, setActivePageIndex
     } = useEditor();
 
@@ -37,94 +38,144 @@ const PDFPage = ({ page, pageIndex }) => {
         };
     }, [scale, renderedScale]);
 
-    // Main Rendering Effect
+    // -------------------------------------------------------------------------
+    // 1. Fabric Initialization Effect (Runs once on mount)
+    // -------------------------------------------------------------------------
     useEffect(() => {
-        if (!page || !canvasRef.current) return;
+        if (!canvasRef.current) return;
+
+        // Init logging
+        if (!window.__PDF_LOGS) window.__PDF_LOGS = [];
+        const log = (msg) => window.__PDF_LOGS.push(`[${Date.now()}] ${msg}`);
+
+        log("[Fabric Init] Initializing Fabric Canvas...");
+
+        const fCanvas = new Canvas(canvasRef.current, {
+            selection: true
+        });
+
+        fabricCanvasRef.current = fCanvas;
+        registerCanvas(pageIndex, fCanvas);
+
+        // Attach Initial Events
+        updateDrawingMode(fCanvas, activeTool, activeColor, activeSize);
+        attachMouseEvents(fCanvas, activeTool, activeColor, activeSize);
+
+        fCanvas.on('selection:created', (e) => {
+            if (e.selected && e.selected.length > 0) setSelectedObjectId(e.selected[0]);
+        });
+        fCanvas.on('selection:updated', (e) => {
+            if (e.selected && e.selected.length > 0) setSelectedObjectId(e.selected[0]);
+        });
+        fCanvas.on('selection:cleared', () => setSelectedObjectId(null));
+
+        return () => {
+            log("[Fabric Init] Disposing Fabric Canvas...");
+            fCanvas.dispose();
+            fabricCanvasRef.current = null;
+            unregisterCanvas(pageIndex);
+        };
+    }, [pageIndex, registerCanvas, unregisterCanvas]); // Depend on stable props
+
+    // -------------------------------------------------------------------------
+    // 2. PDF Rendering & Update Effect (Runs on scale/page change)
+    // -------------------------------------------------------------------------
+    useEffect(() => {
+        if (!page) return;
+        let isCancelled = false;
+
+        const log = (msg) => window.__PDF_LOGS ? window.__PDF_LOGS.push(`[${Date.now()}] ${msg}`) : null;
 
         const renderPage = async () => {
-            // Use renderedScale for high-res logic, not the fluid 'scale'
-            const currentScale = renderedScale;
+            log(`[Render] Starting. Index: ${pageIndex}, Scale: ${renderedScale}`);
 
-            // High DPI rendering for the underlying PDF image
+            // Wait for Fabric to be ready (it should be since effect 1 runs first typically, but ref might be laggy)
+            // Actually, in React 18, effects run in order.
+
+            const currentScale = renderedScale;
             const pixelRatio = window.devicePixelRatio || 1;
             const targetScale = Math.max(pixelRatio, 2);
             const finalRenderScale = currentScale * targetScale;
 
             const renderViewport = page.getViewport({ scale: finalRenderScale });
-            // Display viewport uses the current FIXED rendered scale (not fluid scale)
             const displayViewport = page.getViewport({ scale: currentScale });
 
-            const canvas = canvasRef.current;
-            const context = canvas.getContext('2d');
-
-            // Render Buffer (High Res)
-            canvas.height = renderViewport.height;
-            canvas.width = renderViewport.width;
+            // 1. Render High-Res PDF to Offscreen Canvas
+            const tempCanvas = document.createElement('canvas');
+            const tempContext = tempCanvas.getContext('2d');
+            tempCanvas.height = renderViewport.height;
+            tempCanvas.width = renderViewport.width;
 
             const renderContext = {
-                canvasContext: context,
+                canvasContext: tempContext,
                 viewport: renderViewport,
             };
 
-            await page.render(renderContext).promise;
-
-            const bgDataURL = canvas.toDataURL('image/png');
-
-            // Dispose old fabric
-            if (fabricCanvasRef.current) {
-                fabricCanvasRef.current.dispose();
+            try {
+                await page.render(renderContext).promise;
+            } catch (err) {
+                if (!isCancelled) console.error("PDF Render Error:", err);
+                return;
             }
 
-            // Initialize Fabric
-            const fCanvas = new Canvas(canvasRef.current, {
-                height: displayViewport.height,
-                width: displayViewport.width,
-                selection: true
-            });
+            if (isCancelled) return;
 
-            // Set PDF page as background
+            // 2. Update Fabric Canvas Background
+            const fCanvas = fabricCanvasRef.current;
+            if (!fCanvas) {
+                log("[Render] Warning: Fabric canvas ref missing during render update");
+                return;
+            }
+
+            // Update Dimensions
+            const prevWidth = fCanvas.width;
+            const prevHeight = fCanvas.height;
+            const newWidth = displayViewport.width;
+            const newHeight = displayViewport.height;
+            const scaleFactor = prevWidth > 0 ? newWidth / prevWidth : 1;
+
+            // If dimensions changed (Zooming)
+            fCanvas.setDimensions({ width: newWidth, height: newHeight });
+
+            // Set Background Image
             try {
-                const img = await FabricImage.fromURL(bgDataURL);
-                img.scaleX = displayViewport.width / img.width;
-                img.scaleY = displayViewport.height / img.height;
+                const img = new FabricImage(tempCanvas);
+                img.scaleX = newWidth / img.width;
+                img.scaleY = newHeight / img.height;
                 fCanvas.backgroundImage = img;
                 fCanvas.requestRenderAll();
+                log("[Render] Background updated");
             } catch (err) {
                 console.error("Error setting background image", err);
             }
 
-            // Re-attach drawing mode settings if tool is already active
-            updateDrawingMode(fCanvas, activeTool, activeColor, activeSize);
-
-            // Re-attach selection events
-            fCanvas.on('selection:created', (e) => {
-                if (e.selected && e.selected.length > 0)
-                    setSelectedObjectId(e.selected[0]);
-            });
-            fCanvas.on('selection:cleared', () => setSelectedObjectId(null));
-
-            // Re-attach mouse events (cleanly)
-            attachMouseEvents(fCanvas, activeTool, activeColor, activeSize);
-
-            fabricCanvasRef.current = fCanvas;
-            registerCanvas(pageIndex, fCanvas);
+            // Rescale Objects if this was a Zoom operation (heuristic: prevWidth > 0)
+            // Note: On first load, prevWidth might be default/0.
+            // But we can just rescale everything based on the ratio.
+            if (prevWidth > 0 && prevWidth !== newWidth) {
+                fCanvas.getObjects().forEach(obj => {
+                    obj.left *= scaleFactor;
+                    obj.top *= scaleFactor;
+                    obj.scaleX *= scaleFactor;
+                    obj.scaleY *= scaleFactor;
+                    obj.setCoords();
+                });
+                fCanvas.requestRenderAll();
+            }
         };
 
         renderPage();
 
         return () => {
-            // Cleanup
-            if (fabricCanvasRef.current) {
-                fabricCanvasRef.current.dispose();
-                unregisterCanvas(pageIndex);
-            }
+            isCancelled = true;
         };
-    }, [page, renderedScale]); // Only re-run when DEBOUNCED scale changes (or page)
+    }, [page, renderedScale]);
 
 
     // Helper to update drawing mode on a canvas
     const updateDrawingMode = (canvas, tool, color, size) => {
         if (!canvas) return;
+        console.log(`[PDFPage] Updating Drawing Mode: Tool=${tool}, Color=${color}`);
 
         canvas.isDrawingMode = (tool === 'draw' || tool === 'highlight' || tool === 'eraser');
 
@@ -140,6 +191,7 @@ const PDFPage = ({ page, pageIndex }) => {
             canvas.freeDrawingBrush = new PencilBrush(canvas);
             canvas.freeDrawingBrush.color = '#ffffff';
             canvas.freeDrawingBrush.width = 20;
+            canvas.freeDrawingBrush.shadow = null; // Fix artifacts
         }
         canvas.requestRenderAll();
     };
@@ -148,24 +200,27 @@ const PDFPage = ({ page, pageIndex }) => {
     useEffect(() => {
         updateDrawingMode(fabricCanvasRef.current, activeTool, activeColor, activeSize);
         // Also update click listeners
-        attachMouseEvents(fabricCanvasRef.current, activeTool, activeColor, activeSize);
-    }, [activeTool, activeColor, activeSize]);
+        attachMouseEvents(fabricCanvasRef.current, activeTool, activeColor, activeStrokeColor, activeSize, activeStrokeWidth);
+    }, [activeTool, activeColor, activeStrokeColor, activeSize, activeStrokeWidth]);
 
 
     // Helper to attach mouse events
-    const attachMouseEvents = (canvas, tool, color, size) => {
+    const attachMouseEvents = (canvas, tool, color, strokeColor, size, strokeWidth) => {
         if (!canvas) return;
+        console.log(`[PDFPage] Attaching Mouse Events for Tool: ${tool}`);
 
         canvas.off('mouse:down');
         canvas.on('mouse:down', (opt) => {
+            console.log(`[PDFPage] Mouse Down Detected! Tool=${tool}, Target=`, opt.target);
             const pointer = canvas.getPointer(opt.e);
+            console.log(`[PDFPage] Pointer:`, pointer);
 
-            // Prevent adding objects if interacting with selection
-            if (canvas.getActiveObject() || canvas.getActiveObjects().length > 0) {
-                if (opt.target) return;
-            }
+            // If user clicks on an existing object, assume they want to select it.
+            // Don't create new object on top.
+            if (opt.target) return;
 
             if (tool === 'text') {
+                console.log("[PDFPage] Creating Text Object");
                 const text = new IText('Type here', {
                     left: pointer.x,
                     top: pointer.y,
@@ -176,29 +231,48 @@ const PDFPage = ({ page, pageIndex }) => {
                 canvas.add(text);
                 canvas.setActiveObject(text);
                 text.enterEditing();
+                canvas.requestRenderAll(); // Ensure render
             } else if (tool === 'rect') {
                 const rect = new Rect({
                     left: pointer.x,
                     top: pointer.y,
-                    fill: 'transparent',
-                    stroke: color,
-                    strokeWidth: 2,
+                    fill: color,
+                    stroke: strokeColor,
+                    strokeWidth: strokeWidth,
                     width: 100,
                     height: 60
                 });
                 canvas.add(rect);
                 canvas.setActiveObject(rect);
+                canvas.requestRenderAll();
             } else if (tool === 'circle') {
                 const circle = new Circle({
                     left: pointer.x,
                     top: pointer.y,
-                    fill: 'transparent',
-                    stroke: color,
-                    strokeWidth: 2,
+                    fill: color,
+                    stroke: strokeColor,
+                    strokeWidth: strokeWidth,
                     radius: 50
                 });
                 canvas.add(circle);
                 canvas.setActiveObject(circle);
+                canvas.requestRenderAll();
+            } else if (tool === 'redact') {
+                const rect = new Rect({
+                    left: pointer.x,
+                    top: pointer.y,
+                    fill: 'black',
+                    stroke: 'black',
+                    strokeWidth: 0,
+                    width: 100,
+                    height: 30,
+                    rx: 2,
+                    ry: 2,
+                    isRedaction: true // Mark for secure flattening
+                });
+                canvas.add(rect);
+                canvas.setActiveObject(rect);
+                canvas.requestRenderAll();
             }
         });
     };
@@ -255,7 +329,8 @@ const PDFPage = ({ page, pageIndex }) => {
                 // Apply CSS Zoom
                 transform: `scale(${cssScale})`,
                 transformOrigin: 'top center',
-                transition: 'transform 0.1s linear' // Smooth transition for CSS
+                transition: scale !== renderedScale ? 'transform 0.2s ease-out' : 'none', // Smooth zoom, instant snap
+                willChange: 'transform'
             }}>
                 <canvas ref={canvasRef} />
             </div>

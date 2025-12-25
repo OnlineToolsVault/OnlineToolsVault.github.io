@@ -2,18 +2,19 @@ import React from 'react';
 import { useEditor } from './EditorContext';
 import {
     MousePointer2, Type, Pen, Highlighter, Eraser,
-    Image as ImageIcon, Square, Circle, Minus,
+    Image as ImageIcon, Square, Circle, Minus, Ban,
     Undo, Redo, ZoomIn, ZoomOut, Download
 } from 'lucide-react';
 
 const Toolbar = ({ onDownload }) => {
-    const { activeTool, setActiveTool, scale, setScale, isProcessing } = useEditor();
+    const { activeTool, setActiveTool, scale, setScale, isProcessing, addImage, undo, redo } = useEditor();
 
     const tools = [
         { id: 'select', icon: MousePointer2, label: 'Select' },
         { id: 'text', icon: Type, label: 'Text' },
         { id: 'draw', icon: Pen, label: 'Draw' },
         { id: 'highlight', icon: Highlighter, label: 'Highlight' },
+        { id: 'redact', icon: Ban, label: 'Redact' }, // Redact Tool
         { id: 'eraser', icon: Eraser, label: 'Eraser' },
         //{ id: 'image', icon: ImageIcon, label: 'Image' }, // Image upload needs specific handling
         { id: 'rect', icon: Square, label: 'Rectangle' },
@@ -46,10 +47,11 @@ const Toolbar = ({ onDownload }) => {
                             border: activeTool === tool.id ? '1px solid var(--primary)' : '1px solid transparent',
                             background: activeTool === tool.id ? 'var(--secondary)' : 'transparent',
                             color: activeTool === tool.id ? 'var(--primary)' : 'var(--foreground)',
-                            transition: 'all 0.2s',
+                            transition: 'none',
                             display: 'flex',
                             alignItems: 'center',
-                            justifyContent: 'center'
+                            justifyContent: 'center',
+                            cursor: 'pointer'
                         }}
                     >
                         <tool.icon size={20} />
@@ -79,13 +81,56 @@ const Toolbar = ({ onDownload }) => {
                         accept="image/*"
                         style={{ display: 'none' }}
                         onChange={(e) => {
-                            // We'll handle file selection in the parent or context, for now just set tool
-                            setActiveTool('image_upload_trigger');
-                            // In a real impl, we'd pass the file to a handler
+                            const file = e.target.files[0];
+                            if (file) {
+                                const reader = new FileReader();
+                                reader.onload = (f) => {
+                                    addImage(f.target.result);
+                                };
+                                reader.readAsDataURL(file);
+                            }
+                            // Reset input so same file can be selected again
+                            e.target.value = '';
                         }}
                     />
                     <ImageIcon size={20} />
                 </label>
+
+                <div style={{ width: '1px', height: '24px', background: 'var(--border)', margin: '0 0.5rem' }}></div>
+
+                {/* Undo/Redo Buttons */}
+                <button
+                    onClick={undo}
+                    title="Undo"
+                    style={{
+                        padding: '0.5rem',
+                        borderRadius: '0.5rem',
+                        border: '1px solid transparent',
+                        background: 'transparent',
+                        cursor: 'pointer',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center'
+                    }}
+                >
+                    <Undo size={20} />
+                </button>
+                <button
+                    onClick={redo}
+                    title="Redo"
+                    style={{
+                        padding: '0.5rem',
+                        borderRadius: '0.5rem',
+                        border: '1px solid transparent',
+                        background: 'transparent',
+                        cursor: 'pointer',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center'
+                    }}
+                >
+                    <Redo size={20} />
+                </button>
 
             </div>
 

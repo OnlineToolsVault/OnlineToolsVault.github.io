@@ -4,8 +4,15 @@ import { useEditor } from './EditorContext';
 const Thumbnail = memo(({ page, pageIndex, scrollToPage, shouldRender, onComplete, isActive }) => {
     const canvasRef = useRef(null);
     const hasRendered = useRef(false);
+    const lastPageRef = useRef(null);
 
     useEffect(() => {
+        // Reset when page object changes (new PDF loaded)
+        if (page !== lastPageRef.current) {
+            hasRendered.current = false;
+            lastPageRef.current = page;
+        }
+
         if (!shouldRender || hasRendered.current || !page || !canvasRef.current) return;
 
         let active = true;
@@ -16,8 +23,10 @@ const Thumbnail = memo(({ page, pageIndex, scrollToPage, shouldRender, onComplet
                 const canvas = canvasRef.current;
                 const context = canvas.getContext('2d');
 
+                // Clear previous content
                 canvas.height = viewport.height;
                 canvas.width = viewport.width;
+                context.clearRect(0, 0, canvas.width, canvas.height);
 
                 const renderContext = {
                     canvasContext: context,
