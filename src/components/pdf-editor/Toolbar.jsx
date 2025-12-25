@@ -37,100 +37,106 @@ const Toolbar = ({ onDownload }) => {
         }}>
             <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
                 {tools.map((tool) => (
-                    <button
-                        key={tool.id}
-                        onClick={() => setActiveTool(tool.id)}
-                        title={tool.label}
-                        style={{
-                            padding: '0.5rem',
-                            borderRadius: '0.5rem',
-                            border: activeTool === tool.id ? '1px solid var(--primary)' : '1px solid transparent',
-                            background: activeTool === tool.id ? 'var(--secondary)' : 'transparent',
-                            color: activeTool === tool.id ? 'var(--primary)' : 'var(--foreground)',
-                            transition: 'none',
-                            display: 'flex',
-                            alignItems: 'center',
-                            justifyContent: 'center',
-                            cursor: 'pointer'
-                        }}
-                    >
-                        <tool.icon size={20} />
-                    </button>
+                    <div key={tool.id} style={{ position: 'relative' }} className="tool-btn-wrapper">
+                        <button
+                            onClick={() => setActiveTool(tool.id)}
+                            style={{
+                                padding: '0.5rem',
+                                borderRadius: '0.5rem',
+                                border: activeTool === tool.id ? '1px solid var(--primary)' : '1px solid transparent',
+                                background: activeTool === tool.id ? 'var(--secondary)' : 'transparent',
+                                color: activeTool === tool.id ? 'var(--primary)' : 'var(--foreground)',
+                                transition: 'none',
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'center',
+                                cursor: 'pointer'
+                            }}
+                        >
+                            <tool.icon size={20} />
+                        </button>
+                        <span className="tool-tooltip">{tool.label}</span>
+                    </div>
                 ))}
 
                 <div style={{ width: '1px', height: '24px', background: 'var(--border)', margin: '0 0.5rem' }}></div>
 
-                {/* Image Upload Button Special Case */}
-                <label
-                    title="Add Image"
-                    style={{
-                        padding: '0.5rem',
-                        borderRadius: '0.5rem',
-                        border: activeTool === 'image' ? '1px solid var(--primary)' : '1px solid transparent',
-                        background: activeTool === 'image' ? 'var(--secondary)' : 'transparent',
-                        color: activeTool === 'image' ? 'var(--primary)' : 'var(--foreground)',
-                        transition: 'all 0.2s',
-                        cursor: 'pointer',
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center'
-                    }}
-                >
-                    <input
-                        type="file"
-                        accept="image/*"
-                        style={{ display: 'none' }}
-                        onChange={(e) => {
-                            const file = e.target.files[0];
-                            if (file) {
-                                const reader = new FileReader();
-                                reader.onload = (f) => {
-                                    addImage(f.target.result);
-                                };
-                                reader.readAsDataURL(file);
-                            }
-                            // Reset input so same file can be selected again
-                            e.target.value = '';
+                {/* Image Upload Button */}
+                <div style={{ position: 'relative' }} className="tool-btn-wrapper">
+                    <label
+                        style={{
+                            padding: '0.5rem',
+                            borderRadius: '0.5rem',
+                            border: '1px solid transparent',
+                            background: 'transparent',
+                            cursor: 'pointer',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center'
                         }}
-                    />
-                    <ImageIcon size={20} />
-                </label>
+                    >
+                        <input
+                            type="file"
+                            accept="image/*"
+                            style={{ display: 'none' }}
+                            onChange={(e) => {
+                                const file = e.target.files[0];
+                                if (file) {
+                                    const reader = new FileReader();
+                                    reader.onload = (f) => {
+                                        addImage(f.target.result);
+                                    };
+                                    reader.readAsDataURL(file);
+                                }
+                                e.target.value = '';
+                            }}
+                        />
+                        <ImageIcon size={20} />
+                    </label>
+                    <span className="tool-tooltip">Add Image</span>
+                </div>
 
                 <div style={{ width: '1px', height: '24px', background: 'var(--border)', margin: '0 0.5rem' }}></div>
 
-                {/* Undo/Redo Buttons */}
-                <button
-                    onClick={undo}
-                    title="Undo"
-                    style={{
-                        padding: '0.5rem',
-                        borderRadius: '0.5rem',
-                        border: '1px solid transparent',
-                        background: 'transparent',
-                        cursor: 'pointer',
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center'
-                    }}
-                >
-                    <Undo size={20} />
-                </button>
-                <button
-                    onClick={redo}
-                    title="Redo"
-                    style={{
-                        padding: '0.5rem',
-                        borderRadius: '0.5rem',
-                        border: '1px solid transparent',
-                        background: 'transparent',
-                        cursor: 'pointer',
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center'
-                    }}
-                >
-                    <Redo size={20} />
-                </button>
+                {/* Undo Button */}
+                <div style={{ position: 'relative' }} className="tool-btn-wrapper">
+                    <button
+                        onClick={undo}
+                        style={{
+                            padding: '0.5rem',
+                            borderRadius: '0.5rem',
+                            border: '1px solid transparent',
+                            background: 'transparent',
+                            cursor: 'pointer',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center'
+                        }}
+                    >
+                        <Undo size={20} />
+                    </button>
+                    <span className="tool-tooltip">Undo</span>
+                </div>
+
+                {/* Redo Button */}
+                <div style={{ position: 'relative' }} className="tool-btn-wrapper">
+                    <button
+                        onClick={redo}
+                        style={{
+                            padding: '0.5rem',
+                            borderRadius: '0.5rem',
+                            border: '1px solid transparent',
+                            background: 'transparent',
+                            cursor: 'pointer',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center'
+                        }}
+                    >
+                        <Redo size={20} />
+                    </button>
+                    <span className="tool-tooltip">Redo</span>
+                </div>
 
             </div>
 

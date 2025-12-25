@@ -268,6 +268,29 @@ const PdfEditorContent = () => {
                 body, html { overflow: hidden !important; }
                 /* Ensure header doesn't overlap if it's sticky */
                 .site-header { position: sticky; top: 0; z-index: 50; }
+                
+                /* Instant custom tooltips */
+                .tool-btn-wrapper .tool-tooltip {
+                    position: absolute;
+                    top: 100%;
+                    left: 50%;
+                    transform: translateX(-50%);
+                    margin-top: 6px;
+                    padding: 4px 8px;
+                    background: #1e293b;
+                    color: white;
+                    font-size: 12px;
+                    border-radius: 4px;
+                    white-space: nowrap;
+                    opacity: 0;
+                    visibility: hidden;
+                    pointer-events: none;
+                    z-index: 100;
+                }
+                .tool-btn-wrapper:hover .tool-tooltip {
+                    opacity: 1;
+                    visibility: visible;
+                }
             `}</style>
             <Toolbar onDownload={handleDownload} />
 

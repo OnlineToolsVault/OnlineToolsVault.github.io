@@ -9,6 +9,7 @@ export const EditorProvider = ({ children }) => {
     const [activeStrokeColor, setActiveStrokeColor] = useState('#000000'); // Border Color
     const [activeSize, setActiveSize] = useState(20); // Font size or Brush size
     const [activeStrokeWidth, setActiveStrokeWidth] = useState(2); // Border thickness
+    const [highlightOpacity, setHighlightOpacity] = useState(50); // Highlight opacity (0-100)
 
     const [selectedObjectId, setSelectedObjectId] = useState(null);
     const [activePageIndex, setActivePageIndex] = useState(0);
@@ -125,6 +126,7 @@ export const EditorProvider = ({ children }) => {
             activeStrokeColor, setActiveStrokeColor,
             activeSize, setActiveSize,
             activeStrokeWidth, setActiveStrokeWidth,
+            highlightOpacity, setHighlightOpacity,
             scale, setScale,
             activePageIndex, setActivePageIndex,
             pages, setPages,

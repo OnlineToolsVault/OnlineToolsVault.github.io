@@ -8,11 +8,12 @@ const PDFPage = ({ page, pageIndex }) => {
     const canvasRef = useRef(null);
     const {
         scale, registerCanvas, unregisterCanvas, activeTool, activeColor, activeSize,
-        activeStrokeColor, activeStrokeWidth,
+        activeStrokeColor, activeStrokeWidth, highlightOpacity,
         setSelectedObjectId, setActivePageIndex
     } = useEditor();
 
     const fabricCanvasRef = useRef(null);
+    const activeToolRef = useRef(activeTool); // Ref to track current tool for event handlers
 
     // State for the scale we are CURRENTLY rendered at
     // We initialize with 'scale' so first render is sharp.
@@ -68,6 +69,13 @@ const PDFPage = ({ page, pageIndex }) => {
             if (e.selected && e.selected.length > 0) setSelectedObjectId(e.selected[0]);
         });
         fCanvas.on('selection:cleared', () => setSelectedObjectId(null));
+
+        // Mark paths created with highlight tool (using ref for current value)
+        fCanvas.on('path:created', (e) => {
+            if (e.path && activeToolRef.current === 'highlight') {
+                e.path.isHighlight = true;
+            }
+        });
 
         return () => {
             log("[Fabric Init] Disposing Fabric Canvas...");
@@ -185,8 +193,10 @@ const PDFPage = ({ page, pageIndex }) => {
             canvas.freeDrawingBrush.width = size;
         } else if (tool === 'highlight') {
             canvas.freeDrawingBrush = new PencilBrush(canvas);
-            canvas.freeDrawingBrush.color = color + '80'; // 50% opacity
-            canvas.freeDrawingBrush.width = 30;
+            // Convert opacity percentage (0-100) to hex (00-FF)
+            const opacityHex = Math.round((highlightOpacity / 100) * 255).toString(16).padStart(2, '0');
+            canvas.freeDrawingBrush.color = color + opacityHex;
+            canvas.freeDrawingBrush.width = size;
         } else if (tool === 'eraser') {
             canvas.freeDrawingBrush = new PencilBrush(canvas);
             canvas.freeDrawingBrush.color = '#ffffff';
@@ -198,10 +208,11 @@ const PDFPage = ({ page, pageIndex }) => {
 
     // Effect to update drawing properties when they change (without re-init fabric)
     useEffect(() => {
+        activeToolRef.current = activeTool; // Keep ref in sync
         updateDrawingMode(fabricCanvasRef.current, activeTool, activeColor, activeSize);
         // Also update click listeners
         attachMouseEvents(fabricCanvasRef.current, activeTool, activeColor, activeStrokeColor, activeSize, activeStrokeWidth);
-    }, [activeTool, activeColor, activeStrokeColor, activeSize, activeStrokeWidth]);
+    }, [activeTool, activeColor, activeStrokeColor, activeSize, activeStrokeWidth, highlightOpacity]);
 
 
     // Helper to attach mouse events

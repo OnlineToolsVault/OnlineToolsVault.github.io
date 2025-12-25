@@ -19,19 +19,40 @@ const PropertiesBar = () => {
         activeStrokeColor, setActiveStrokeColor,
         activeSize, setActiveSize,
         activeStrokeWidth, setActiveStrokeWidth,
+        highlightOpacity, setHighlightOpacity,
         selectedObjectId
     } = useEditor();
 
-    const isText = (activeTool === 'text') || (selectedObjectId && (selectedObjectId.type === 'i-text' || selectedObjectId.type === 'text'));
-    const isShape = ['rect', 'circle', 'path', 'redact'].includes(activeTool) || (selectedObjectId && ['rect', 'circle', 'path'].includes(selectedObjectId.type));
-    /* Note: 'redact' objects are just rects but usually we don't want to change their color from black, but user might want to. Let's allow it. */
+    // Determine what we're working with - TOOL or SELECTED OBJECT
+    const isSelectingObject = activeTool === 'select' && selectedObjectId;
+
+    // Type detection - based on tool OR selected object type
+    let isText = false;
+    let isShape = false;
+    let isBrush = false;
+
+    if (isSelectingObject) {
+        // Selected object determines properties
+        const objType = selectedObjectId.type;
+        isText = ['i-text', 'text'].includes(objType);
+        isShape = ['rect', 'circle'].includes(objType);
+        isBrush = objType === 'path'; // Paths are brush strokes (draw, highlight, eraser)
+    } else {
+        // Active tool determines properties
+        isText = activeTool === 'text';
+        isShape = ['rect', 'circle', 'redact'].includes(activeTool);
+        isBrush = ['draw', 'highlight', 'eraser'].includes(activeTool);
+    }
 
     // Show Property Groups
     const showTextFormat = isText;
-    const showFillColor = isText || isShape; // For Shapes, 'activeColor' is Fill
-    const showStrokeColor = isShape;        // For Shapes, 'activeStrokeColor' is Border
+    const showFillColor = isText || isShape || isBrush;
+    const showStrokeColor = isShape;
     const showFontSize = isText;
-    const showStrokeWidth = isShape;        // For Shapes, 'activeStrokeWidth' is Border Size
+    const showStrokeWidth = isShape;
+    const showBrushSize = isBrush;
+    // Opacity for highlight tool OR selecting a path marked as highlight
+    const showOpacity = activeTool === 'highlight' || (isSelectingObject && selectedObjectId?.isHighlight);
 
     const [isBold, setIsBold] = React.useState(false);
     const [isItalic, setIsItalic] = React.useState(false);
@@ -110,7 +131,7 @@ const PropertiesBar = () => {
         }
     };
 
-    if (!showTextFormat && !showFillColor && !showStrokeColor) return null;
+    // Always show the properties bar (tool info is always shown)
 
     return (
         <div style={{
@@ -188,6 +209,36 @@ const PropertiesBar = () => {
                 <div>
                     <label style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.9rem', color: '#64748b' }}>Border Width</label>
                     <Slider value={activeStrokeWidth} min={0} max={20} onChange={handleStrokeWidthChange} unit="px" />
+                </div>
+            )}
+
+            {/* BRUSH SIZE */}
+            {showBrushSize && (
+                <div>
+                    <label style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.9rem', color: '#64748b' }}>Brush Size</label>
+                    <Slider value={activeSize} min={1} max={50} onChange={(size) => {
+                        setActiveSize(size);
+                        // If a path is selected, update its strokeWidth immediately
+                        if (selectedObjectId && selectedObjectId.type === 'path') {
+                            selectedObjectId.set('strokeWidth', size);
+                            selectedObjectId.canvas?.requestRenderAll();
+                        }
+                    }} unit="px" />
+                </div>
+            )}
+
+            {/* HIGHLIGHT OPACITY */}
+            {showOpacity && (
+                <div>
+                    <label style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.9rem', color: '#64748b' }}>Opacity</label>
+                    <Slider value={highlightOpacity} min={10} max={100} onChange={(val) => {
+                        setHighlightOpacity(val);
+                        // If a path is selected, update its opacity immediately
+                        if (selectedObjectId && selectedObjectId.type === 'path') {
+                            selectedObjectId.set('opacity', val / 100);
+                            selectedObjectId.canvas?.requestRenderAll();
+                        }
+                    }} unit="%" />
                 </div>
             )}
 
