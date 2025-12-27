@@ -235,19 +235,12 @@ const MergeImages = () => {
     return (
         <ToolLayout
             title="Merge Images"
-            description="Combine multiple images into one. Free online photo joiner."
+            description="Combine multiple images into one. Just press Cmd+V to paste, drag and drop, or upload."
             seoTitle="Merge Images Online - Combine Photos Horizontally or Vertically"
             seoDescription="Combine multiple images into one. Free online photo joiner. Stitch photos horizontally or vertically with custom borders and gaps."
             faqs={faqs}
         >
             <div className="tool-workspace merge-tool-container">
-                <div className="merge-header">
-                    <h1>Merge Images</h1>
-                    <p className="tool-description">
-                        Combine multiple photos into one clean asset.
-                        <strong> Just press Cmd+V to paste</strong>, drag and drop, or upload.
-                    </p>
-                </div>
 
                 <div className="merge-card">
                     <div className="merge-layout">
