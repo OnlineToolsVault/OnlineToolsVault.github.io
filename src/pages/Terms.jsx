@@ -30,9 +30,8 @@ const Terms = () => {
                         <div className="standard-section">
                             <h2>2. Intellectual Property (Source Code)</h2>
                             <p>While the <em>tools</em> are free to use, the <em>source code</em> of this website is proprietary.</p>
-                            <p className="copyright"><strong>Copyright (c) 2025 Kuldeep Singh Sidhu. All Rights Reserved.</strong></p>
                             <ul>
-                                <li>You may view the source code for educational purposes.</li>
+                                <li>You may view the source code for educational purposes on <a href="https://github.com/OnlineToolsVault/OnlineToolsVault.github.io" target="_blank" rel="noopener noreferrer">GitHub</a>.</li>
                                 <li>You may <strong>NOT</strong> copy, sell, resell, distribute, or reproduce the source code itself, in whole or in part, in any way, shape, or form.</li>
                             </ul>
                         </div>

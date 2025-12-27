@@ -44,7 +44,7 @@ const About = () => {
                                 <strong>Blazing Fast:</strong> Optimized for performance to save you time.
                             </li>
                             <li>
-                                <strong>Source Available:</strong> We believe in transparency. You can view our source code on <a href="https://github.com/singhsidhukuldeep/Free-Tools" target="_blank" rel="noopener noreferrer" style={{ color: 'var(--primary)', textDecoration: 'underline' }}>GitHub</a>.
+                                <strong>Source Available:</strong> We believe in transparency. You can view our source code on <a href="https://github.com/OnlineToolsVault/OnlineToolsVault.github.io" target="_blank" rel="noopener noreferrer" style={{ color: 'var(--primary)', textDecoration: 'underline' }}>GitHub</a>.
                             </li>
                         </ul>
 

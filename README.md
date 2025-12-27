@@ -85,23 +85,16 @@ The project is already configured for automated deployment to **GitHub Pages** u
 4. **Automated Steps**: The workflow will:
    - Install dependencies.
    - Generate the SEO Sitemap.
-   - Build the production assets with the correct base path (`/Free-Tools/`).
+   - Build the production assets with the correct base path (`/`).
    - Deploy the contents of the `dist` folder to the `gh-pages` branch.
 
-### Manual Build
-If you need to build manually for a different hosting provider:
-```bash
-npm run build
-```
-The output will be in the `dist/` directory. Note: You may need to adjust the `base` property in `vite.config.js` if deploying to a custom domain or a different path.
+## 📄 License
 
+This project is open-source under the **MIT License**.
 
+For the full license terms, please visit: [License Terms](https://github.com/OnlineToolsVault/OnlineToolsVault.github.io?tab=License-1-ov-file)
 
-This project is licensed under a Proprietary License. Unauthorized copying, modification, distribution, or use of this software is strictly prohibited.
-
-For the full license terms, please visit: [License Terms](https://github.com/singhsidhukuldeep/Free-Tools?tab=License-1-ov-file)
-
-- 💻 [Project Repository](https://github.com/singhsidhukuldeep/Free-Tools)
+- 💻 [Project Repository](https://github.com/OnlineToolsVault/OnlineToolsVault.github.io)
 
 ---
 

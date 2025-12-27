@@ -11,7 +11,7 @@ const ToolLayout = ({
     children
 }) => {
     const location = useLocation()
-    const canonicalUrl = `https://singhsidhukuldeep.github.io/Free-Tools${location.pathname === '/' ? '' : location.pathname}`
+    const canonicalUrl = `https://onlinetoolsvault.com${location.pathname === '/' ? '' : location.pathname}`
 
     const renderStyledText = (text) => {
         if (!text || typeof text !== 'string') return text

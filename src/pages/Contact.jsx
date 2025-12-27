@@ -31,7 +31,7 @@ const Contact = () => {
                                 <p>singhsidhukuldeep@gmail.com</p>
                             </a>
 
-                            <a href="https://github.com/singhsidhukuldeep/Free-Tools/issues" target="_blank" rel="noopener noreferrer" className="contact-card" style={{ textDecoration: 'none', color: 'inherit' }}>
+                            <a href="https://github.com/OnlineToolsVault/OnlineToolsVault.github.io/issues" target="_blank" rel="noopener noreferrer" className="contact-card" style={{ textDecoration: 'none', color: 'inherit' }}>
                                 <Github size={32} style={{ marginBottom: '1rem', color: 'var(--primary)' }} />
                                 <h3>GitHub Issues</h3>
                                 <p>Report bugs or request features</p>

@@ -14,7 +14,7 @@ const Footer = () => {
                     <p>
                         Premium, free-to-use online tools for everyone. Free, Fast, Secure and Privacy Focused
                         <br />
-                        You can check the source code <a href="https://github.com/singhsidhukuldeep/Free-Tools" target="_blank" rel="noopener noreferrer" style={{ color: 'var(--primary)', textDecoration: 'underline' }}>here</a>.
+                        You can check the source code <a href="https://github.com/OnlineToolsVault/OnlineToolsVault.github.io" target="_blank" rel="noopener noreferrer" style={{ color: 'var(--primary)', textDecoration: 'underline' }}>here</a>.
                     </p>
                 </div>
 
@@ -43,7 +43,7 @@ const Footer = () => {
                         <h4>Connect</h4>
                         <ul>
                             <li><a href="https://twitter.com/kuldeep_s_s" target="_blank" rel="noopener noreferrer">Twitter</a></li>
-                            <li><a href="https://github.com/singhsidhukuldeep" target="_blank" rel="noopener noreferrer">GitHub</a></li>
+                            <li><a href="https://github.com/OnlineToolsVault" target="_blank" rel="noopener noreferrer">GitHub</a></li>
                             <li><a href="https://www.linkedin.com/in/singhsidhukuldeep/" target="_blank" rel="noopener noreferrer">LinkedIn</a></li>
                         </ul>
                     </div>

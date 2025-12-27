@@ -87,7 +87,7 @@ _You **can** combine them_
 
 ## Links
 
-You may be using [Free-Tools Link](https://singhsidhukuldeep.github.io/Free-Tools/).
+You may be using [OnlineToolsVault](https://onlinetoolsvault.com/).
 
 ## Blockquotes
 
