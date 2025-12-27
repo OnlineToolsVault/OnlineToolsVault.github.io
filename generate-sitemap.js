@@ -5,7 +5,7 @@ import { fileURLToPath } from 'url';
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
 // Configuration
-const baseUrl = 'https://singhsidhukuldeep.github.io/Free-Tools';
+const baseUrl = 'https://onlinetoolsvault.com';
 const distPath = path.resolve(__dirname, 'dist');
 const publicPath = path.resolve(__dirname, 'public');
 
