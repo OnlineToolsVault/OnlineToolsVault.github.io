@@ -1,6 +1,6 @@
 import React, { useState } from 'react'
 import { Link, useLocation } from 'react-router-dom'
-import { Menu, X, Rocket } from 'lucide-react'
+import { Menu, X, Rocket, Twitter, Github, Linkedin } from 'lucide-react'
 import './Layout.css'
 
 const Header = () => {
@@ -27,7 +27,18 @@ const Header = () => {
                     <Link to="/" className="nav-link">Home</Link>
                     <Link to="/about" className="nav-link">About</Link>
                     <Link to="/contact" className="nav-link">Contact</Link>
-                    {/* Add more links later */}
+
+                    <div className="social-icons">
+                        <a href="https://twitter.com/kuldeep_s_s" target="_blank" rel="noopener noreferrer" className="social-icon" aria-label="Twitter">
+                            <Twitter size={18} />
+                        </a>
+                        <a href="https://github.com/singhsidhukuldeep" target="_blank" rel="noopener noreferrer" className="social-icon" aria-label="GitHub">
+                            <Github size={18} />
+                        </a>
+                        <a href="https://www.linkedin.com/in/singhsidhukuldeep/" target="_blank" rel="noopener noreferrer" className="social-icon" aria-label="LinkedIn">
+                            <Linkedin size={18} />
+                        </a>
+                    </div>
                 </nav>
 
                 {/* Mobile Menu Button */}
@@ -36,7 +47,7 @@ const Header = () => {
                 </button>
             </div>
 
-            {/* Mobile Nav Dropdown - Simple implementation for now */}
+            {/* Mobile Nav Dropdown */}
             {isMobileMenuOpen && (
                 <div className="mobile-menu" style={{
                     position: 'absolute',
@@ -54,6 +65,24 @@ const Header = () => {
                     <Link to="/" className="nav-link">Home</Link>
                     <Link to="/about" className="nav-link">About</Link>
                     <Link to="/contact" className="nav-link">Contact</Link>
+
+                    <div style={{
+                        display: 'flex',
+                        gap: '1.5rem',
+                        paddingTop: '1rem',
+                        borderTop: '1px solid var(--border)',
+                        justifyContent: 'center'
+                    }}>
+                        <a href="https://twitter.com/kuldeep_s_s" target="_blank" rel="noopener noreferrer" className="social-icon" aria-label="Twitter">
+                            <Twitter size={20} />
+                        </a>
+                        <a href="https://github.com/singhsidhukuldeep" target="_blank" rel="noopener noreferrer" className="social-icon" aria-label="GitHub">
+                            <Github size={20} />
+                        </a>
+                        <a href="https://www.linkedin.com/in/singhsidhukuldeep/" target="_blank" rel="noopener noreferrer" className="social-icon" aria-label="LinkedIn">
+                            <Linkedin size={20} />
+                        </a>
+                    </div>
                 </div>
             )}
         </header>

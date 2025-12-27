@@ -1,4 +1,5 @@
 import React, { useState } from 'react'
+import RelatedTools from '../../components/tools/RelatedTools'
 import { Helmet } from 'react-helmet-async'
 import ReactMarkdown from 'react-markdown'
 import remarkGfm from 'remark-gfm'
@@ -203,7 +204,7 @@ This web site is using \`js\`.`)
                 <meta name="description" content="Free online Markdown editor with live preview. Convert Markdown to HTML or PDF. Features split view, syntax highlighting, and instant download." />
             </Helmet>
 
-            <div className="container" style={{ padding: '2rem' }}>
+            <div className="tool-workspace" style={{ maxWidth: '1400px', margin: '0 auto', padding: '2rem' }}>
                 <header className="no-print" style={{ marginBottom: '1.5rem', textAlign: 'center' }}>
                     <h1 style={{ fontSize: '2rem', fontWeight: '800' }}>Markdown Previewer</h1>
                     <p style={{ color: '#64748b' }}>Edit Markdown with real-time preview.</p>
@@ -318,6 +319,47 @@ This web site is using \`js\`.`)
                             {markdown}
                         </ReactMarkdown>
                     </div>
+                </div>
+
+                <div className="no-print" style={{ marginTop: '4rem' }}>
+                    <RelatedTools />
+
+                    <div className="features-section" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))', gap: '2rem', marginBottom: '4rem' }}>
+                        {[
+                            { title: 'Real-time Preview', desc: 'See your changes instantly as you type. Split view for maximum productivity.', icon: <Eye color="var(--primary)" size={24} /> },
+                            { title: 'Synchronized Scrolling', desc: 'Editor and preview scroll together, keeping your place in long documents.', icon: <ArrowLeftRight color="var(--primary)" size={24} /> },
+                            { title: 'Export Options', desc: 'Download as HTML, save as PDF, or just copy the raw Markdown.', icon: <Download color="var(--primary)" size={24} /> }
+                        ].map((feature, index) => (
+                            <div key={index} className="tool-feature-block" style={{ padding: '1.5rem', borderRadius: '1rem', border: '1px solid var(--border)', background: 'var(--bg-card)' }}>
+                                <div style={{ width: '48px', height: '48px', background: 'var(--primary-light)', borderRadius: '0.75rem', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: '1rem' }}>
+                                    {feature.icon}
+                                </div>
+                                <h3 style={{ fontSize: '1.25rem', marginBottom: '0.5rem' }}>{feature.title}</h3>
+                                <p style={{ color: 'var(--text-secondary)' }}>{feature.desc}</p>
+                            </div>
+                        ))}
+                    </div>
+
+                    <div className="faqs-section" style={{ marginTop: '3rem', background: 'var(--bg-card)', padding: '2rem', borderRadius: '1rem', border: '1px solid var(--border)' }}>
+                        <h2 style={{ fontSize: '1.8rem', marginBottom: '1.5rem' }}>Frequently Asked Questions</h2>
+                        <div style={{ display: 'grid', gap: '1.5rem' }}>
+                            {[
+                                { q: "How do I make text bold?", a: "Wrap your text with **double asterisks** or __double underscores__." },
+                                { q: "Can I export to PDF?", a: "Yes! Click the 'Save as PDF' button to open the browser's print dialog, then choose 'Save as PDF'." },
+                                { q: "Is GitHub Flavored Markdown supported?", a: "Yes, we support GFM, which includes tables, strikethrough, and task lists." },
+                                { q: "Can I work offline?", a: "Yes, once the page is loaded, the entire editor works offline in your browser." },
+                                { q: "Does it support HTML tags?", a: "Yes, Markdown allows inline HTML, so you can add things like <div> or <span> if needed." },
+                                { q: "Is there a limit on length?", a: "No hard limit. You can edit very long documents, but extremely large files might slow down the live preview." }
+                            ].map((faq, i) => (
+                                <div key={i}>
+                                    <h3 style={{ fontSize: '1.1rem', fontWeight: '600', marginBottom: '0.5rem' }}>{faq.q}</h3>
+                                    <p style={{ color: 'var(--text-secondary)', lineHeight: '1.5' }}>{faq.a}</p>
+                                </div>
+                            ))}
+                        </div>
+                    </div>
+
+
                 </div>
             </div>
 

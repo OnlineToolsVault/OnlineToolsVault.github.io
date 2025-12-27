@@ -1,6 +1,7 @@
 
+import RelatedTools from '../../components/tools/RelatedTools'
 import React, { useState, useEffect, useRef } from 'react'
-import { Helmet } from 'react-helmet-async'
+import ToolLayout from '../../components/tools/ToolLayout'
 import Editor from '@monaco-editor/react'
 import { format } from 'prettier/standalone'
 import * as prettierPluginHtml from 'prettier/plugins/html'
@@ -11,10 +12,9 @@ import * as prettierPluginYaml from 'prettier/plugins/yaml'
 import * as prettierPluginXml from '@prettier/plugin-xml'
 import * as prettierPluginSql from 'prettier-plugin-sql'
 import * as prettierPluginPhp from '@prettier/plugin-php/standalone'
-// import initRuff, { format as formatPython } from '@astral-sh/ruff-wasm-web' (Startup failed)
-import { Copy, Trash2, Code, Check, AlertCircle, Upload } from 'lucide-react'
+import { Copy, Trash2, Check, AlertCircle, Upload, Code, Zap, Shield } from 'lucide-react'
 
-// Simple fallback formatter for C-like languages and others not fully supported by Prettier in browser
+
 const basicFormatter = (code, type = 'c-style') => {
     // SQL Formatter (Regex based)
     if (type === 'sql') {
@@ -97,12 +97,13 @@ users.filter { it.id > 1 }.forEach { println("User: \${it.name}") } }`,
 #include <stdlib.h>
 int main(int argc, char *argv[]) {
 int i; for(i=0; i<10; i++) {
-if(i%2==0){printf("%d is even\n",i);}
-else{printf("%d is odd\n",i);}
+if(i%2==0){printf("%d is even\\n",i);}
+else{printf("%d is odd\\n",i);}
 } return 0; }`,
     cpp: `#include <iostream>
 #include <vector>
 #include <algorithm>
+#include <iostream>
 using namespace std;
 class Sorter { public: void sortVector(vector<int>& v) { sort(v.begin(), v.end()); } };
 int main() { vector<int> nums = {5, 2, 9, 1, 5, 6}; Sorter s; s.sortVector(nums);
@@ -150,24 +151,36 @@ const MONACO_LANG_MAP = {
     protobuf: 'proto',
 }
 
-const CodeFormatter = () => {
-    const [code, setCode] = useState(EXAMPLES['html'])
-    const [language, setLanguage] = useState('html')
+const CodeFormatter = ({
+    initialLanguage = 'html',
+    seoTitle = "Code Formatter - Free Online Multi-Language Beautifier",
+    seoDescription = "Free online code formatter. Support for C, C++, Java, Python, SQL, XML, JSON, and more. Beautify your code instantly.",
+    aboutTitle,
+    aboutContent,
+}) => {
+    const [code, setCode] = useState(EXAMPLES[initialLanguage] || EXAMPLES['html'])
+    const [language, setLanguage] = useState(initialLanguage)
     const [formatted, setFormatted] = useState('')
     const [error, setError] = useState(null)
     const [copied, setCopied] = useState(false)
     const fileInputRef = useRef(null)
 
-    // Ruff WASM init removed due to build issues
-
-    // Debounce timer logic
     useEffect(() => {
         const timer = setTimeout(() => {
             handleFormat()
-        }, 800) // Auto-format 800ms after typing stops
-
+        }, 800)
         return () => clearTimeout(timer)
     }, [code, language])
+
+    const renderStyledText = (text) => {
+        if (!text || typeof text !== 'string') return text
+        return text.split(/(\*\*.*?\*\*)/g).map((part, index) => {
+            if (part.startsWith('**') && part.endsWith('**')) {
+                return <strong key={index}>{part.slice(2, -2)}</strong>
+            }
+            return part
+        })
+    }
 
     const handleFormat = async () => {
         try {
@@ -176,18 +189,14 @@ const CodeFormatter = () => {
 
             switch (language) {
                 case 'html': result = await format(code, { parser: 'html', plugins: [prettierPluginHtml], printWidth: 80, tabWidth: 2 }); break
-                case 'xml': result = await format(code, { parser: 'xml', plugins: [prettierPluginXml], printWidth: 80, tabWidth: 2 }); break
+                case 'xml': result = await format(code, { parser: 'xml', plugins: [prettierPluginXml.default || prettierPluginXml], printWidth: 80, tabWidth: 2 }); break
                 case 'css': result = await format(code, { parser: 'css', plugins: [prettierPluginCss], printWidth: 80, tabWidth: 2 }); break
                 case 'javascript': result = await format(code, { parser: 'babel', plugins: [prettierPluginBabel, prettierPluginEstree], semi: true, singleQuote: true }); break
                 case 'json': result = await format(code, { parser: 'json', plugins: [prettierPluginBabel, prettierPluginEstree] }); break
                 case 'yaml': result = await format(code, { parser: 'yaml', plugins: [prettierPluginYaml] }); break
                 case 'sql': result = basicFormatter(code, 'sql'); break
                 case 'php': result = await format(code, { parser: 'php', plugins: [prettierPluginPhp] }); break
-                case 'python':
-                    result = basicFormatter(code, 'python')
-                    break
-
-                // Fallback for languages without robust WASM prettier plugins
+                case 'python': result = basicFormatter(code, 'python'); break
                 case 'c':
                 case 'cpp':
                 case 'csharp':
@@ -199,15 +208,12 @@ const CodeFormatter = () => {
                     result = basicFormatter(code, 'c-style')
                     break
                 default:
-                    result = code // No-op
+                    result = code
             }
 
             setFormatted(result)
         } catch (err) {
-            // console.error(err) // Suppress noisy errors during typing
             setError(err.message || 'Formatting failed.')
-            // Keep old formatted code or clear? keeping old might be better effectively
-            // setFormatted('') 
         }
     }
 
@@ -246,22 +252,14 @@ const CodeFormatter = () => {
     }
 
     return (
-        <>
-            <Helmet>
-                <title>Code Formatter - Free Online Multi-Language Beautifier</title>
-                <meta name="description" content="Free online code formatter. Support for C, C++, Java, Python, SQL, XML, JSON, and more. Beautify your code instantly with syntax highlighting and line numbers." />
-            </Helmet>
-
-            <div className="container" style={{ padding: '2rem', height: '100vh', display: 'flex', flexDirection: 'column' }}>
-                <header style={{ marginBottom: '1.5rem', textAlign: 'center' }}>
-                    <h1 style={{ fontSize: '2rem', fontWeight: '800', marginBottom: '0.5rem' }}>Code Formatter</h1>
-                    <p style={{ color: '#64748b', maxWidth: '800px', margin: '0 auto', lineHeight: '1.6' }}>
-                        Instantly format and beautify your code with our <strong>Free Online Code Formatter</strong>.
-                        Supports <strong>15+ languages</strong> including Python, JavaScript, Java, C++, SQL, XML, and JSON.
-                        Features intelligent syntax highlighting, auto-indentation, and error detection - <strong>no installation required</strong>.
-                    </p>
-                </header>
-
+        <ToolLayout
+            title={seoTitle.split(' - ')[0]}
+            description={seoDescription}
+            seoTitle={seoTitle}
+            seoDescription={seoDescription}
+            faqs={faqs}
+        >
+            <div className="tool-workspace" style={{ maxWidth: '1200px', margin: '0 auto', padding: '0 1.5rem', minHeight: '80vh', display: 'flex', flexDirection: 'column' }}>
                 <div style={{
                     background: 'var(--card)',
                     borderRadius: '1rem',
@@ -276,6 +274,7 @@ const CodeFormatter = () => {
                     <div style={{ display: 'flex', gap: '1rem', marginBottom: '1rem', flexWrap: 'wrap', alignItems: 'center' }}>
                         <div className="select-wrapper">
                             <select
+                                id="language-select"
                                 value={language}
                                 onChange={handleLanguageChange}
                                 style={{
@@ -315,17 +314,17 @@ const CodeFormatter = () => {
                             </select>
                         </div>
 
-                        <input type="file" ref={fileInputRef} style={{ display: 'none' }} onChange={handleFileUpload} />
-                        <button onClick={() => fileInputRef.current.click()} className="btn-secondary" style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', padding: '0.5rem 1rem', borderRadius: '0.5rem', border: '1px solid var(--border)', background: 'white', cursor: 'pointer' }}>
+                        <input id="code-file-upload" type="file" ref={fileInputRef} style={{ display: 'none' }} onChange={handleFileUpload} />
+                        <button id="upload-btn" onClick={() => fileInputRef.current.click()} className="btn-secondary" style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', padding: '0.5rem 1rem', borderRadius: '0.5rem', border: '1px solid var(--border)', background: 'white', cursor: 'pointer' }}>
                             <Upload size={16} /> Load File
                         </button>
 
                         <div style={{ marginLeft: 'auto', display: 'flex', gap: '0.5rem' }}>
-                            <button onClick={handleCopy} className="btn-secondary" style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', padding: '0.5rem 1rem', borderRadius: '0.5rem', border: '1px solid var(--border)', background: 'white', cursor: 'pointer' }}>
+                            <button id="copy-btn" onClick={handleCopy} className="btn-secondary" style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', padding: '0.5rem 1rem', borderRadius: '0.5rem', border: '1px solid var(--border)', background: 'white', cursor: 'pointer' }}>
                                 {copied ? <Check size={16} color="#22c55e" /> : <Copy size={16} />}
                                 {copied ? 'Copied' : 'Copy'}
                             </button>
-                            <button onClick={handleClear} className="btn-secondary" style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', padding: '0.5rem 1rem', borderRadius: '0.5rem', border: '1px solid #ef4444', color: '#ef4444', background: '#fef2f2', cursor: 'pointer' }}>
+                            <button id="clear-btn" onClick={handleClear} className="btn-secondary" style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', padding: '0.5rem 1rem', borderRadius: '0.5rem', border: '1px solid #ef4444', color: '#ef4444', background: '#fef2f2', cursor: 'pointer' }}>
                                 <Trash2 size={16} /> Clear
                             </button>
                         </div>
@@ -337,9 +336,9 @@ const CodeFormatter = () => {
                         </div>
                     )}
 
-                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem', flex: 1, minHeight: 0 }}>
+                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem', flex: 1, minHeight: '600px', width: '100%', maxWidth: '100%' }}>
                         {/* Editor Input */}
-                        <div style={{ border: '1px solid var(--border)', borderRadius: '0.5rem', overflow: 'hidden' }}>
+                        <div id="editor-input-container" style={{ border: '1px solid var(--border)', borderRadius: '0.5rem', overflow: 'hidden', width: '100%', maxWidth: '100%' }}>
                             <Editor
                                 height="100%"
                                 language={MONACO_LANG_MAP[language] || 'plaintext'}
@@ -358,7 +357,7 @@ const CodeFormatter = () => {
                         </div>
 
                         {/* Editor Output (Read Only) */}
-                        <div style={{ border: '1px solid var(--border)', borderRadius: '0.5rem', overflow: 'hidden', background: '#f8fafc' }}>
+                        <div id="editor-output-container" style={{ border: '1px solid var(--border)', borderRadius: '0.5rem', overflow: 'hidden', background: '#f8fafc', width: '100%', maxWidth: '100%' }}>
                             <Editor
                                 height="100%"
                                 language={MONACO_LANG_MAP[language] || 'plaintext'}
@@ -377,7 +376,32 @@ const CodeFormatter = () => {
                         </div>
                     </div>
                 </div>
+
+                <div className="tool-content" style={{ marginTop: '4rem' }}>
+                    <RelatedTools />
+                    <div className="about-section" style={{ background: 'var(--bg-card)', padding: '2rem', borderRadius: '1rem', border: '1px solid var(--border)', marginBottom: '2rem' }}>
+                        <h2 style={{ fontSize: '1.8rem', marginBottom: '1.5rem' }}>{aboutTitle || `About ${seoTitle.split(' - ')[0]}`}</h2>
+                        <p style={{ lineHeight: '1.6', color: 'var(--text-secondary)', marginBottom: '1rem' }}>
+                            {renderStyledText(aboutContent || seoDescription)}
+                        </p>
+                    </div>
+                    <div className="features-section" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))', gap: '2rem' }}>
+                        {features.map((f, i) => (
+                            <div key={i} className="feature-card" style={{ padding: '1.5rem', borderRadius: '1rem', border: '1px solid var(--border)', background: 'var(--bg-card)' }}>
+                                <div style={{ width: '48px', height: '48px', background: 'var(--primary-light)', borderRadius: '0.75rem', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: '1rem' }}>
+                                    {i === 0 ? <Code color="var(--primary)" size={24} /> :
+                                        i === 1 ? <Zap color="var(--primary)" size={24} /> :
+                                            <Shield color="var(--primary)" size={24} />}
+                                </div>
+                                <h3 style={{ fontSize: '1.25rem', marginBottom: '0.5rem' }}>{f.title}</h3>
+                                <p style={{ color: 'var(--text-secondary)' }}>{f.desc}</p>
+                            </div>
+                        ))}
+                    </div>
+                </div>
             </div>
+
+
 
             <style>{`
                 @media (max-width: 768px) {
@@ -385,11 +409,28 @@ const CodeFormatter = () => {
                         grid-template-columns: 1fr !important;
                     }
                     .container { height: auto !important; }
-                    .container > div { height: 800px; }
+                    .container > div { height: 600px; }
+                    #editor-input-container, #editor-output-container {
+                        min-height: 400px;
+                        width: 100% !important;
+                        max-width: 100vw !important;
+                    }
                 }
             `}</style>
-        </>
+        </ToolLayout>
     )
 }
+
+const features = [
+    { title: 'Multi-Language Support', desc: 'Supports 20+ programming languages including HTML, CSS, JavaScript, Python, and SQL.' },
+    { title: 'Intelligent Formatting', desc: 'Automatically fixes indentation, spacing, and bracket alignment for maximum readability.' },
+    { title: 'Privacy Focused', desc: 'All code formatting happens locally in your browser. Your code is never sent to any server.' }
+]
+
+const faqs = [
+    { question: 'Is my code safe?', answer: 'Yes, absolutely. The formatting happens entirely in your browser using JavaScript. Your code is never sent to our servers.' },
+    { question: 'What languages are supported?', answer: 'We support over 20 languages including HTML, CSS, JavaScript, JSON, SQL, Python, Java, C++, and XML.' },
+    { question: 'Can I format minified code?', answer: 'Yes! Paste your minified or obfuscated code, and our tool will instantly beautify it with proper indentation and spacing.' }
+]
 
 export default CodeFormatter

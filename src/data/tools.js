@@ -4,200 +4,949 @@ import {
     FileImage,
     Minimize2,
     MoveHorizontal,
-    FileText, // For Merge PDF and Paste to Markdown
-    Image as ImageIcon, // For Jpg to PDF
-    Scissors, // Bg Remover
-    Maximize, // Resizer
-    Settings, // Compress PDF
-    Edit3, // PDF Editor
-    Sparkles, // Humanize AI
-    Crop, // Image Cropper
-    Code, // Code Formatter
-    FileJson // Advanced JSON Formatter
+    FileText,
+    Image as ImageIcon,
+    Scissors,
+    Maximize,
+    Settings,
+    Edit3,
+    Sparkles,
+    Crop,
+    Code,
+    FileJson,
+    Lock,
+    Unlock,
+    Hash,
+    Shield,
+    Database,
+    Globe,
+    Clock,
+    Archive,
+    Search,
+    RefreshCw,
+    Palette,
+    FileCode,
+    FileSpreadsheet,
+    FileDigit,
+    Layers,
+    Wand2,
+    Binary,
+    Layout
 } from 'lucide-react'
 
 export const tools = [
+    // --- Text Tools ---
     {
         id: 'word-counter',
         name: 'Word Counter',
         description: 'Count words, characters, and reading time in real-time.',
-        seoDescription: 'Free online word counter tool. Calculate word count, character count, and reading time instantly for your essays, articles, and blog posts.',
+        seoDescription: 'Free online word counter and text analyzer. Count words, characters, sentences, and paragraphs instantly with detailed reading time statistics.',
         path: '/word-counter',
         icon: Type,
         category: 'text',
-        featured: true
+        featured: true,
+        popularity: 80
     },
     {
         id: 'humanize-text',
         name: 'Humanize AI Text',
         description: 'Refine AI-generated text to look more natural.',
-        seoDescription: 'Convert AI-generated content into natural, human-like text. Perfect for bypassing AI detectors and improving readability.',
+        seoDescription: 'Advanced AI text humanizer. Convert ChatGPT or generic AI content into natural, human-sounding text to bypass AI detectors effortlessly.',
         path: '/humanize-text',
         icon: Sparkles,
         category: 'text',
-        featured: true
+        featured: true,
+        popularity: 88
     },
     {
         id: 'paste-to-markdown',
         name: 'Paste to Markdown',
         description: 'Convert pasted HTML/Rich Text to Markdown.',
-        seoDescription: 'Instantly convert rich text, HTML, or formatted content into clean Markdown syntax. Essential for developers and technical writers.',
+        seoDescription: 'Instantly convert pasted content, HTML, or rich text into clean, formatted Markdown for your documentation or blog posts.',
         path: '/paste-to-markdown',
         icon: FileText,
-        category: 'utility',
-        featured: true
-    },
-    {
-        id: 'qr-generator',
-        name: 'QR Generator',
-        description: 'Create customizable QR codes for URLs and text.',
-        seoDescription: 'Generate custom QR codes for free. Create QR codes for websites, text, and more with adjustable colors and sizes.',
-        path: '/qr-generator',
-        icon: QrCode,
-        category: 'utility',
-        featured: true
-    },
-    {
-        id: 'image-compressor',
-        name: 'Image Compressor',
-        description: 'Compress PNG, JPG, and WebP images efficiently.',
-        seoDescription: 'Optimize your images for the web. Reduce file size of PNG, JPG, and WebP images without losing quality.',
-        path: '/image-compressor',
-        icon: Minimize2,
-        category: 'image',
-        featured: true
-    },
-    {
-        id: 'bg-remover',
-        name: 'Background Remover',
-        description: 'Remove image backgrounds automatically with AI.',
-        seoDescription: 'Remove backgrounds from images instantly using AI. Create transparent PNGs for e-commerce, profiles, and design projects.',
-        path: '/bg-remover',
-        icon: Scissors,
-        category: 'image',
-        featured: true
-    },
-    {
-        id: 'image-cropper',
-        name: 'Image Cropper',
-        description: 'Crop images to custom sizes and aspect ratios.',
-        seoDescription: 'Free online image cropper. Crop JPG, PNG, and WebP images to exact pixel dimensions or fixed aspect ratios instantly.',
-        path: '/image-cropper',
-        icon: Crop,
-        category: 'image',
-        featured: true
+        category: 'text',
+        featured: true,
+        popularity: 45
     },
     {
         id: 'markdown-previewer',
         name: 'Markdown Previewer',
         description: 'Real-time Markdown to HTML renderer.',
-        seoDescription: 'Live Markdown editor and previewer. Write Markdown and instantly see the rendered HTML output.',
+        seoDescription: 'Live online Markdown editor. Write Markdown and see the rendered HTML preview instantly alongside your code.',
         path: '/markdown-previewer',
         icon: FileText,
         category: 'text',
-        featured: true
+        featured: true,
+        popularity: 50
     },
     {
-        id: 'code-formatter',
-        name: 'Code Formatter',
-        description: 'Beautify HTML, CSS, and JavaScript code.',
-        seoDescription: 'Free online code formatter. Beautify and format HTML, CSS, and JS code with one click.',
-        path: '/code-formatter',
-        icon: Code,
-        category: 'utility',
-        featured: true
+        id: 'lorem-ipsum-generator',
+        name: 'Lorem Ipsum Generator',
+        description: 'Generate placeholder text for effortless design.',
+        seoDescription: 'Free Lorem Ipsum generator. Create custom placeholder text for web design, graphic design, and mockups in seconds.',
+        path: '/lorem-ipsum-generator',
+        icon: RefreshCw,
+        category: 'text',
+        featured: false,
+        popularity: 55
     },
     {
-        id: 'json-formatter',
-        name: 'JSON Formatter',
-        description: 'Validate, pretty print, and minify JSON data.',
-        seoDescription: 'Free online advanced JSON formatter. Validate, pretty print, minify, and explore JSON data with collapsible trees and path finding.',
-        path: '/json-formatter',
-        icon: FileJson,
-        category: 'utility',
-        featured: true
+        id: 'diff-viewer',
+        name: 'Diff Viewer',
+        description: 'Compare text files and find differences instantly.',
+        seoDescription: 'Online text comparison tool. Identify differences between two text files, code snippets, or documents with side-by-side highlighting.',
+        path: '/diff-viewer',
+        icon: FileCode,
+        category: 'text',
+        featured: false,
+        popularity: 42
     },
-    // PDF Section
-    {
-        id: 'pdf-to-jpg',
-        name: 'PDF to JPG',
-        description: 'Convert PDF pages to high-quality images.',
-        seoDescription: 'Convert PDF documents to high-resolution JPG images. Safe, secure, and client-side conversion for your privacy.',
-        path: '/pdf-to-jpg',
-        icon: FileImage,
-        category: 'pdf',
-        featured: true
-    },
-    {
-        id: 'pdf-to-png',
-        name: 'PDF to PNG',
-        description: 'Convert PDF pages to high-quality PNG images.',
-        seoDescription: 'Extract pages from PDF files and convert them to lossless PNG images. Free, secure, and client-side.',
-        path: '/pdf-to-png',
-        icon: FileImage,
-        category: 'pdf',
-        featured: true
-    },
-    {
-        id: 'jpg-to-pdf',
-        name: 'JPG to PDF',
-        description: 'Convert images to a single PDF document.',
-        seoDescription: 'Merge multiple images into a single professional PDF file. Supports JPG, PNG, and other image formats.',
-        path: '/jpg-to-pdf',
-        icon: ImageIcon,
-        category: 'pdf',
-        featured: false
-    },
+
+    // --- PDF Tools ---
     {
         id: 'merge-pdf',
         name: 'Merge PDF',
         description: 'Combine multiple PDF files into one.',
-        seoDescription: 'Combine multiple PDF files into one document. Organize your PDFs easily with our fast and free PDF merger.',
+        seoDescription: 'Free online PDF merger. Combine multiple PDF documents into a single file quickly, securely, and without any software installation.',
         path: '/merge-pdf',
-        icon: FileText,
+        icon: Layers,
         category: 'pdf',
-        featured: false
+        featured: true,
+        popularity: 100
+    },
+    {
+        id: 'split-pdf',
+        name: 'Split PDF',
+        description: 'Extract pages or split PDF into multiple files.',
+        seoDescription: 'Split PDF files online. Extract specific pages or divide a large PDF document into smaller individual files easily.',
+        path: '/split-pdf',
+        icon: Scissors,
+        category: 'pdf',
+        featured: true,
+        popularity: 92
     },
     {
         id: 'compress-pdf',
         name: 'Compress PDF',
         description: 'Optimize PDF structure and remove metadata.',
-        seoDescription: 'Reduce PDF file size while maintaining quality. Optimize PDFs for email attachments and web uploads.',
+        seoDescription: 'Online PDF compressor. Reduce PDF file size significantly for email or web upload without shrinking the visual quality.',
         path: '/compress-pdf',
-        icon: Settings,
+        icon: Minimize2,
         category: 'pdf',
-        featured: false
+        featured: true,
+        popularity: 98
+    },
+    {
+        id: 'pdf-to-word',
+        name: 'PDF to Word',
+        description: 'Convert PDF files to editable Word documents.',
+        seoDescription: 'Convert PDF to Word (DOCX) online. Turn your PDFs into editable Microsoft Word documents with high accuracy.',
+        path: '/pdf-to-word',
+        icon: FileText,
+        category: 'pdf',
+        featured: true,
+        popularity: 95
+    },
+    {
+        id: 'word-to-pdf',
+        name: 'Word to PDF',
+        description: 'Convert Word documents to professional PDFs.',
+        seoDescription: 'Free Word to PDF converter. Transform DOCX and DOC files into high-quality PDF documents that look exactly like the original.',
+        path: '/word-to-pdf',
+        icon: FileText,
+        category: 'pdf',
+        featured: false,
+        popularity: 82
+    },
+    {
+        id: 'pdf-to-excel',
+        name: 'PDF to Excel',
+        description: 'Extract PDF tables to Excel spreadsheets.',
+        seoDescription: 'Convert PDF data to Excel. Extract tables and lists from PDF files into editable XLS/XLSX spreadsheets accurately.',
+        path: '/pdf-to-excel',
+        icon: FileSpreadsheet,
+        category: 'pdf',
+        featured: true,
+        popularity: 70
+    },
+    {
+        id: 'pdf-to-jpg',
+        name: 'PDF to JPG',
+        description: 'Convert PDF pages to high-quality images.',
+        seoDescription: 'Extract pages from PDF as JPG images. Convert entire PDF documents into individual image files for easy sharing.',
+        path: '/pdf-to-jpg',
+        icon: FileImage,
+        category: 'pdf',
+        featured: false,
+        popularity: 85
+    },
+    {
+        id: 'pdf-to-png',
+        name: 'PDF to PNG',
+        description: 'Convert PDF pages to high-quality PNG images.',
+        seoDescription: 'Turn PDF pages into transparent or high-quality PNG images. Ideal for presentations and web use.',
+        path: '/pdf-to-png',
+        icon: FileImage,
+        category: 'pdf',
+        featured: false,
+        popularity: 72
+    },
+    {
+        id: 'jpg-to-pdf',
+        name: 'JPG to PDF',
+        description: 'Convert images to a single PDF document.',
+        seoDescription: 'Merge JPG, PNG, and other images into a single, organized PDF file. perfect for creating portfolios or sharing photos.',
+        path: '/jpg-to-pdf',
+        icon: ImageIcon,
+        category: 'pdf',
+        featured: false,
+        popularity: 88
     },
     {
         id: 'pdf-editor',
         name: 'PDF Editor',
         description: 'Add text annotations to PDF documents.',
-        seoDescription: 'Edit PDF files online for free. Add text, annotations, and form fills to your PDF documents directly in the browser.',
+        seoDescription: 'Online PDF Editor. Modify PDF properties, titles, authors, and other metadata directly in your browser.',
         path: '/pdf-editor',
         icon: Edit3,
         category: 'pdf',
-        featured: false
+        featured: false,
+        popularity: 75
     },
-    // Image Section
+    {
+        id: 'protect-pdf',
+        name: 'Protect PDF',
+        description: 'Encrypt your PDF with a strong password.',
+        seoDescription: 'Secure your PDF files. Add password protection and encryption to sensitive documents to prevent unauthorized access.',
+        path: '/protect-pdf',
+        icon: Lock,
+        category: 'pdf',
+        featured: false,
+        popularity: 60
+    },
+    {
+        id: 'unlock-pdf',
+        name: 'Unlock PDF',
+        description: 'Remove passwords from PDFs instantly.',
+        seoDescription: 'Unlock password-protected PDFs. Remove security restrictions and passwords from PDF files you own.',
+        path: '/unlock-pdf',
+        icon: Unlock,
+        category: 'pdf',
+        featured: false,
+        popularity: 58
+    },
+    {
+        id: 'rotate-pdf',
+        name: 'Rotate PDF',
+        description: 'Rotate PDF pages to the correct orientation.',
+        seoDescription: 'Permanently rotate PDF pages. Fix the orientation of upside-down or sideways pages in your PDF documents.',
+        path: '/rotate-pdf',
+        icon: RefreshCw,
+        category: 'pdf',
+        featured: false,
+        popularity: 65
+    },
+    {
+        id: 'flatten-pdf',
+        name: 'Flatten PDF',
+        description: 'Merge layers and make form fields uneditable.',
+        seoDescription: 'Flatten PDF documents. Merge all layers, annotations, and form fields into the main content to prevent further editing.',
+        path: '/flatten-pdf',
+        icon: Layers,
+        category: 'pdf',
+        featured: false,
+        popularity: 35
+    },
+    {
+        id: 'add-watermark-pdf',
+        name: 'Watermark PDF',
+        description: 'Stamp text watermarks on your PDF pages.',
+        seoDescription: 'Add custom text watermarks to PDF files. Protect your intellectual property with customizable transparency and positioning.',
+        path: '/add-watermark-pdf',
+        icon: Wand2,
+        category: 'pdf',
+        featured: false,
+        popularity: 40
+    },
+    {
+        id: 'add-page-numbers-pdf',
+        name: 'Page Numbers PDF',
+        description: 'Insert page numbers into your document.',
+        seoDescription: 'Add page numbers to PDF. Customize position, font, and format for professional-looking documents.',
+        path: '/add-page-numbers-pdf',
+        icon: Hash,
+        category: 'pdf',
+        featured: false,
+        popularity: 38
+    },
+    {
+        id: 'pdf-metadata',
+        name: 'PDF Metadata',
+        description: 'View and edit PDF file properties.',
+        seoDescription: 'Modify PDF metadata. Change the author, title, subject, and keywords key-values of your PDF files.',
+        path: '/pdf-metadata-editor',
+        icon: FileText,
+        category: 'pdf',
+        featured: false,
+        popularity: 25
+    },
+    {
+        id: 'remove-pdf-metadata',
+        name: 'Remove PDF Metadata',
+        description: 'Clean hidden metadata from PDF files.',
+        seoDescription: 'Scrub PDF metadata. Remove author names, creation dates, and other hidden privacy data from your PDFs.',
+        path: '/remove-pdf-metadata',
+        icon: FileText,
+        category: 'pdf',
+        featured: false,
+        popularity: 28
+    },
+    {
+        id: 'extract-images-pdf',
+        name: 'Extract Images PDF',
+        description: 'Download every image inside a PDF file.',
+        seoDescription: 'PDF image extractor. Scrape and download all high-resolution images embedded within any PDF document.',
+        path: '/extract-images-from-pdf',
+        icon: FileImage,
+        category: 'pdf',
+        featured: false,
+        popularity: 50
+    },
+    {
+        id: 'organize-pdf',
+        name: 'Organize PDF',
+        description: 'Sort, reorder, and delete PDF pages.',
+        seoDescription: 'Organize PDF pages visually. Drag and drop to reorder, delete unwanted pages, or move pages between documents.',
+        path: '/organize-pdf',
+        icon: Layers,
+        category: 'pdf',
+        featured: false,
+        popularity: 45
+    },
+    {
+        id: 'pdf-to-txt',
+        name: 'PDF to Text',
+        description: 'Extract raw text content from PDFs.',
+        seoDescription: 'Convert PDF to plain text. Extract readable text from PDF documents for editing or analysis.',
+        path: '/pdf-to-txt',
+        icon: FileText,
+        category: 'pdf',
+        featured: false,
+        popularity: 55
+    },
+    {
+        id: 'pdf-thumbnail-generator',
+        name: 'PDF Thumbnail Generator',
+        description: 'Generate thumbnails from PDF pages.',
+        seoDescription: 'Create high-quality thumbnails for every page of your PDF document. Download as ZIP.',
+        path: '/pdf-thumbnail-generator',
+        icon: FileImage,
+        category: 'pdf',
+        featured: false,
+        popularity: 60
+    },
+
+    // --- Image Tools ---
+    {
+        id: 'image-compressor',
+        name: 'Image Compressor',
+        description: 'Compress PNG, JPG, and WebP images efficiently.',
+        seoDescription: 'Free online image compressor. Optimize your images for the web by reducing file size without visible quality loss.',
+        path: '/image-compressor',
+        icon: Minimize2,
+        category: 'image',
+        featured: true,
+        popularity: 95
+    },
+    {
+        id: 'bg-remover',
+        name: 'Background Remover',
+        description: 'Remove image backgrounds automatically with AI.',
+        seoDescription: 'AI background remover. Instantly remove image backgrounds to create transparent PNGs for products and profiles.',
+        path: '/background-remover',
+        icon: Scissors,
+        category: 'image',
+        featured: true,
+        popularity: 90
+    },
+    {
+        id: 'image-converter',
+        name: 'Image Converter',
+        description: 'Convert images between all major formats.',
+        seoDescription: 'Universal image converter. Switch between PNG, JPG, WebP, BMP, and TIFF formats easily and free.',
+        path: '/image-converter',
+        icon: RefreshCw,
+        category: 'image',
+        featured: true,
+        popularity: 82
+    },
     {
         id: 'image-resizer',
         name: 'Image Resizer',
         description: 'Resize images by pixel dimensions or percentage.',
-        seoDescription: 'Resize images online for free. Change dimensions of JPG, PNG, and WebP images quickly and easily.',
+        seoDescription: 'Online image resizer. Change image dimensions for social media, websites, or printing requirements.',
         path: '/image-resizer',
         icon: Maximize,
         category: 'image',
-        featured: false
+        featured: false,
+        popularity: 78
+    },
+    {
+        id: 'image-cropper',
+        name: 'Image Cropper',
+        description: 'Crop images to custom sizes and aspect ratios.',
+        seoDescription: 'Free image cropper tool. Trim unwanted areas or crop photos to specific aspect ratios like 16:9 or 1:1.',
+        path: '/image-cropper',
+        icon: Crop,
+        category: 'image',
+        featured: false,
+        popularity: 72
+    },
+    {
+        id: 'heic-to-jpg',
+        name: 'HEIC to JPG',
+        description: 'Convert iPhone HEIC photos to JPG format.',
+        seoDescription: 'HEIC to JPG converter. Turn Apple HEIC images into widely compatible JPG files for Windows and Android.',
+        path: '/heic-to-jpg',
+        icon: FileImage,
+        category: 'image',
+        featured: false,
+        popularity: 85
+    },
+    {
+        id: 'webp-to-jpg',
+        name: 'WebP to JPG',
+        description: 'Convert WebP images to standard JPG.',
+        seoDescription: 'WebP to JPG converter. Transform modern WebP images into standard JPG files compatible with all software.',
+        path: '/webp-to-jpg',
+        icon: FileImage,
+        category: 'image',
+        featured: false,
+        popularity: 68
+    },
+    {
+        id: 'blur-image',
+        name: 'Blur Image',
+        description: 'Blur faces or details in your photos.',
+        seoDescription: 'Online blur tool. Selectively blur sensitive information, faces, or backgrounds in your images for privacy.',
+        path: '/blur-image',
+        icon: Wand2,
+        category: 'image',
+        featured: false,
+        popularity: 45
+    },
+    {
+        id: 'watermark-image',
+        name: 'Watermark Image',
+        description: 'Add custom watermarks to your photos.',
+        seoDescription: 'Image watermark tool. Protect your photography and designs by adding text or logo watermarks.',
+        path: '/add-watermark-to-image',
+        icon: Wand2,
+        category: 'image',
+        featured: false,
+        popularity: 42
+    },
+    {
+        id: 'image-to-text',
+        name: 'Image to Text',
+        description: 'Extract text from images using OCR.',
+        seoDescription: 'Free online OCR. Convert images (JPG, PNG) to editable text. Extract text from scanned documents or screenshots instantly.',
+        path: '/image-to-text',
+        icon: FileText,
+        category: 'image',
+        featured: true,
+        popularity: 85
+    },
+    {
+        id: 'image-to-pdf',
+        name: 'Image to PDF',
+        description: 'Convert any image format to PDF.',
+        seoDescription: 'Universal Image to PDF converter. Turn JPG, PNG, BMP, and WebP images into a single PDF document.',
+        path: '/image-to-pdf',
+        icon: FileImage,
+        category: 'pdf',
+        featured: true,
+        popularity: 92
+    },
+    {
+        id: 'passport-photo',
+        name: 'Passport Photo Maker',
+        description: 'Create ID and passport photos fast.',
+        seoDescription: 'Passport photo generator. Create perfectly sized ID and passport photos for various countries securely online.',
+        path: '/passport-photo-maker',
+        icon: FileImage,
+        category: 'image',
+        featured: false,
+        popularity: 50
+    },
+    {
+        id: 'image-metadata',
+        name: 'Image Metadata',
+        description: 'View and edit EXIF metadata in photos.',
+        seoDescription: 'EXIF viewer and editor. Check and modify camera settings, GPS data, and dates embedded in image files.',
+        path: '/image-metadata-editor',
+        icon: Search,
+        category: 'image',
+        featured: false,
+        popularity: 28
+    },
+    {
+        id: 'remove-image-metadata',
+        name: 'Remove Image Metadata',
+        description: 'Scrub GPS and camera data from photos.',
+        seoDescription: 'Remove EXIF data. Delete hidden privacy information like location and camera details from your images.',
+        path: '/remove-image-metadata',
+        icon: Search,
+        category: 'image',
+        featured: false,
+        popularity: 32
+    },
+    {
+        id: 'youtube-thumbnail',
+        name: 'YouTube Thumbnail',
+        description: 'Download thumbnails from YouTube videos.',
+        seoDescription: 'YouTube thumbnail downloader. Save high-definition (HD) thumbnails from any YouTube video URL instantly.',
+        path: '/youtube-thumbnail-downloader',
+        icon: FileImage,
+        category: 'image',
+        featured: false,
+        popularity: 58
+    },
+    {
+        id: 'social-media-resizer',
+        name: 'Social Media Resizer',
+        description: 'Resize images for Instagram, Twitter, etc.',
+        seoDescription: 'Social media image resizer. Crop and resize images perfectly for Instagram stories, Twitter headers, and Facebook posts.',
+        path: '/instagram-twitter-resizer',
+        icon: Maximize,
+        category: 'image',
+        featured: false,
+        popularity: 52
+    },
+    {
+        id: 'bulk-image-compressor',
+        name: 'Bulk Image Compressor',
+        description: 'Compress dozens of images at once.',
+        seoDescription: 'Batch image compressor. Optimize unlimited images simultaneously to save time and bandwidth.',
+        path: '/bulk-image-compressor',
+        icon: Minimize2,
+        category: 'image',
+        featured: false,
+        popularity: 55
+    },
+    {
+        id: 'bulk-image-resizer',
+        name: 'Bulk Image Resizer',
+        description: 'Resize multiple images in one go.',
+        seoDescription: 'Batch image resizer. Resize huge collections of images to the exact same dimensions quickly.',
+        path: '/bulk-image-resizer',
+        icon: Maximize,
+        category: 'image',
+        featured: false,
+        popularity: 48
     },
     {
         id: 'merge-images',
         name: 'Merge Images',
         description: 'Join images horizontally or vertically.',
-        seoDescription: 'Combine multiple images into one. Stitch photos together horizontally or vertically for clear comparisons.',
+        seoDescription: 'Online photo combiner. Join multiple images side-by-side or stack them vertically. Customize spacing, borders, and orientation.',
         path: '/merge-images',
-        icon: MoveHorizontal,
+        icon: Layout,
         category: 'image',
-        featured: false
+        featured: false,
+        popularity: 45
+    },
+
+    // --- Developer Tools ---
+    {
+        id: 'code-formatter',
+        name: 'Code Formatter',
+        description: 'Beautify HTML, CSS, and JavaScript code.',
+        seoDescription: 'Universal code formatter. Beautify HTML, CSS, JavaScript, Python, Java, and more with smart indentation.',
+        path: '/code-formatter',
+        icon: Code,
+        category: 'developer',
+        featured: true,
+        popularity: 70
+    },
+    {
+        id: 'html-formatter',
+        name: 'HTML Formatter',
+        description: 'Format, indent, and beautify HTML code.',
+        seoDescription: 'Online HTML formatter. Beautify messy HTML code with proper indentation and nesting for better readability.',
+        path: '/html-formatter',
+        icon: Code,
+        category: 'developer',
+        featured: false,
+        popularity: 52
+    },
+    {
+        id: 'css-formatter',
+        name: 'CSS Formatter',
+        description: 'Clean up and organize CSS stylesheets.',
+        seoDescription: 'CSS beauty tool. Format, un-minify, and organize your Cascading Style Sheets instantly.',
+        path: '/css-formatter',
+        icon: Code,
+        category: 'developer',
+        featured: false,
+        popularity: 48
+    },
+    {
+        id: 'js-formatter',
+        name: 'JS Formatter',
+        description: 'Format and lint JavaScript code.',
+        seoDescription: 'JavaScript beautifier. Clean, format, and standardize your JS code with best-practice indentation.',
+        path: '/js-formatter',
+        icon: Code,
+        category: 'developer',
+        featured: false,
+        popularity: 50
+    },
+    {
+        id: 'json-formatter',
+        name: 'JSON Formatter',
+        description: 'Validate, pretty print, and minify JSON data.',
+        seoDescription: 'JSON validator and beautifier. Fix errors, format minified JSON, and validate structure for API debugging.',
+        path: '/json-formatter',
+        icon: FileJson,
+        category: 'developer',
+        featured: true,
+        popularity: 85
+    },
+    {
+        id: 'sql-formatter',
+        name: 'SQL Formatter',
+        description: 'Format SQL queries for better readability.',
+        seoDescription: 'SQL prettifier. Format complex SQL queries, indent clauses, and uppercase keywords for standard styling.',
+        path: '/sql-formatter',
+        icon: Database,
+        category: 'developer',
+        featured: false,
+        popularity: 45
+    },
+    {
+        id: 'xml-formatter',
+        name: 'XML Formatter',
+        description: 'Format and beautify XML strings.',
+        seoDescription: 'XML beautifier tool. Format XML data with tree-view indentation to make it human-readable.',
+        path: '/xml-formatter',
+        icon: Code,
+        category: 'developer',
+        featured: false,
+        popularity: 38
+    },
+    {
+        id: 'cron-parser',
+        name: 'Cron Parser',
+        description: 'Translate Cron expressions into plain English.',
+        seoDescription: 'Cron job scheduler helper. Understand complex Cron strings by converting them into human-readable schedules.',
+        path: '/cron-parser',
+        icon: Clock,
+        category: 'developer',
+        featured: false,
+        popularity: 40
+    },
+    {
+        id: 'regex-tester',
+        name: 'Regex Tester',
+        description: 'Test and debug regular expressions.',
+        seoDescription: 'Online Regex tester. Validate, test, and debug regular expressions against custom text strings in real-time.',
+        path: '/regular-expression-tester',
+        icon: Search,
+        category: 'developer',
+        featured: false,
+        popularity: 65
+    },
+    {
+        id: 'color-picker',
+        name: 'Color Picker',
+        description: 'Pick colors and convert HEX/RGB/HSL.',
+        seoDescription: 'Advanced color picker. Get HEX, RGB, HSL, and CMYK codes from a color wheel or image palette.',
+        path: '/color-picker',
+        icon: Palette,
+        category: 'developer',
+        featured: false,
+        popularity: 62
+    },
+
+    // --- Security Tools ---
+    {
+        id: 'hash-generator',
+        name: 'Hash Generator',
+        description: 'Generate secure MD5, SHA-1, SHA-256 hashes.',
+        seoDescription: 'Online hash generator. Create cryptographic hashes (MD5, SHA256) for passwords or data integrity checks.',
+        path: '/hash-generator',
+        icon: Lock,
+        category: 'security',
+        featured: false,
+        popularity: 55
+    },
+    {
+        id: 'encrypt-text',
+        name: 'Encrypt Text',
+        description: 'Encrypt text commands with AES security.',
+        seoDescription: 'AES text encryption. Secure your messages or notes with military-grade AES encryption directly in your browser.',
+        path: '/encrypt-text',
+        icon: Lock,
+        category: 'security',
+        featured: false,
+        popularity: 38
+    },
+    {
+        id: 'decrypt-text',
+        name: 'Decrypt Text',
+        description: 'Decrypt AES-encrypted messages.',
+        seoDescription: 'AES decryption tool. Unlock and read encrypted text using your secure password key.',
+        path: '/decrypt-text',
+        icon: Unlock,
+        category: 'security',
+        featured: false,
+        popularity: 35
+    },
+    {
+        id: 'bcrypt-generator',
+        name: 'Bcrypt Generator',
+        description: 'Generate secure Bcrypt password hashes.',
+        seoDescription: 'Bcrypt hash generator. Create industry-standard Bcrypt hashes for secure password storage in databases.',
+        path: '/bcrypt-generator',
+        icon: Lock,
+        category: 'security',
+        featured: false,
+        popularity: 40
+    },
+    {
+        id: 'uuid-generator',
+        name: 'UUID Generator',
+        description: 'Generate unique UUID v4 identifiers.',
+        seoDescription: 'Bulk UUID generator. Create random, unique UUID v4 strings for database keys or testing.',
+        path: '/uuid-generator',
+        icon: Hash,
+        category: 'security',
+        featured: false,
+        popularity: 70
+    },
+    {
+        id: 'base64-encoder',
+        name: 'Base64 Encoder',
+        description: 'Convert text or files to Base64 format.',
+        seoDescription: 'Base64 encoder. Convert text, strings, or images into Base64 encoded strings for safe data transport.',
+        path: '/base64-encoder',
+        icon: Binary,
+        category: 'security',
+        featured: false,
+        popularity: 65
+    },
+    {
+        id: 'base64-decoder',
+        name: 'Base64 Decoder',
+        description: 'Decode Base64 strings back to text.',
+        seoDescription: 'Base64 decoder. Translate Base64 encoded strings back into readable text or original files.',
+        path: '/base64-decoder',
+        icon: Binary,
+        category: 'security',
+        featured: false,
+        popularity: 62
+    },
+    {
+        id: 'url-encoder',
+        name: 'URL Encoder',
+        description: 'Encode special characters for URL safety.',
+        seoDescription: 'URL encode tool. Convert text into a valid URL format by encoding special characters safely.',
+        path: '/url-encoder',
+        icon: Globe,
+        category: 'security',
+        featured: false,
+        popularity: 48
+    },
+    {
+        id: 'url-decoder',
+        name: 'URL Decoder',
+        description: 'Decode URL-encoded strings to text.',
+        seoDescription: 'URL decode utility. Convert encoded URL entities back into standard readable text.',
+        path: '/url-decoder',
+        icon: Globe,
+        category: 'security',
+        featured: false,
+        popularity: 45
+    },
+    {
+        id: 'jwt-decoder',
+        name: 'JWT Decoder',
+        description: 'Debug and decode JSON Web Tokens.',
+        seoDescription: 'JWT debugger. Decode JSON Web Tokens to view headers, payloads, and signatures without verifying.',
+        path: '/jwt-decoder',
+        icon: FileJson,
+        category: 'security',
+        featured: false,
+        popularity: 58
+    },
+    {
+        id: 'password-strength',
+        name: 'Password Strength',
+        description: 'Analyze password strength and entropy.',
+        seoDescription: 'Password strength checker. Test various passwords to calculate crack times and security score.',
+        path: '/password-strength-checker',
+        icon: Shield,
+        category: 'security',
+        featured: false,
+        popularity: 52
+    },
+    {
+        id: 'file-checksum',
+        name: 'File Checksum',
+        description: 'Verify file integrity with MD5/SHA checksums.',
+        seoDescription: 'File hash calculator. Generate MD5, SHA1, and SHA256 checksums to verify file downloads and integrity.',
+        path: '/file-checksum-generator',
+        icon: FileCode,
+        category: 'security',
+        featured: false,
+        popularity: 35
+    },
+    {
+        id: 'file-encryption',
+        name: 'File Encryption',
+        description: 'Securely encrypt any file with a password.',
+        seoDescription: 'Browser-based file encryption. Encrypt documents, images, and videos locally using robust AES-GCM.',
+        path: '/file-encryption-tool',
+        icon: Lock,
+        category: 'security',
+        featured: false,
+        popularity: 38
+    },
+
+    // --- Converter & Utility Tools ---
+    {
+        id: 'qr-generator',
+        name: 'QR Generator',
+        description: 'Create customizable QR codes for URLs and text.',
+        seoDescription: 'Free QR code generator. Create high-resolution QR codes for URLs, WiFi, emails, and vCards with custom colors.',
+        path: '/qr-generator',
+        icon: QrCode,
+        category: 'utility',
+        featured: true,
+        popularity: 90
+    },
+    {
+        id: 'csv-to-json',
+        name: 'CSV to JSON',
+        description: 'Convert CSV data to JSON objects.',
+        seoDescription: 'CSV to JSON converter. Transform CSV spreadsheet data into structured JSON format for developers.',
+        path: '/csv-to-json',
+        icon: FileJson,
+        category: 'utility',
+        featured: false,
+        popularity: 55
+    },
+    {
+        id: 'json-to-csv',
+        name: 'JSON to CSV',
+        description: 'Convert JSON data to CSV spreadsheets.',
+        seoDescription: 'JSON to CSV converter. flatten JSON objects into CSV rows for analysis in Excel or Google Sheets.',
+        path: '/json-to-csv',
+        icon: FileSpreadsheet,
+        category: 'developer',
+        featured: false,
+        popularity: 52
+    },
+    {
+        id: 'csv-to-excel',
+        name: 'CSV to Excel',
+        description: 'Convert CSV files to Excel (.XLSX).',
+        seoDescription: 'CSV to Excel converter. Convert comma-separated values into formatted Excel workbooks instantly.',
+        path: '/csv-to-excel',
+        icon: FileSpreadsheet,
+        category: 'utility',
+        featured: false,
+        popularity: 48
+    },
+    {
+        id: 'excel-to-csv',
+        name: 'Excel to CSV',
+        description: 'Convert Excel spreadsheets to CSV text.',
+        seoDescription: 'Excel to CSV exporter. Save XLS and XLSX sheets as standard CSV files for data processing.',
+        path: '/excel-to-csv',
+        icon: FileText,
+        category: 'utility',
+        featured: false,
+        popularity: 45
+    },
+    {
+        id: 'timestamp-converter',
+        name: 'Timestamp Converter',
+        description: 'Convert Unix timestamps to human dates.',
+        seoDescription: 'Epoch timestamp converter. Translate Unix epoch time to human-readable dates and vice versa.',
+        path: '/timestamp-converter',
+        icon: Clock,
+        category: 'utility',
+        featured: false,
+        popularity: 50
+    },
+    {
+        id: 'unit-converter',
+        name: 'Unit Converter',
+        description: 'Convert measurements like length, weight, area.',
+        seoDescription: 'Universal unit converter. Convert metric and imperial units for length, weight, temperature, area, and speed.',
+        path: '/unit-converter',
+        icon: RefreshCw,
+        category: 'utility',
+        featured: false,
+        popularity: 58
+    },
+    {
+        id: 'zip-creator',
+        name: 'ZIP Creator',
+        description: 'Create ZIP archives from multiple files.',
+        seoDescription: 'Online ZIP file maker. Compress documents and images into a secure ZIP archive for easy sharing.',
+        path: '/zip-file-creator',
+        icon: Archive,
+        category: 'utility',
+        featured: false,
+        popularity: 42
+    },
+    {
+        id: 'zip-viewer',
+        name: 'ZIP Viewer',
+        description: 'Browse and extract ZIP content online.',
+        seoDescription: 'Online ZIP viewer. Open and inspect ZIP files to view or extract specific items without installing software.',
+        path: '/zip-viewer',
+        icon: Search,
+        category: 'utility',
+        featured: false,
+        popularity: 35
+    },
+    {
+        id: 'file-size-calculator',
+        name: 'File Size Calculator',
+        description: 'Calculate file sizes and transfer times.',
+        seoDescription: 'File size converter. Convert between Bytes, KB, MB, GB, and TB, and estimate download/upload transfer times.',
+        path: '/file-size-calculator',
+        icon: FileDigit || FileText,
+        category: 'utility',
+        featured: false,
+        popularity: 28
+    },
+    {
+        id: 'batch-renamer',
+        name: 'Batch File Renamer',
+        description: 'Rename multiple files instantly.',
+        seoDescription: 'Bulk file renamer. Add prefixes, suffixes, or numbering to rename hundreds of files at once organized in your browser.',
+        path: '/batch-file-renamer',
+        icon: Edit3,
+        category: 'utility',
+        featured: false,
+        popularity: 22
+    },
+    {
+        id: 'file-metadata',
+        name: 'File Metadata',
+        description: 'Check file type, size, and MIME info.',
+        seoDescription: 'Detailed file inspector. View MIME types, exact file sizes, and last modified timestamps for any file.',
+        path: '/file-metadata-viewer',
+        icon: Search,
+        category: 'utility',
+        featured: false,
+        popularity: 18
     }
 ]
 
@@ -206,5 +955,7 @@ export const categories = [
     { id: 'pdf', name: 'PDF Tools' },
     { id: 'image', name: 'Image Tools' },
     { id: 'text', name: 'Text Tools' },
+    { id: 'developer', name: 'Developer' },
+    { id: 'security', name: 'Security' },
     { id: 'utility', name: 'Utilities' }
 ]

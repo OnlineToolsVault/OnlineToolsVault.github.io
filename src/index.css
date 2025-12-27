@@ -18,6 +18,14 @@
 
   --border: hsl(214, 32%, 91%);
   --input: hsl(214, 32%, 91%);
+  --bg-card: #ffffff;
+  /* Added for feature cards background */
+  --text-secondary: #64748b;
+  /* Added for feature description text */
+
+  /* Global Tool Card Styles for Interactivity */
+  --tool-card-hover-translate: -4px;
+  --tool-card-hover-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
 
   --radius: 0.75rem;
 
@@ -66,6 +74,32 @@ button {
   padding: 0 1.5rem;
 }
 
+/* AdBlock Resistant Utilities */
+.tool-upload-area {
+  position: relative;
+  transition: all 0.2s ease;
+}
+
+.tool-btn-primary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transition: opacity 0.2s ease;
+}
+
+.tool-workspace {
+  width: 100%;
+  margin: 0 auto;
+}
+
+.tool-feature-block {
+  transition: transform 0.2s ease;
+}
+
+.tool-feature-block:hover {
+  transform: translateY(-2px);
+}
+
 /* Scrollbar */
 ::-webkit-scrollbar {
   width: 8px;
@@ -82,4 +116,44 @@ button {
 
 ::-webkit-scrollbar-thumb:hover {
   background-color: rgba(0, 0, 0, 0.2);
+}
+
+/* -------------------------------------------------------------------------- */
+/*                        Feature Cards Global Override                       */
+/* -------------------------------------------------------------------------- */
+/* 
+   Enforces strict 3-column layout on desktop and 1-column on mobile 
+   for all tool feature sections, overriding any inline padding/grid settings.
+*/
+
+/* 
+   Explicitly control feature grid layout to prevent collapse
+*/
+.features-section {
+  display: grid !important;
+  gap: 2rem !important;
+  grid-template-columns: 1fr !important;
+  /* Mobile default */
+}
+
+@media (min-width: 640px) {
+  .features-section {
+    grid-template-columns: repeat(2, 1fr) !important;
+  }
+}
+
+@media (min-width: 1024px) {
+  .features-section {
+    grid-template-columns: repeat(3, 1fr) !important;
+  }
+}
+
+/* Tool Card Interactive Styles */
+.tool-card {
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.tool-card:hover {
+  transform: translateY(var(--tool-card-hover-translate));
+  box-shadow: var(--tool-card-hover-shadow);
 }

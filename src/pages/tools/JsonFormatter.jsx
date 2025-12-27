@@ -1,8 +1,9 @@
 import React, { useState, useEffect, useRef } from 'react'
+import ToolLayout from '../../components/tools/ToolLayout'
+import RelatedTools from '../../components/tools/RelatedTools'
 import { Helmet } from 'react-helmet-async'
 import Editor, { useMonaco } from '@monaco-editor/react'
 import { Copy, Trash2, Check, AlertCircle, FileJson, Search, Minimize2, Maximize2, ArrowRight } from 'lucide-react'
-
 const JsonFormatter = () => {
     const [input, setInput] = useState('{"example": "paste your json here"}')
     const [output, setOutput] = useState('')
@@ -207,7 +208,7 @@ const JsonFormatter = () => {
                 <meta name="keywords" content="json formatter, json validator, json pretty print, json minify, json viewer, online json tool" />
             </Helmet>
 
-            <div className="container" style={{ padding: '2rem', minHeight: '100vh', display: 'flex', flexDirection: 'column' }}>
+            <div className="tool-workspace" style={{ maxWidth: '1200px', margin: '0 auto', padding: '2rem', minHeight: '100vh', display: 'flex', flexDirection: 'column' }}>
                 <header style={{ marginBottom: '1.5rem', textAlign: 'center' }}>
                     <h1 style={{ fontSize: '2rem', fontWeight: '800', marginBottom: '0.5rem', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.75rem' }}>
                         <FileJson size={32} color="var(--primary)" />
@@ -412,54 +413,50 @@ const JsonFormatter = () => {
                 </div>
 
                 {/* FAQ / Content Section */}
-                <section style={{ maxWidth: '800px', margin: '4rem auto 0', color: '#475569' }}>
-                    <h2 style={{ fontSize: '1.5rem', fontWeight: '700', marginBottom: '1.5rem', color: 'var(--foreground)' }}>About Advanced JSON Formatter</h2>
-
-                    <div style={{ display: 'grid', gap: '2rem' }}>
-                        <div>
-                            <p style={{ lineHeight: '1.7', marginBottom: '1rem' }}>
-                                Welcome to the most advanced <strong>Online JSON Formatter</strong>. This free tool allows you to <strong>validate</strong>, <strong>beautify</strong>, and <strong>minify</strong> your JSON data instantly. Whether you are a developer debugging an API response or a data analyst working with large datasets, our tool provides a secure, client-side environment to handle your JSON needs efficiently.
-                            </p>
-                        </div>
-
-                        <div>
-                            <h3 style={{ fontSize: '1.1rem', fontWeight: '600', marginBottom: '0.75rem', color: 'var(--foreground)' }}>Key Features</h3>
-                            <ul style={{ paddingLeft: '1.5rem', lineHeight: '1.6', display: 'grid', gap: '0.5rem' }}>
-                                <li><strong>Instant Validation:</strong> Detect syntax errors in real-time with precise line numbers and error messages.</li>
-                                <li><strong>Pretty Print JSON:</strong> Convert minified or messy JSON into a readable, well-indented structure. customize indentation levels (2, 4, 6, 8 spaces or tabs).</li>
-                                <li><strong>JSON Minifier:</strong> Compress your JSON data by removing unnecessary whitespace, reducing file size for production usage.</li>
-                                <li><strong>JSON Path Finder:</strong> Click on any property in the formatted output to instantly find its unique <strong>JSON Path</strong> or <strong>JSON Pointer</strong>.</li>
-                                <li><strong>Tree View:</strong> Expand and collapse objects and arrays to navigate complex nested data structures easily.</li>
-                                <li><strong>100% Client-Side Secure:</strong> Your data never leaves your browser. All processing is done locally, ensuring maximum privacy and security.</li>
-                            </ul>
-                        </div>
-
-                        <div>
-                            <h3 style={{ fontSize: '1.1rem', fontWeight: '600', marginBottom: '0.75rem', color: 'var(--foreground)' }}>Frequently Asked Questions</h3>
-                            <div style={{ display: 'grid', gap: '1.5rem' }}>
-                                <div>
-                                    <h4 style={{ fontWeight: '600', color: 'var(--foreground)', marginBottom: '0.25rem' }}>What is JSON?</h4>
-                                    <p style={{ lineHeight: '1.6', fontSize: '0.95rem' }}>
-                                        JSON (JavaScript Object Notation) is a lightweight data-interchange format that is easy for humans to read and write, and easy for machines to parse and generate. It is widely used for APIs and configuration files.
-                                    </p>
-                                </div>
-                                <div>
-                                    <h4 style={{ fontWeight: '600', color: 'var(--foreground)', marginBottom: '0.25rem' }}>How do I find the path of a specific value?</h4>
-                                    <p style={{ lineHeight: '1.6', fontSize: '0.95rem' }}>
-                                        Simply click on any key or value in the "Formatted Output" editor. The tool will automatically calculate and display the precise path (e.g., <code>$.store.book[0].title</code>) in the path bar above the editor. You can copy this path with a single click.
-                                    </p>
-                                </div>
-                                <div>
-                                    <h4 style={{ fontWeight: '600', color: 'var(--foreground)', marginBottom: '0.25rem' }}>Is my data sent to a server?</h4>
-                                    <p style={{ lineHeight: '1.6', fontSize: '0.95rem' }}>
-                                        No. This tool runs entirely in your browser using JavaScript. No data is ever transmitted to a server, making it safe for sensitive data processing.
-                                    </p>
-                                </div>
-                            </div>
-                        </div>
+                <div className="tool-content" style={{ marginTop: '4rem' }}>
+                    <RelatedTools />
+                    <div className="about-section" style={{ background: 'var(--bg-card)', padding: '2rem', borderRadius: '1rem', border: '1px solid var(--border)', marginBottom: '2rem' }}>
+                        <h2 style={{ fontSize: '1.8rem', marginBottom: '1.5rem' }}>About Advanced JSON Formatter</h2>
+                        <p style={{ lineHeight: '1.6', color: 'var(--text-secondary)', marginBottom: '1rem' }}>
+                            Welcome to the most advanced <strong>Online JSON Formatter</strong>. This free tool allows you to <strong>validate</strong>, <strong>beautify</strong>, and <strong>minify</strong> your JSON data instantly. Whether you are a developer debugging an API response or a data analyst working with large datasets, our tool provides a secure, client-side environment to handle your JSON needs efficiently.
+                        </p>
                     </div>
-                </section>
+                    <div className="features-section" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))', gap: '2rem' }}>
+                        {features.map((feature, index) => (
+                            <div key={index} className="tool-feature-block" style={{ padding: '1.5rem', borderRadius: '1rem', border: '1px solid var(--border)', background: 'var(--bg-card)' }}>
+                                <div style={{ width: '48px', height: '48px', background: 'var(--primary-light)', borderRadius: '0.75rem', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: '1rem' }}>
+                                    {index === 0 ? <Check color="var(--primary)" size={24} /> :
+                                        index === 1 ? <FileJson color="var(--primary)" size={24} /> :
+                                            <Search color="var(--primary)" size={24} />}
+                                </div>
+                                <h3 style={{ fontSize: '1.25rem', marginBottom: '0.5rem' }}>{feature.title}</h3>
+                                <p style={{ color: 'var(--text-secondary)' }}>{feature.desc}</p>
+                            </div>
+                        ))}
+                    </div>
+
+                </div>
+
+                <div className="faqs-section" style={{ marginTop: '2rem', background: 'var(--bg-card)', padding: '2rem', borderRadius: '1rem', border: '1px solid var(--border)' }}>
+                    <h2 style={{ fontSize: '1.8rem', marginBottom: '1.5rem' }}>Frequently Asked Questions</h2>
+                    <div style={{ display: 'grid', gap: '1.5rem' }}>
+                        {[
+                            { q: "Is my JSON data safe?", a: "Yes, absolutely. The formatting happens entirely in your browser. We never see, store, or upload your data." },
+                            { q: "What does 'Minify' do?", a: "Minification removes all unnecessary whitespace, newlines, and comments to make the file size as small as possible for production use." },
+                            { q: "How do I find the JSON Path?", a: "Simply click on any key or value in the 'Formatted Output' editor. The valid JSON Path will appear in the bar below." },
+                            { q: "Supports large files?", a: "Yes, since it runs client-side, it is only limited by your browser's memory. It can handle multip-megabyte JSON files easily." },
+                            { q: "Can it fix errors?", a: "It validates your JSON. If there is a syntax error (like a missing comma), it will show you exactly where the error is so you can fix it." },
+                            { q: "What is 'Pretty Print'?", a: "Pretty Print formats compact JSON into a readable structure with proper indentation (2 spaces, 4 spaces, or tabs) so humans can read it." }
+                        ].map((faq, i) => (
+                            <div key={i}>
+                                <h3 style={{ fontSize: '1.1rem', fontWeight: '600', marginBottom: '0.5rem' }}>{faq.q}</h3>
+                                <p style={{ color: 'var(--text-secondary)', lineHeight: '1.5' }}>{faq.a}</p>
+                            </div>
+                        ))}
+                    </div>
+                </div>
             </div>
+
 
             <style>{`
                 @media (max-width: 768px) {
@@ -475,5 +472,11 @@ const JsonFormatter = () => {
         </>
     )
 }
+
+const features = [
+    { title: 'Validate JSON', desc: 'Instantly validate your JSON data. Detect syntax errors and fix them automatically.' },
+    { title: 'Pretty Print & Minify', desc: 'Format your JSON for readability or minify it to reduce size for production.' },
+    { title: 'JSON Path Explorer', desc: 'Click on any property to get its JSON Path. Perfect for debugging complex data structures.' }
+]
 
 export default JsonFormatter

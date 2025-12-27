@@ -1,8 +1,33 @@
-import React, { useState, useEffect, useRef, useCallback } from 'react'
-import { Helmet } from 'react-helmet-async'
+import React, { useState, useEffect, useCallback } from 'react'
 import { useDropzone } from 'react-dropzone'
 import { Upload, Download, X, Layout, Maximize2, Layers, Shield, Square, Minus, Trash2 } from 'lucide-react'
 import './MergeImages.css'
+import ToolLayout from '../../components/tools/ToolLayout'
+import RelatedTools from '../../components/tools/RelatedTools'
+const features = [
+    { title: 'Flexible Layouts', desc: 'Merge images vertically or horizontally with one click. Perfect for creating long screenshots or before-after comparisons.', icon: <Layout color="var(--primary)" size={24} /> },
+    { title: 'Custom Styling', desc: 'Adjust borders, gaps between images, and add shadows to create professional-looking collages.', icon: <Layers color="var(--primary)" size={24} /> },
+    { title: 'Smart Sizing', desc: 'Automatically magnify smaller images or reduce larger ones to ensure a uniform and clean layout.', icon: <Maximize2 color="var(--primary)" size={24} /> }
+]
+
+const faqs = [
+    {
+        question: "Is merging images free?",
+        answer: "Yes, this tool is 100% free to use for merging unlimited images."
+    },
+    {
+        question: "Does it reduce image quality?",
+        answer: "We strive to maintain high quality. You can choose different sizing strategies, but the output is generally a high-resolution PNG."
+    },
+    {
+        question: "Can I paste images directly?",
+        answer: "Yes! You can press Cmd+V (or Ctrl+V) to paste images from your clipboard directly into the tool."
+    },
+    {
+        question: "Is my data private?",
+        answer: "Absolutely. All image merging happens in your browser canvas. No images are uploaded to any server."
+    }
+]
 
 const MergeImages = () => {
     const [images, setImages] = useState([])
@@ -208,13 +233,14 @@ const MergeImages = () => {
     }
 
     return (
-        <>
-            <Helmet>
-                <title>Merge Images - Modern Image Combiner</title>
-                <meta name="description" content="Combine multiple images horizontally or vertically. Paste directly into the tool. Custom borders, gaps, and shadows." />
-            </Helmet>
-
-            <div className="container merge-tool-container">
+        <ToolLayout
+            title="Merge Images"
+            description="Combine multiple images into one. Free online photo joiner."
+            seoTitle="Merge Images Online - Combine Photos Horizontally or Vertically"
+            seoDescription="Combine multiple images into one. Free online photo joiner. Stitch photos horizontally or vertically with custom borders and gaps."
+            faqs={faqs}
+        >
+            <div className="tool-workspace merge-tool-container">
                 <div className="merge-header">
                     <h1>Merge Images</h1>
                     <p className="tool-description">
@@ -227,7 +253,7 @@ const MergeImages = () => {
                     <div className="merge-layout">
                         {/* Sidebar Controls */}
                         <div className="options-panel">
-                            <div {...getRootProps()} className={`paste-drop-zone ${isDragActive ? 'active' : ''}`}>
+                            <div {...getRootProps()} className={`tool-upload-area paste-drop-zone ${isDragActive ? 'active' : ''}`}>
                                 <input {...getInputProps()} />
                                 <Upload size={32} className="text-primary" />
                                 <p>Click, Drag, or <strong>Paste (Cmd+V)</strong></p>
@@ -357,8 +383,36 @@ const MergeImages = () => {
                         </div>
                     </div>
                 </div>
+
+                <div className="tool-content" style={{ marginTop: '4rem' }}>
+                    <RelatedTools />
+                    <div className="about-section" style={{ background: 'var(--bg-card)', padding: '2rem', borderRadius: '1rem', border: '1px solid var(--border)', marginBottom: '2rem' }}>
+                        <h2 style={{ fontSize: '1.8rem', marginBottom: '1.5rem' }}>About Merge Images Tool</h2>
+                        <p style={{ lineHeight: '1.6', color: 'var(--text-secondary)', marginBottom: '1rem' }}>
+                            Looking to join multiple screenshots into one long image or create a quick photo collage? Our <strong>Merge Images</strong> tool makes it effortless.
+                        </p>
+                        <p style={{ lineHeight: '1.6', color: 'var(--text-secondary)', marginBottom: '1rem' }}>
+                            You can stitch photos <strong>vertically</strong> (top-to-bottom) or <strong>horizontally</strong> (side-by-side). Customization options allow you to add <strong>borders</strong>, control the <strong>gap</strong> between images, and apply <strong>shadows</strong> for a polished look.
+                        </p>
+                        <p style={{ lineHeight: '1.6', color: 'var(--text-secondary)' }}>
+                            It's fast, free, and secure. Features like "Paste from Clipboard" make your workflow smoother than ever.
+                        </p>
+                    </div>
+
+                    <div className="features-section" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))', gap: '2rem', marginBottom: '2rem' }}>
+                        {features.map((feature, index) => (
+                            <div key={index} className="tool-feature-block" style={{ padding: '1.5rem', borderRadius: '1rem', border: '1px solid var(--border)', background: 'var(--bg-card)' }}>
+                                <div style={{ width: '48px', height: '48px', background: 'var(--primary-light)', borderRadius: '0.75rem', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: '1rem' }}>
+                                    {feature.icon}
+                                </div>
+                                <h3 style={{ fontSize: '1.25rem', marginBottom: '0.5rem' }}>{feature.title}</h3>
+                                <p style={{ color: 'var(--text-secondary)' }}>{feature.desc}</p>
+                            </div>
+                        ))}
+                    </div>
+                </div>
             </div>
-        </>
+        </ToolLayout>
     )
 }
 

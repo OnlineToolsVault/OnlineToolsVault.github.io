@@ -1,13 +1,47 @@
 import React, { useState, useEffect } from 'react'
-import { Helmet } from 'react-helmet-async'
+import ToolLayout from '../../components/tools/ToolLayout'
+import RelatedTools from '../../components/tools/RelatedTools'
 import { useDropzone } from 'react-dropzone'
 import * as PDFJS from 'pdfjs-dist'
 import JSZip from 'jszip'
 import { saveAs } from 'file-saver'
-import { Upload, Download, FileText, Image as ImageIcon, Loader2 } from 'lucide-react'
+import { Upload, Download, FileText, Image as ImageIcon, Loader2, Settings, Zap, Shield } from 'lucide-react'
 
 // Worker setup for Vite
 PDFJS.GlobalWorkerOptions.workerSrc = `//cdnjs.cloudflare.com/ajax/libs/pdf.js/${PDFJS.version}/pdf.worker.min.mjs`
+
+const features = [
+  { title: 'High-Fidelity Extraction', desc: 'Convert every PDF page into a high-quality JPG image. Choose from screen resolution up to professional 600 DPI print quality.', icon: <ImageIcon color="var(--primary)" size={24} /> },
+  { title: 'Batch Download', desc: 'Save time by downloading all extracted images at once in a convenient ZIP file, or save individual pages as needed.', icon: <Download color="var(--primary)" size={24} /> },
+  { title: 'Private & Secure', desc: 'Your confidential documents are processed entirely in your browser. We never see, store, or upload your files.', icon: <Shield color="var(--primary)" size={24} /> }
+]
+
+const faqs = [
+  {
+    question: "Is it free to use?",
+    answer: "Yes, our PDF to JPG converter is 100% free with no file size limits or watermarks."
+  },
+  {
+    question: "Does it support high resolution?",
+    answer: "Absolutely. You can select 'Ultra' or 'Max' quality settings to get images up to 600 DPI, perfect for printing."
+  },
+  {
+    question: "Is my data secure?",
+    answer: "Yes. We use client-side processing, meaning your PDF never leaves your computer. It's the most secure way to convert documents."
+  },
+  {
+    question: "Can I convert multiple PDFs at once?",
+    answer: "Currently, we process one PDF file at a time to ensure maximum browser performance and stability."
+  },
+  {
+    question: "Do I need to install software?",
+    answer: "No, everything runs in your web browser. It works on Windows, Mac, Linux, and even mobile devices."
+  },
+  {
+    question: "What image formats are extracted?",
+    answer: "This tool extracts images as JPG (JPEG) files. If you need PNG, please use our PDF to PNG converter."
+  }
+]
 
 const PdfToJpg = () => {
 
@@ -17,7 +51,7 @@ const PdfToJpg = () => {
   const [progress, setProgress] = useState(0)
 
   // Quality Settings
-  const [scaleMode, setScaleMode] = useState('high') // low, medium, high, ultra
+  const [scaleMode, setScaleMode] = useState('high') // low, medium, high, ultra, max
   const [jpgQuality, setJpgQuality] = useState(0.8)
 
   const SCALES = {
@@ -121,260 +155,176 @@ const PdfToJpg = () => {
   const totalSize = pages.reduce((acc, page) => acc + getDataUrlSize(page.data), 0);
 
   return (
-    <>
-      <Helmet>
-        <title>PDF to JPG Converter - Free Online Tool</title>
-        <meta name="description" content="Convert PDF pages to high-quality JPG images instantly. Free, secure, and client-side via browser. Choose resolution (up to 600 DPI) and download as ZIP." />
-        <script type="application/ld+json">
-          {JSON.stringify({
-            "@context": "https://schema.org",
-            "@type": "FAQPage",
-            "mainEntity": [
-              {
-                "@type": "Question",
-                "name": "Is it free to convert PDF to JPG?",
-                "acceptedAnswer": {
-                  "@type": "Answer",
-                  "text": "Yes, our PDF to JPG converter is 100% free to use. There are no limits on the number of files you can convert, and no registration is required."
-                }
-              },
-              {
-                "@type": "Question",
-                "name": "Is my data secure?",
-                "acceptedAnswer": {
-                  "@type": "Answer",
-                  "text": "Absolutely. We use a secure client-side conversion process, meaning your PDF files are processed entirely within your browser. They are never uploaded to our servers, ensuring maximum privacy."
-                }
-              },
-              {
-                "@type": "Question",
-                "name": "Does it support high-quality conversion?",
-                "acceptedAnswer": {
-                  "@type": "Answer",
-                  "text": "Yes! You can choose from multiple quality settings ranging from Screen (72 DPI) to high-resolution Print (300 DPI) and even Ultra (600 DPI). We also offer adjustable JPEG compression settings."
-                }
-              },
-              {
-                "@type": "Question",
-                "name": "Can I convert multiple pages at once in a batch?",
-                "acceptedAnswer": {
-                  "@type": "Answer",
-                  "text": "Yes, the tool automatically extracts all pages from your PDF file. You can then download individual images or grab them all at once as a convenient ZIP archive batch download."
-                }
-              },
-              {
-                "@type": "Question",
-                "name": "What browsers and devices are supported?",
-                "acceptedAnswer": {
-                  "@type": "Answer",
-                  "text": "Our tool is cross-platform and works on all modern web browsers including Chrome, Firefox, Safari, and Edge. It is fully mobile-friendly for iPhone and Android devices."
-                }
-              }
-            ]
-          })}
-        </script>
-      </Helmet>
-
-      <div className="container" style={{ padding: '3rem 1.5rem' }}>
-        <div style={{ maxWidth: '1000px', margin: '0 auto' }}>
-          <header style={{ marginBottom: '3rem', textAlign: 'center' }}>
-            <h1 style={{ fontSize: '2.5rem', fontWeight: '800', marginBottom: '0.5rem' }}>PDF to JPG Converter</h1>
-            <p style={{ color: '#64748b' }}>Extract images from your PDF documents securely.</p>
-          </header>
-
-          {!file ? (
-            <div
-              {...getRootProps()}
-              style={{
-                border: '2px dashed var(--border)',
-                borderRadius: '1rem',
-                padding: '4rem 2rem',
-                textAlign: 'center',
-                cursor: 'pointer',
-                background: isDragActive ? 'var(--secondary)' : 'white',
-                minHeight: '300px',
-                display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center'
-              }}
-            >
-              <input {...getInputProps()} />
-              <div style={{
-                width: '64px', height: '64px',
-                background: '#fee2e2',
-                borderRadius: '50%',
-                display: 'flex', alignItems: 'center', justifyContent: 'center',
-                margin: '0 auto 1.5rem',
-                color: '#dc2626'
-              }}>
-                <FileText size={32} />
-              </div>
-              <h3 style={{ fontSize: '1.25rem', fontWeight: '600', marginBottom: '0.5rem' }}>
-                Drag & Drop PDF here
-              </h3>
-              <p style={{ color: '#64748b' }}>or click to select file</p>
+    <ToolLayout
+      title="PDF to JPG Converter"
+      description="Convert PDF pages to high-quality JPG images instantly."
+      seoTitle="PDF to JPG Converter - Free Online Tool"
+      seoDescription="Convert PDF pages to high-quality JPG images instantly. Free, secure, and client-side via browser. Choose resolution (up to 600 DPI) and download as ZIP."
+      faqs={faqs}
+    >
+      <div className="tool-workspace" style={{ maxWidth: '1000px', margin: '0 auto' }}>
+        {!file ? (
+          <div
+            {...getRootProps()}
+            style={{
+              border: '2px dashed var(--border)',
+              borderRadius: '1rem',
+              padding: '4rem 2rem',
+              textAlign: 'center',
+              cursor: 'pointer',
+              background: isDragActive ? 'var(--secondary)' : 'white',
+              minHeight: '300px',
+              display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center'
+            }}
+          >
+            <input {...getInputProps()} />
+            <div style={{
+              width: '64px', height: '64px',
+              background: '#fee2e2',
+              borderRadius: '50%',
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+              margin: '0 auto 1.5rem',
+              color: '#dc2626'
+            }}>
+              <FileText size={32} />
             </div>
-          ) : (
-            <div style={{ background: 'white', border: '1px solid var(--border)', borderRadius: '1rem', padding: '2rem' }}>
-              <div className="pdf-tool-toolbar">
-                <div className="pdf-file-info">
-                  <div style={{ padding: '0.75rem', background: '#fee2e2', borderRadius: '0.5rem', color: '#dc2626' }}>
-                    <FileText size={24} />
-                  </div>
-                  <div>
-                    <h3 style={{ fontSize: '1.125rem', fontWeight: '600' }}>{file.name}</h3>
-                    <p style={{ fontSize: '0.875rem', color: '#64748b' }}>{pages.length} Pages • {(file.size / 1024 / 1024).toFixed(2)} MB</p>
-                  </div>
+            <h3 style={{ fontSize: '1.25rem', fontWeight: '600', marginBottom: '0.5rem' }}>
+              Drag & Drop PDF here
+            </h3>
+            <p style={{ color: '#64748b' }}>or click to select file</p>
+          </div>
+        ) : (
+          <div style={{ background: 'white', border: '1px solid var(--border)', borderRadius: '1rem', padding: '2rem' }}>
+            <div className="pdf-tool-toolbar">
+              <div className="pdf-file-info">
+                <div style={{ padding: '0.75rem', background: '#fee2e2', borderRadius: '0.5rem', color: '#dc2626' }}>
+                  <FileText size={24} />
                 </div>
+                <div>
+                  <h3 style={{ fontSize: '1.125rem', fontWeight: '600' }}>{file.name}</h3>
+                  <p style={{ fontSize: '0.875rem', color: '#64748b' }}>{pages.length} Pages • {(file.size / 1024 / 1024).toFixed(2)} MB</p>
+                </div>
+              </div>
 
-                <div className="pdf-controls">
-                  {/* Quality Controls */}
-                  <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
-                    <select
-                      value={scaleMode}
-                      onChange={(e) => setScaleMode(e.target.value)}
-                      style={{ padding: '0.5rem', borderRadius: '0.5rem', border: '1px solid var(--border)', fontSize: '0.875rem', cursor: 'pointer' }}
-                      disabled={isProcessing}
-                    >
-                      <option value="low">Screen (72 DPI)</option>
-                      <option value="medium">Medium (150 DPI)</option>
-                      <option value="high">High (200 DPI)</option>
-                      <option value="ultra">Print (300 DPI)</option>
-                      <option value="max">Ultra (600 DPI)</option>
-                    </select>
-
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', fontSize: '0.875rem', color: '#64748b', background: '#f1f5f9', padding: '0.5rem', borderRadius: '0.5rem' }}>
-                      <span style={{ fontSize: '0.75rem', fontWeight: '600', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Quality</span>
-                      <input
-                        type="range"
-                        min="0.1"
-                        max="1"
-                        step="0.1"
-                        value={jpgQuality}
-                        onChange={(e) => setJpgQuality(Number(e.target.value))}
-                        style={{ width: '60px', accentColor: 'var(--primary)', cursor: 'pointer' }}
-                        disabled={isProcessing}
-                      />
-                      <span style={{ minWidth: '3ch', fontWeight: '600' }}>{Math.round(jpgQuality * 100)}%</span>
-                    </div>
-                  </div>
-
-                  <div style={{ width: '1px', height: '24px', background: 'var(--border)' }}></div>
-
-                  <button
-                    onClick={() => setFile(null)}
-                    className="btn-secondary"
-                    style={{
-                      padding: '0.5rem 1rem', borderRadius: '0.5rem',
-                      background: 'white', border: '1px solid var(--border)', fontWeight: '600', cursor: 'pointer'
-                    }}
+              <div className="pdf-controls">
+                {/* Quality Controls */}
+                <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
+                  <select
+                    value={scaleMode}
+                    onChange={(e) => setScaleMode(e.target.value)}
+                    style={{ padding: '0.5rem', borderRadius: '0.5rem', border: '1px solid var(--border)', fontSize: '0.875rem', cursor: 'pointer' }}
+                    disabled={isProcessing}
                   >
-                    Convert Another
-                  </button>
-                  {pages.length > 0 && (
-                    <button
-                      onClick={downloadAll}
-                      className="btn-primary"
-                      style={{
-                        padding: '0.5rem 1.5rem', borderRadius: '0.5rem',
-                        background: 'var(--primary)', color: 'white', border: 'none', fontWeight: '600',
-                        display: 'flex', alignItems: 'center', gap: '0.5rem', cursor: 'pointer'
-                      }}
-                      title={`Estimated ZIP Size: ${formatBytes(totalSize)}`}
-                    >
-                      <Download size={18} /> Download All (ZIP)
-                      <span style={{ background: 'rgba(255,255,255,0.2)', padding: '0.1rem 0.4rem', borderRadius: '0.3rem', fontSize: '0.75rem' }}>{formatBytes(totalSize)}</span>
-                    </button>
-                  )}
-                </div>
-              </div>
+                    <option value="low">Screen (72 DPI)</option>
+                    <option value="medium">Medium (150 DPI)</option>
+                    <option value="high">High (200 DPI)</option>
+                    <option value="ultra">Print (300 DPI)</option>
+                    <option value="max">Ultra (600 DPI)</option>
+                  </select>
 
-              {isProcessing && (
-                <div style={{ textAlign: 'center', padding: '4rem' }}>
-                  <Loader2 className="spin" size={48} style={{ color: 'var(--primary)', marginBottom: '1rem', animation: 'spin 1s linear infinite' }} />
-                  <p style={{ fontWeight: '500' }}>Processing PDF... {progress}%</p>
-                  <style>{`@keyframes spin { 100 % { transform: rotate(360deg); } } `}</style>
-                </div>
-              )}
-
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))', gap: '1.5rem' }}>
-                {pages.map((page) => (
-                  <div key={page.id} style={{
-                    border: '1px solid var(--border)', borderRadius: '0.75rem', overflow: 'hidden',
-                    background: '#f8fafc', position: 'relative'
-                  }}>
-                    <div style={{ height: '200px', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '1rem' }}>
-                      <img src={page.data} alt={`Page ${page.id} `} style={{ maxWidth: '100%', maxHeight: '100%', boxShadow: '0 4px 6px -1px rgba(0,0,0,0.1)' }} />
-                    </div>
-                    <div style={{ padding: '0.75rem', borderTop: '1px solid var(--border)', display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: 'white' }}>
-                      <div style={{ display: 'flex', flexDirection: 'column' }}>
-                        <span style={{ fontSize: '0.875rem', fontWeight: '500', color: '#64748b' }}>Page {page.id}</span>
-                        <span style={{ fontSize: '0.7rem', color: '#94a3b8' }}>{formatBytes(getDataUrlSize(page.data))}</span>
-                      </div>
-                      <button
-                        onClick={() => downloadSingle(page)}
-                        style={{ padding: '0.25rem', color: 'var(--primary)', background: 'transparent', border: 'none', cursor: 'pointer' }}
-                        title="Download"
-                      >
-                        <Download size={18} />
-                      </button>
-                    </div>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', fontSize: '0.875rem', color: '#64748b', background: '#f1f5f9', padding: '0.5rem', borderRadius: '0.5rem' }}>
+                    <span style={{ fontSize: '0.75rem', fontWeight: '600', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Quality</span>
+                    <input
+                      type="range"
+                      min="0.1"
+                      max="1"
+                      step="0.1"
+                      value={jpgQuality}
+                      onChange={(e) => setJpgQuality(Number(e.target.value))}
+                      style={{ width: '60px', accentColor: 'var(--primary)', cursor: 'pointer' }}
+                      disabled={isProcessing}
+                    />
+                    <span style={{ minWidth: '3ch', fontWeight: '600' }}>{Math.round(jpgQuality * 100)}%</span>
                   </div>
-                ))}
+                </div>
+
+                <div style={{ width: '1px', height: '24px', background: 'var(--border)' }}></div>
+
+                <button
+                  onClick={() => setFile(null)}
+                  className="btn-secondary"
+                  style={{
+                    padding: '0.5rem 1rem', borderRadius: '0.5rem',
+                    background: 'white', border: '1px solid var(--border)', fontWeight: '600', cursor: 'pointer'
+                  }}
+                >
+                  Convert Another
+                </button>
+                {pages.length > 0 && (
+                  <button
+                    onClick={downloadAll}
+                    className="tool-btn-primary"
+                    style={{
+                      padding: '0.5rem 1.5rem', borderRadius: '0.5rem',
+                      background: 'var(--primary)', color: 'white', border: 'none', fontWeight: '600',
+                      display: 'flex', alignItems: 'center', gap: '0.5rem', cursor: 'pointer'
+                    }}
+                    title={`Estimated ZIP Size: ${formatBytes(totalSize)}`}
+                  >
+                    <Download size={18} /> Download All (ZIP)
+                    <span style={{ background: 'rgba(255,255,255,0.2)', padding: '0.1rem 0.4rem', borderRadius: '0.3rem', fontSize: '0.75rem' }}>{formatBytes(totalSize)}</span>
+                  </button>
+                )}
               </div>
             </div>
-          )}
-        </div>
 
-        {/* FAQ Section */}
-        <div style={{ maxWidth: '800px', margin: '4rem auto 0', borderTop: '1px solid var(--border)', paddingTop: '3rem' }}>
-          <h2 style={{ fontSize: '1.8rem', fontWeight: '700', marginBottom: '2rem', textAlign: 'center' }}>
-            Frequently Asked Questions
-          </h2>
+            {isProcessing && (
+              <div style={{ textAlign: 'center', padding: '4rem' }}>
+                <Loader2 className="spin" size={48} style={{ color: 'var(--primary)', marginBottom: '1rem', animation: 'spin 1s linear infinite' }} />
+                <p style={{ fontWeight: '500' }}>Processing PDF... {progress}%</p>
+                <style>{`@keyframes spin { 100 % { transform: rotate(360deg); } } `}</style>
+              </div>
+            )}
 
-          <div style={{ display: 'grid', gap: '2rem' }}>
-            <div>
-              <h3 style={{ fontSize: '1.2rem', fontWeight: '600', marginBottom: '0.5rem', color: '#1e293b' }}>
-                Is it free to use this PDF to JPG converter?
-              </h3>
-              <p style={{ lineHeight: '1.6', color: '#475569' }}>
-                Yes, our PDF to JPG converter is 100% free to use. There are no limits on the number of files you can convert.
-              </p>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))', gap: '1.5rem' }}>
+              {pages.map((page) => (
+                <div key={page.id} style={{
+                  border: '1px solid var(--border)', borderRadius: '0.75rem', overflow: 'hidden',
+                  background: '#f8fafc', position: 'relative'
+                }}>
+                  <div style={{ height: '200px', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '1rem' }}>
+                    <img src={page.data} alt={`Page ${page.id} `} style={{ maxWidth: '100%', maxHeight: '100%', boxShadow: '0 4px 6px -1px rgba(0,0,0,0.1)' }} />
+                  </div>
+                  <div style={{ padding: '0.75rem', borderTop: '1px solid var(--border)', display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: 'white' }}>
+                    <div style={{ display: 'flex', flexDirection: 'column' }}>
+                      <span style={{ fontSize: '0.875rem', fontWeight: '500', color: '#64748b' }}>Page {page.id}</span>
+                      <span style={{ fontSize: '0.7rem', color: '#94a3b8' }}>{formatBytes(getDataUrlSize(page.data))}</span>
+                    </div>
+                    <button
+                      onClick={() => downloadSingle(page)}
+                      style={{ padding: '0.25rem', color: 'var(--primary)', background: 'transparent', border: 'none', cursor: 'pointer' }}
+                      title="Download"
+                    >
+                      <Download size={18} />
+                    </button>
+                  </div>
+                </div>
+              ))}
             </div>
+          </div>
+        )}
 
-            <div>
-              <h3 style={{ fontSize: '1.2rem', fontWeight: '600', marginBottom: '0.5rem', color: '#1e293b' }}>
-                Is my data secure?
-              </h3>
-              <p style={{ lineHeight: '1.6', color: '#475569' }}>
-                Absolutely. We use a <strong>client-side conversion</strong> process, which means your PDF files are processed entirely within your browser. They are <strong>never uploaded</strong> to our servers, ensuring maximum privacy and security.
-              </p>
-            </div>
-
-            <div>
-              <h3 style={{ fontSize: '1.2rem', fontWeight: '600', marginBottom: '0.5rem', color: '#1e293b' }}>
-                Does it support high-quality conversion?
-              </h3>
-              <p style={{ lineHeight: '1.6', color: '#475569' }}>
-                Yes! You can choose from multiple quality settings ranging from standard <strong>Screen (72 DPI)</strong> to high-resolution <strong>Print (300 DPI)</strong> and even <strong>Ultra (600 DPI)</strong> quality. We also offer adjustable JPEG quality/compression to balance between image clarity and file size.
-              </p>
-            </div>
-
-            <div>
-              <h3 style={{ fontSize: '1.2rem', fontWeight: '600', marginBottom: '0.5rem', color: '#1e293b' }}>
-                Can I batch convert multiple pages at once?
-              </h3>
-              <p style={{ lineHeight: '1.6', color: '#475569' }}>
-                Yes, the tool automatically extracts <strong>all pages</strong> from your PDF file. You can then download individual images or grab them all at once as a convenient ZIP archive.
-              </p>
-            </div>
-
-            <div>
-              <h3 style={{ fontSize: '1.2rem', fontWeight: '600', marginBottom: '0.5rem', color: '#1e293b' }}>
-                What browsers are supported?
-              </h3>
-              <p style={{ lineHeight: '1.6', color: '#475569' }}>
-                Our tool works on all modern web browsers including Chrome, Firefox, Safari, and Edge. It is also mobile-friendly, allowing you to convert PDFs on your iPhone or Android device.
-              </p>
-            </div>
+        <div className="tool-content" style={{ marginTop: '4rem' }}>
+          <RelatedTools />
+          <div className="about-section" style={{ background: 'var(--bg-card)', padding: '2rem', borderRadius: '1rem', border: '1px solid var(--border)', marginBottom: '2rem' }}>
+            <h2 style={{ fontSize: '1.8rem', marginBottom: '1.5rem' }}>About PDF to JPG Converter</h2>
+            <p style={{ lineHeight: '1.6', color: 'var(--text-secondary)', marginBottom: '1rem' }}>
+              Extract high-quality images from your PDF documents instantly. Our PDF to JPG converter transforms every page of your PDF into a separate JPG file, perfect for sharing, editing, or archiving.
+            </p>
+            <p style={{ lineHeight: '1.6', color: 'var(--text-secondary)' }}>
+              We've optimized this tool for speed and privacy. There's no need to upload your sensitive files to a cloud server—everything happens directly in your browser.
+            </p>
+          </div>
+          <div className="features-section" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))', gap: '2rem' }}>
+            {features.map((feature, index) => (
+              <div key={index} className="tool-feature-block" style={{ padding: '1.5rem', borderRadius: '1rem', border: '1px solid var(--border)', background: 'var(--bg-card)' }}>
+                <div style={{ width: '48px', height: '48px', background: 'var(--primary-light)', borderRadius: '0.75rem', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: '1rem' }}>
+                  {feature.icon}
+                </div>
+                <h3 style={{ fontSize: '1.25rem', marginBottom: '0.5rem' }}>{feature.title}</h3>
+                <p style={{ color: 'var(--text-secondary)' }}>{feature.desc}</p>
+              </div>
+            ))}
           </div>
         </div>
       </div>
@@ -417,7 +367,7 @@ const PdfToJpg = () => {
             }
           }
         `}</style>
-    </>
+    </ToolLayout>
   )
 }
 

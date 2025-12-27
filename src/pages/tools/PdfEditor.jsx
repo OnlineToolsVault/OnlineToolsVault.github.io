@@ -183,7 +183,7 @@ const PdfEditorContent = () => {
 
     if (!file) {
         return (
-            <div className="container" style={{ padding: '4rem 1.5rem', minHeight: '80vh', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
+            <div className="tool-workspace" style={{ padding: '4rem 1.5rem', minHeight: '80vh', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
                 <header style={{ marginBottom: '3rem', textAlign: 'center' }}>
                     <h1 style={{ fontSize: '3rem', fontWeight: '800', marginBottom: '1rem', background: 'linear-gradient(to right, var(--primary), #818cf8)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>
                         Professional PDF Editor
@@ -223,11 +223,11 @@ const PdfEditorContent = () => {
 
                 <div style={{ marginTop: '4rem', display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '2rem', width: '100%', maxWidth: '1000px' }}>
                     {[
-                        { title: 'Edit & Annotate', desc: 'Add text, images, shapes (rectangles, circles), freehand drawing, highlighter, and eraser tools.' },
-                        { title: 'Secure Redaction', desc: 'Permanently remove sensitive text with our redaction tool. Redacted pages are flattened for security.' },
-                        { title: '100% Client-Side', desc: 'All processing happens in your browser. No uploads, no servers, complete privacy. Undo/Redo supported.' }
+                        { title: 'Full Editing Suite', desc: 'Add text, shapes, and freehand drawings. Highlight important sections or strike through errors.' },
+                        { title: 'Form Filling & Signing', desc: 'Easily fill out PDF forms and add your signature electronically without printing.' },
+                        { title: 'Secure Redaction', desc: 'Permanently remove sensitive information. Our redaction tool flattens content to ensure it cannot be recovered.' }
                     ].map((feat, i) => (
-                        <div key={i} style={{ padding: '2rem', background: 'white', borderRadius: '1rem', border: '1px solid var(--border)' }}>
+                        <div key={i} className="tool-feature-block" style={{ padding: '2rem', background: 'white', borderRadius: '1rem', border: '1px solid var(--border)' }}>
                             <h4 style={{ fontSize: '1.1rem', fontWeight: '700', marginBottom: '0.5rem' }}>{feat.title}</h4>
                             <p style={{ color: '#64748b', fontSize: '0.9rem', lineHeight: 1.6 }}>{feat.desc}</p>
                         </div>
@@ -241,12 +241,11 @@ const PdfEditorContent = () => {
                     </h2>
                     <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
                         {[
-                            { q: 'Is this PDF editor really free?', a: 'Yes! Our PDF editor is completely free to use with no hidden costs, watermarks, or signup required.' },
-                            { q: 'Is my PDF uploaded to a server?', a: 'No. All processing happens entirely in your browser using client-side JavaScript. Your files never leave your device.' },
-                            { q: 'What can I do with this PDF editor?', a: 'You can add text, insert images, draw shapes (rectangles, circles), highlight text, use freehand drawing, erase content, and securely redact sensitive information.' },
-                            { q: 'How does the redaction tool work?', a: 'The redaction tool places a permanent black box over sensitive content. When you download the PDF, any page with redactions is flattened into an image, making the underlying text unrecoverable.' },
-                            { q: 'Can I undo my changes?', a: 'Yes! Use the Undo and Redo buttons in the toolbar to reverse or reapply your edits.' },
-                            { q: 'What file formats are supported?', a: 'Currently, we support PDF files for editing. You can download the edited document as a PDF.' }
+                            { q: 'Is it free to edit PDFs?', a: 'Yes, our editor is completely free. We do not charge for adding text, signatures, or annotations.' },
+                            { q: 'Can I edit existing text?', a: 'Because PDFs are complex, direct text modification is difficult in the browser. However, you can easily cover old text with a white box and write new text over it.' },
+                            { q: 'Is my document private?', a: 'Absolutely. We use 100% client-side processing, meaning your PDF never leaves your computer.' },
+                            { q: 'How do I sign a PDF?', a: 'Select the "Draw" tool or "Text" tool to add your signature. You can place it anywhere on the document.' },
+                            { q: 'Does it work on Mac and Windows?', a: 'Yes! Our tool works in any modern web browser (Chrome, Safari, Edge, Firefox) on any operating system.' }
                         ].map((faq, i) => (
                             <details key={i} style={{ background: 'white', borderRadius: '0.75rem', border: '1px solid var(--border)', overflow: 'hidden' }}>
                                 <summary style={{ padding: '1rem 1.25rem', fontWeight: '600', cursor: 'pointer', fontSize: '1rem' }}>{faq.q}</summary>
@@ -268,29 +267,6 @@ const PdfEditorContent = () => {
                 body, html { overflow: hidden !important; }
                 /* Ensure header doesn't overlap if it's sticky */
                 .site-header { position: sticky; top: 0; z-index: 50; }
-                
-                /* Instant custom tooltips */
-                .tool-btn-wrapper .tool-tooltip {
-                    position: absolute;
-                    top: 100%;
-                    left: 50%;
-                    transform: translateX(-50%);
-                    margin-top: 6px;
-                    padding: 4px 8px;
-                    background: #1e293b;
-                    color: white;
-                    font-size: 12px;
-                    border-radius: 4px;
-                    white-space: nowrap;
-                    opacity: 0;
-                    visibility: hidden;
-                    pointer-events: none;
-                    z-index: 100;
-                }
-                .tool-btn-wrapper:hover .tool-tooltip {
-                    opacity: 1;
-                    visibility: visible;
-                }
             `}</style>
             <Toolbar onDownload={handleDownload} />
 

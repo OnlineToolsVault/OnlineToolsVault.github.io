@@ -1,15 +1,28 @@
 import React, { useState } from 'react'
 import { Link } from 'react-router-dom'
 import { Helmet } from 'react-helmet-async'
+import { Search } from 'lucide-react'
 import { tools, categories } from '../data/tools'
 import './Home.css'
 
 const Home = () => {
     const [activeCategory, setActiveCategory] = useState('all')
+    const [searchQuery, setSearchQuery] = useState('')
 
-    const filteredTools = activeCategory === 'all'
-        ? tools
-        : tools.filter(tool => tool.category === activeCategory)
+    const filteredTools = tools
+        .filter(tool => {
+            const matchesCategory = activeCategory === 'all' || tool.category === activeCategory
+            const matchesSearch = searchQuery === '' ||
+                tool.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                tool.description.toLowerCase().includes(searchQuery.toLowerCase())
+            return matchesCategory && matchesSearch
+        })
+        .sort((a, b) => {
+            // Featured tools first
+            if (a.featured !== b.featured) return b.featured ? 1 : -1
+            // Then by popularity (higher first)
+            return (b.popularity || 0) - (a.popularity || 0)
+        })
 
     const structuredData = {
         "@context": "https://schema.org",
@@ -53,16 +66,28 @@ const Home = () => {
                             <span className="glow-text">100% free, client-side, and privacy-focused.</span>
                         </p>
 
-                        <div className="categories-nav">
-                            {categories.map(cat => (
-                                <button
-                                    key={cat.id}
-                                    className={`category-btn ${activeCategory === cat.id ? 'active' : ''}`}
-                                    onClick={() => setActiveCategory(cat.id)}
-                                >
-                                    {cat.name}
-                                </button>
-                            ))}
+                        <div className="filter-bar">
+                            <div className="search-box">
+                                <Search size={18} className="search-icon" />
+                                <input
+                                    type="text"
+                                    placeholder="Search tools..."
+                                    value={searchQuery}
+                                    onChange={(e) => setSearchQuery(e.target.value)}
+                                    className="search-input"
+                                />
+                            </div>
+                            <div className="categories-nav">
+                                {categories.map(cat => (
+                                    <button
+                                        key={cat.id}
+                                        className={`category-btn ${activeCategory === cat.id ? 'active' : ''}`}
+                                        onClick={() => setActiveCategory(cat.id)}
+                                    >
+                                        {cat.name}
+                                    </button>
+                                ))}
+                            </div>
                         </div>
 
                         <div className="tools-grid">

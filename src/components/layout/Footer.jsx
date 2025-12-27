@@ -20,12 +20,12 @@ const Footer = () => {
 
                 <div className="footer-links">
                     <div className="footer-col">
-                        <h4>Tools</h4>
+                        <h4>Popular Tools</h4>
                         <ul>
-                            <li><Link to="/pdf-to-jpg">PDF to JPG</Link></li>
+                            <li><Link to="/merge-pdf">Merge PDF</Link></li>
+                            <li><Link to="/compress-pdf">Compress PDF</Link></li>
                             <li><Link to="/image-compressor">Image Compressor</Link></li>
                             <li><Link to="/qr-generator">QR Generator</Link></li>
-                            <li><Link to="/word-counter">Word Counter</Link></li>
                         </ul>
                     </div>
 
