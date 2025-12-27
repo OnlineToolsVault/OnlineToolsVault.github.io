@@ -18,59 +18,92 @@ const PrivacyPolicy = () => {
                     </header>
 
                     <div className="standard-content">
-                        <h2>Introduction</h2>
-                        <p>
-                            Your privacy is critically important to us. At FreeTools, we have a few fundamental principles:
-                        </p>
-                        <ul>
-                            <li>We don't ask you for personal information unless we truly need it.</li>
-                            <li>We don't share your personal information with anyone except to comply with the law, develop our products, or protect our rights.</li>
-                            <li>We don't store personal information on our servers unless required for the on-going operation of one of our services.</li>
-                        </ul>
+                        <section className="legal-section">
+                            <h2>1. Introduction</h2>
+                            <p>
+                                Welcome to FreeTools ("we," "our," or "us"). We are committed to protecting your privacy.
+                                This Privacy Policy explains how we collect, use, and safeguard your information when you visit our website
+                                <strong>onlinetoolsvault.com</strong>. By using our Service, you agree to the collection and use of information in accordance with this policy.
+                            </p>
+                        </section>
 
-                        <h2>Data Handling</h2>
-                        <p>
-                            <strong>Client-Side Processing:</strong> Most of our tools (like Image Compressor, PDF to JPG, etc.)
-                            operate entirely within your browser. Your files are processed on your device and are
-                            never uploaded to our servers.
-                        </p>
-                        <p>
-                            <strong>No Persistent Storage:</strong> For tools that might require temporary server processing
-                            (if any in the future), files are deleted immediately after processing. We do not retain user files.
-                        </p>
+                        <section className="legal-section">
+                            <h2>2. Information We Collect</h2>
+                            <h3>2.1 Personal Data</h3>
+                            <p>
+                                We <strong>do not</strong> collect personally identifiable information (PII) such as your name, email address, or phone number unless you voluntarily contact us via email.
+                            </p>
+                            <h3>2.2 Usage Data</h3>
+                            <p>
+                                We may collect non-personal information about how the Service is accessed and used. This Usage Data may include information such as your computer's Internet Protocol address (IP address), browser type, browser version, the pages of our Service that you visit, the time and date of your visit, the time spent on those pages, and other diagnostic data.
+                            </p>
+                        </section>
 
-                        <h2>Analytics</h2>
-                        <p>
-                            We use privacy-friendly analytics to understand how our site is used. This helps us decide
-                            what features to build next. The data collected is aggregated and anonymous. We do not track
-                            individual users across the web.
-                        </p>
+                        <section className="legal-section">
+                            <h2>3. Data Processing & Security</h2>
+                            <p>
+                                <strong>Client-Side Execution:</strong> The majority of our tools (including Image Converters, PDF Tools, etc.) operate purely <strong>client-side</strong> within your browser.
+                                This means your files are processed locally on your device and are <strong>never</strong> uploaded to our servers.
+                                Your sensitive documents and images remain strictly in your control.
+                            </p>
+                        </section>
 
-                        <h2>Cookies</h2>
-                        <p>
-                            A cookie is a string of information that a website stores on a visitor's computer, and that the
-                            visitor's browser provides to the website each time the visitor returns. FreeTools uses cookies
-                            to help us identify and track visitors, their usage of our website, and their website access preferences.
-                            Visitors who do not wish to have cookies placed on their computers should set their browsers to
-                            refuse cookies before using FreeTools's websites.
-                        </p>
+                        <section className="legal-section">
+                            <h2>4. Cookies and Tracking Technologies</h2>
+                            <p>
+                                We use Cookies and similar tracking technologies to track the activity on our Service and hold certain information.
+                            </p>
+                            <ul>
+                                <li><strong>Essential Cookies:</strong> Vital for the basic functioning of the website.</li>
+                                <li><strong>Analytics Cookies:</strong> We use Google Analytics to understand traffic patterns. This data is anonymized.</li>
+                                <li><strong>Advertising Cookies:</strong> Third-party vendors, including Google, use cookies to serve ads based on a user's prior visits to your website or other websites.</li>
+                            </ul>
+                        </section>
 
-                        <h2>Advertisements</h2>
-                        <p>
-                            Ads appearing on any of our websites may be delivered to users by advertising partners, who may
-                            set cookies. These cookies allow the ad server to recognize your computer each time they send you
-                            an online advertisement to compile information about you or others who use your computer. This
-                            Privacy Policy covers the use of cookies by FreeTools and does not cover the use of cookies by
-                            any advertisers.
-                        </p>
+                        <section className="legal-section">
+                            <h2>5. Third-Party Service Providers</h2>
+                            <h3>5.1 Google AdSense</h3>
+                            <p>
+                                We use Google AdSense to display advertisements. Google uses cookies to serve ads based on your prior visits to our website or other websites on the Internet.
+                                Google's use of advertising cookies enables it and its partners to serve ads to our users based on their visit to our site and/or other sites on the Internet.
+                            </p>
+                            <p>
+                                Users may opt out of personalized advertising by visiting <a href="https://www.google.com/settings/ads" target="_blank" rel="noopener noreferrer">Google Ads Settings</a>.
+                            </p>
+                        </section>
 
-                        <h2>Changes to This Policy</h2>
-                        <p>
-                            Although most changes are likely to be minor, FreeTools may change its Privacy Policy from time to time,
-                            and in FreeTools's sole discretion. FreeTools encourages visitors to frequently check this page
-                            for any changes to its Privacy Policy. Your continued use of this site after any change in this
-                            Privacy Policy will constitute your acceptance of such change.
-                        </p>
+                        <section className="legal-section">
+                            <h2>6. GDPR (General Data Protection Regulation) Rights</h2>
+                            <p>
+                                If you are a resident of the European Economic Area (EEA), you have certain data protection rights used by third-party processors like Google:
+                            </p>
+                            <ul>
+                                <li>The right to access, update or to delete the information we have on you.</li>
+                                <li>The right of rectification.</li>
+                                <li>The right to object.</li>
+                                <li>The right of restriction.</li>
+                                <li>The right to data portability.</li>
+                                <li>The right to withdraw consent.</li>
+                            </ul>
+                        </section>
+
+                        <section className="legal-section">
+                            <h2>7. CCPA Requests</h2>
+                            <p>
+                                Under the California Consumer Privacy Act (CCPA), California residents have the right to request comprehensive details about the data collected by third-party advertisers on our site. To exercise these rights, please contact us.
+                            </p>
+                        </section>
+
+                        <section className="legal-section">
+                            <h2>8. Contact Us</h2>
+                            <p>
+                                If you have any questions about this Privacy Policy, please contact us:
+                            </p>
+                            <ul>
+                                <li>By email: singhsidhukuldeep@gmail.com</li>
+                                <li>By visiting the <a href="/contact">Contact Page</a> on our website.</li>
+                            </ul>
+                        </section>
                     </div>
                 </div>
             </div>

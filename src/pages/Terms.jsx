@@ -18,42 +18,75 @@ const Terms = () => {
                     </header>
 
                     <div className="standard-content">
-                        <div className="standard-section">
-                            <h2>1. Usage Rights</h2>
-                            <p><strong>You are free to use these tools</strong> for any personal or commercial purpose.</p>
-                            <ul>
-                                <li><strong>Tools:</strong> You may use the PDF converters, code formatters, and utilities without restriction.</li>
-                                <li><strong>Output:</strong> Any files you create or convert (e.g., images, formatted code) belong completely to you.</li>
-                            </ul>
-                        </div>
-
-                        <div className="standard-section">
-                            <h2>2. Intellectual Property (Source Code)</h2>
-                            <p>While the <em>tools</em> are free to use, the <em>source code</em> of this website is proprietary.</p>
-                            <ul>
-                                <li>You may view the source code for educational purposes on <a href="https://github.com/OnlineToolsVault/OnlineToolsVault.github.io" target="_blank" rel="noopener noreferrer">GitHub</a>.</li>
-                                <li>You may <strong>NOT</strong> copy, sell, resell, distribute, or reproduce the source code itself, in whole or in part, in any way, shape, or form.</li>
-                            </ul>
-                        </div>
-
-                        <div className="standard-section">
-                            <h2>3. Privacy & Security</h2>
+                        <section className="legal-section">
+                            <h2>1. Acceptance of Terms</h2>
                             <p>
-                                We prioritize your privacy. Most tools (like PDF conversion) run <strong>client-side</strong> in your browser.
-                                Your files are not uploaded to our servers unless explicitly stated.
+                                By accessing or using the website <strong>onlinetoolsvault.com</strong> (the "Service"), you agree to be bound by these Terms of Service.
+                                If you disagree with any part of the terms, you may not access the Service.
                             </p>
-                        </div>
+                        </section>
 
-                        <div className="standard-section">
-                            <h2>4. No Warranty</h2>
+                        <section className="legal-section">
+                            <h2>2. Use License & Restrictions</h2>
+                            <ul className="legal-list">
+                                <li>
+                                    <strong>Permitted Use:</strong> You are granted a limited, non-exclusive, non-transferable license to use the online tools provided for personal and commercial purposes (e.g., converting a PDF, compressing an image).
+                                </li>
+                                <li>
+                                    <strong>Restrictions:</strong> You agree not to:
+                                    <ul>
+                                        <li>Use the Service to process illegal content or content you do not have the right to use.</li>
+                                        <li>Attempt to reverse engineer, decompile, or extract the source code of the Service.</li>
+                                        <li>Use any automated system (robots, spiders, scrapers) to access the Service without prior written permission.</li>
+                                        <li>Overburden our infrastructure with excessive requests (DDoS).</li>
+                                    </ul>
+                                </li>
+                            </ul>
+                        </section>
+
+                        <section className="legal-section">
+                            <h2>3. Intellectual Property</h2>
                             <p>
-                                THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND.
-                                We do not guarantee that the tools will be error-free or uninterrupted. Use strictly at your own risk.
+                                The Service and its original content (excluding user-generated output), features, and functionality are and will remain the exclusive property of FreeTools and its licensors.
+                                The Service is protected by copyright, trademark, and other laws of both the United States and foreign countries.
                             </p>
-                        </div>
+                            <p>
+                                <strong>Source Code License:</strong> While our tools are free to use, the underlying source code of this website is proprietary. You may view it for educational purposes on GitHub, but copying for redistribution or resale is strictly prohibited.
+                            </p>
+                        </section>
+
+                        <section className="legal-section">
+                            <h2>4. Disclaimer of Warranties</h2>
+                            <p>
+                                THE SERVICE IS PROVIDED ON AN "AS IS" AND "AS AVAILABLE" BASIS. FREETOOLS MAKES NO REPRESENTATIONS OR WARRANTIES OF ANY KIND, EXPRESS OR IMPLIED, REGARDING THE OPERATION OF THE SERVICE OR THE INFORMATION, CONTENT, MATERIALS, OR PRODUCTS INCLUDED ON THE SERVICE.
+                                YOU EXPRESSLY AGREE THAT YOUR USE OF THE SERVICE IS AT YOUR SOLE RISK.
+                            </p>
+                        </section>
+
+                        <section className="legal-section">
+                            <h2>5. Limitation of Liability</h2>
+                            <p>
+                                IN NO EVENT SHALL FREETOOLS, ITS DIRECTORS, EMPLOYEES, PARTNERS, AGENTS, SUPPLIERS, OR AFFILIATES, BE LIABLE FOR ANY INDIRECT, INCIDENTAL, SPECIAL, CONSEQUENTIAL OR PUNITIVE DAMAGES, INCLUDING WITHOUT LIMITATION, LOSS OF PROFITS, DATA, USE, GOODWILL, OR OTHER INTANGIBLE LOSSES, RESULTING FROM YOUR ACCESS TO OR USE OF OR INABILITY TO ACCESS OR USE THE SERVICE.
+                            </p>
+                        </section>
+
+                        <section className="legal-section">
+                            <h2>6. Third-Party Links & Services</h2>
+                            <p>
+                                Our Service may contain links to third-party web sites or services (e.g. Google AdSense) that are not owned or controlled by FreeTools.
+                                FreeTools has no control over, and assumes no responsibility for, the content, privacy policies, or practices of any third-party web sites or services.
+                            </p>
+                        </section>
+
+                        <section className="legal-section">
+                            <h2>7. Governing Law</h2>
+                            <p>
+                                These Terms shall be governed and construed in accordance with the laws of India, without regard to its conflict of law provisions.
+                            </p>
+                        </section>
 
                         <div className="standard-footer">
-                            <p>For permissions beyond the scope of this license, contact Kuldeep Singh Sidhu.</p>
+                            <p>If you have any questions about these Terms, please contact us at singhsidhukuldeep@gmail.com.</p>
                         </div>
                     </div>
                 </div>
