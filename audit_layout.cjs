@@ -1,7 +1,7 @@
 const fs = require('fs');
 const path = require('path');
 
-const toolsDir = '/Users/kuldeep/Downloads/GitHub/Free-Tools/src/pages/tools';
+const toolsDir = path.resolve(__dirname, 'src/pages/tools');
 const files = fs.readdirSync(toolsDir).filter(f => f.endsWith('.jsx'));
 
 const results = {

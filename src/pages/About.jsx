@@ -45,14 +45,14 @@ const About = () => {
                         </section>
 
                         <section className="about-section">
-                            <h2>Meet the Developer</h2>
+                            <h2>About the Team</h2>
                             <div className="developer-profile">
                                 <p>
-                                    <strong>Kuldeep Singh Sidhu</strong> is a passionate Software Engineer and Open Source advocate.
-                                    With a deep background in Full Stack Development, Kuldeep built FreeTools to solve the daily friction developers and creators face when working with files.
+                                    <strong>Source Strong AI</strong> builds practical, privacy-first software for developers, creators, and everyday users.
+                                    FreeTools is our take on the daily friction people face when working with PDFs, images, and other files — fast, free, and entirely client-side.
                                 </p>
                                 <p>
-                                    "I believe the best tools are the ones that get out of your way and just work. No sign-ups, no credit cards, no nonsense."
+                                    "The best tools get out of your way and just work. No sign-ups, no credit cards, no nonsense."
                                 </p>
                             </div>
                         </section>

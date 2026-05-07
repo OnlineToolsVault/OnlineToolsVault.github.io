@@ -36,7 +36,7 @@ const files = [
     "WordToPdf.jsx"
 ];
 
-const dir = '/Users/kuldeep/Downloads/GitHub/Free-Tools/src/pages/tools';
+const dir = path.resolve(__dirname, 'src/pages/tools');
 
 files.forEach(file => {
     const content = fs.readFileSync(path.join(dir, file), 'utf8');

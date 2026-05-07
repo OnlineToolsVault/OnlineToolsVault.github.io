@@ -42,16 +42,16 @@ const Footer = () => {
                     <div className="footer-col">
                         <h4>Connect</h4>
                         <ul>
-                            <li><a href="https://twitter.com/kuldeep_s_s" target="_blank" rel="noopener noreferrer">Twitter</a></li>
+                            <li><a href="https://x.com/sourcestrongai" target="_blank" rel="noopener noreferrer">Twitter</a></li>
                             <li><a href="https://github.com/OnlineToolsVault" target="_blank" rel="noopener noreferrer">GitHub</a></li>
-                            <li><a href="https://www.linkedin.com/in/singhsidhukuldeep/" target="_blank" rel="noopener noreferrer">LinkedIn</a></li>
+                            <li><a href="https://www.linkedin.com/company/sourcestrongai" target="_blank" rel="noopener noreferrer">LinkedIn</a></li>
                         </ul>
                     </div>
                 </div>
             </div>
 
             <div className="container footer-bottom">
-                <p>&copy; {currentYear} Kuldeep Singh Sidhu. All Rights Reserved. Managed under <Link to="/terms" style={{ color: 'inherit', textDecoration: 'underline' }}>Proprietary License</Link>.</p>
+                <p>&copy; {currentYear} Source Strong AI. All Rights Reserved. Managed under <Link to="/terms" style={{ color: 'inherit', textDecoration: 'underline' }}>Proprietary License</Link>.</p>
                 <p style={{ display: 'flex', alignItems: 'center', gap: '0.25rem' }}>
                     Made with <Heart size={14} fill="currentColor" /> for the web
                 </p>

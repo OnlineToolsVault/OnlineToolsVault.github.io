@@ -29,11 +29,11 @@ const Header = () => {
                     <Link to="/contact" className="nav-link">Contact</Link>
 
                     <div className="social-icons">
-                        <a href="https://twitter.com/kuldeep_s_s" target="_blank" rel="noopener noreferrer" className="social-icon" aria-label="Twitter">
+                        <a href="https://x.com/sourcestrongai" target="_blank" rel="noopener noreferrer" className="social-icon" aria-label="Twitter">
                             <Twitter size={18} />
                         </a>
 
-                        <a href="https://www.linkedin.com/in/singhsidhukuldeep/" target="_blank" rel="noopener noreferrer" className="social-icon" aria-label="LinkedIn">
+                        <a href="https://www.linkedin.com/company/sourcestrongai" target="_blank" rel="noopener noreferrer" className="social-icon" aria-label="LinkedIn">
                             <Linkedin size={18} />
                         </a>
                     </div>
@@ -71,11 +71,11 @@ const Header = () => {
                         borderTop: '1px solid var(--border)',
                         justifyContent: 'center'
                     }}>
-                        <a href="https://twitter.com/kuldeep_s_s" target="_blank" rel="noopener noreferrer" className="social-icon" aria-label="Twitter">
+                        <a href="https://x.com/sourcestrongai" target="_blank" rel="noopener noreferrer" className="social-icon" aria-label="Twitter">
                             <Twitter size={20} />
                         </a>
 
-                        <a href="https://www.linkedin.com/in/singhsidhukuldeep/" target="_blank" rel="noopener noreferrer" className="social-icon" aria-label="LinkedIn">
+                        <a href="https://www.linkedin.com/company/sourcestrongai" target="_blank" rel="noopener noreferrer" className="social-icon" aria-label="LinkedIn">
                             <Linkedin size={20} />
                         </a>
                     </div>

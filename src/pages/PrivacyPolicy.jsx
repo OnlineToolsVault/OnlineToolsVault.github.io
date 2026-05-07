@@ -100,7 +100,7 @@ const PrivacyPolicy = () => {
                                 If you have any questions about this Privacy Policy, please contact us:
                             </p>
                             <ul>
-                                <li>By email: singhsidhukuldeep@gmail.com</li>
+                                <li>By email: hi@sourcestrongai.com</li>
                                 <li>By visiting the <a href="/contact">Contact Page</a> on our website.</li>
                             </ul>
                         </section>

@@ -12,7 +12,7 @@ const features = [
 ]
 
 const QrGenerator = () => {
-    const [text, setText] = useState('https://www.linkedin.com/in/singhsidhukuldeep/')
+    const [text, setText] = useState('https://onlinetoolsvault.com/')
     const [options, setOptions] = useState({
         width: 300,
         margin: 2,

@@ -25,10 +25,10 @@ const Contact = () => {
                         </p>
 
                         <div className="contact-grid">
-                            <a href="mailto:singhsidhukuldeep@gmail.com" className="contact-card" style={{ textDecoration: 'none', color: 'inherit' }}>
+                            <a href="mailto:hi@sourcestrongai.com" className="contact-card" style={{ textDecoration: 'none', color: 'inherit' }}>
                                 <Mail size={32} style={{ marginBottom: '1rem', color: 'var(--primary)' }} />
                                 <h3>Email</h3>
-                                <p>singhsidhukuldeep@gmail.com</p>
+                                <p>hi@sourcestrongai.com</p>
                             </a>
 
                             <a href="https://github.com/OnlineToolsVault/OnlineToolsVault.github.io/issues" target="_blank" rel="noopener noreferrer" className="contact-card" style={{ textDecoration: 'none', color: 'inherit' }}>
@@ -40,16 +40,16 @@ const Contact = () => {
 
                         <h2>Connect on Socials</h2>
                         <div className="contact-grid">
-                            <a href="https://twitter.com/kuldeep_s_s" target="_blank" rel="noopener noreferrer" className="contact-card" style={{ textDecoration: 'none', color: 'inherit' }}>
+                            <a href="https://x.com/sourcestrongai" target="_blank" rel="noopener noreferrer" className="contact-card" style={{ textDecoration: 'none', color: 'inherit' }}>
                                 <Twitter size={32} style={{ marginBottom: '1rem', color: '#1DA1F2' }} />
                                 <h3>Twitter</h3>
-                                <p>@kuldeep_s_s</p>
+                                <p>@sourcestrongai</p>
                             </a>
 
-                            <a href="https://www.linkedin.com/in/singhsidhukuldeep/" target="_blank" rel="noopener noreferrer" className="contact-card" style={{ textDecoration: 'none', color: 'inherit' }}>
+                            <a href="https://www.linkedin.com/company/sourcestrongai" target="_blank" rel="noopener noreferrer" className="contact-card" style={{ textDecoration: 'none', color: 'inherit' }}>
                                 <Linkedin size={32} style={{ marginBottom: '1rem', color: '#0A66C2' }} />
                                 <h3>LinkedIn</h3>
-                                <p>Kuldeep Singh Sidhu</p>
+                                <p>Source Strong AI</p>
                             </a>
                         </div>
                     </div>

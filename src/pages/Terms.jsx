@@ -86,7 +86,7 @@ const Terms = () => {
                         </section>
 
                         <div className="standard-footer">
-                            <p>If you have any questions about these Terms, please contact us at singhsidhukuldeep@gmail.com.</p>
+                            <p>If you have any questions about these Terms, please contact us at hi@sourcestrongai.com.</p>
                         </div>
                     </div>
                 </div>
