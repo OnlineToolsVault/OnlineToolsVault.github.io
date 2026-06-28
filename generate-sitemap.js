@@ -106,6 +106,76 @@ const routes = [
 ];
 
 // =============================================================================
+// Per-route social / SEO metadata (Open Graph + Twitter cards)
+// =============================================================================
+const escAttr = (s = '') =>
+  String(s)
+    .replace(/&/g, '&amp;')
+    .replace(/"/g, '&quot;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;');
+
+// Metadata for the non-tool routes. Tool routes load from the catalogue below.
+const STATIC_META = {
+  '/': { title: 'Free Online Tools - PDF, Image & Utility Tools | OnlineToolsVault', description: '100% Free, Secure, and Client-Side Online Tools for PDF, Images, and more. Privacy focused.' },
+  '/about': { title: 'About | OnlineToolsVault', description: 'Learn about OnlineToolsVault — free, private, browser-based tools for PDF, images, text and more.' },
+  '/contact': { title: 'Contact | OnlineToolsVault', description: 'Get in touch with the OnlineToolsVault team.' },
+  '/terms': { title: 'Terms of Service | OnlineToolsVault', description: 'Terms of service for OnlineToolsVault.' },
+  '/privacy': { title: 'Privacy Policy | OnlineToolsVault', description: 'Privacy policy for OnlineToolsVault. Your files never leave your device.' },
+};
+
+// Build the route -> meta map. The tool catalogue (src/data/tools.js) is the
+// single source of truth; failure to load it degrades gracefully to a plain
+// index.html copy (the previous behaviour), so deployment can never break here.
+const metaByPath = {};
+for (const [route, m] of Object.entries(STATIC_META)) {
+  metaByPath[route] = {
+    ...m,
+    url: `${baseUrl}${route}`,
+    image: `${baseUrl}/og/default.png`,
+    imageAlt: 'OnlineToolsVault — Free Online Tools',
+  };
+}
+try {
+  const { tools } = await import(new URL('./src/data/tools.js', import.meta.url));
+  for (const tool of tools) {
+    metaByPath[tool.path] = {
+      title: `${tool.name} | OnlineToolsVault`,
+      description: tool.seoDescription || tool.description || '',
+      url: `${baseUrl}${tool.path}`,
+      image: `${baseUrl}/og/${tool.id}.png`,
+      imageAlt: `${tool.name} — OnlineToolsVault`,
+    };
+  }
+  console.log(`🔖 Loaded social meta for ${tools.length} tools`);
+} catch (error) {
+  console.warn('⚠️  Could not load tools.js for per-route meta; routes will use base meta only.');
+  console.warn(`   (${error.message})`);
+}
+
+// Replace (or insert) the social/SEO tags in a copy of the built index.html.
+function injectMeta(html, m) {
+  const tags = [
+    [/<title>[\s\S]*?<\/title>/i, `<title>${escAttr(m.title)}</title>`],
+    [/<meta\s+name="description"[\s\S]*?>/i, `<meta name="description" content="${escAttr(m.description)}" />`],
+    [/<link\s+rel="canonical"[\s\S]*?>/i, `<link rel="canonical" href="${escAttr(m.url)}" />`],
+    [/<meta\s+property="og:title"[\s\S]*?>/i, `<meta property="og:title" content="${escAttr(m.title)}" />`],
+    [/<meta\s+property="og:description"[\s\S]*?>/i, `<meta property="og:description" content="${escAttr(m.description)}" />`],
+    [/<meta\s+property="og:url"[\s\S]*?>/i, `<meta property="og:url" content="${escAttr(m.url)}" />`],
+    [/<meta\s+property="og:image"[\s\S]*?>/i, `<meta property="og:image" content="${escAttr(m.image)}" />`],
+    [/<meta\s+property="og:image:alt"[\s\S]*?>/i, `<meta property="og:image:alt" content="${escAttr(m.imageAlt)}" />`],
+    [/<meta\s+name="twitter:title"[\s\S]*?>/i, `<meta name="twitter:title" content="${escAttr(m.title)}" />`],
+    [/<meta\s+name="twitter:description"[\s\S]*?>/i, `<meta name="twitter:description" content="${escAttr(m.description)}" />`],
+    [/<meta\s+name="twitter:image"[\s\S]*?>/i, `<meta name="twitter:image" content="${escAttr(m.image)}" />`],
+    [/<meta\s+name="twitter:image:alt"[\s\S]*?>/i, `<meta name="twitter:image:alt" content="${escAttr(m.imageAlt)}" />`],
+  ];
+  for (const [re, tag] of tags) {
+    html = re.test(html) ? html.replace(re, tag) : html.replace('</head>', `  ${tag}\n</head>`);
+  }
+  return html;
+}
+
+// =============================================================================
 // STEP 1: Generate Sitemap.xml
 // =============================================================================
 function generateSitemap() {
@@ -167,13 +237,29 @@ function prepareMultiEntrySPA() {
 
   console.log('✅ Validation passed: dist folder and index.html exist');
 
-  // Create route folders and copy index.html
+  // Read the built HTML once; each route gets a copy with its own social/SEO meta.
+  const baseHtml = fs.readFileSync(indexPath, 'utf8');
+  const metaCount = Object.keys(metaByPath).length;
+  console.log(metaCount
+    ? `   ↳ Injecting per-route meta for up to ${metaCount} routes`
+    : '   ⚠️  No per-route meta loaded; copying index.html as-is');
+
+  // Rewrite the root index.html with home meta (adds canonical, keeps og:image).
+  if (metaByPath['/']) {
+    try {
+      fs.writeFileSync(indexPath, injectMeta(baseHtml, metaByPath['/']));
+    } catch (error) {
+      console.warn('   ⚠️  Root meta injection skipped:', error.message);
+    }
+  }
+
+  // Create route folders with per-route HTML.
   let successCount = 0;
   let failCount = 0;
 
   routes.forEach(route => {
     if (route === '/') {
-      // Root route already has index.html
+      // Root route handled above.
       return;
     }
 
@@ -187,9 +273,19 @@ function prepareMultiEntrySPA() {
         fs.mkdirSync(routeFolder, { recursive: true });
       }
 
-      // Copy index.html
+      // Inject route-specific meta when available; fall back to a plain copy.
+      let html = baseHtml;
+      const meta = metaByPath[route];
+      if (meta) {
+        try {
+          html = injectMeta(baseHtml, meta);
+        } catch (error) {
+          console.warn(`   ⚠️  Meta injection failed for ${route}, copying as-is:`, error.message);
+        }
+      }
+
       const targetPath = path.join(routeFolder, 'index.html');
-      fs.copyFileSync(indexPath, targetPath);
+      fs.writeFileSync(targetPath, html);
 
       successCount++;
       console.log(`   ✓ Created: ${routePath}/index.html`);

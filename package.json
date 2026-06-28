@@ -10,6 +10,7 @@
     "lint": "eslint .",
     "preview": "vite preview",
     "validate-routes": "node scripts/validate-routes.js",
+    "generate-og": "node scripts/generate-og-images.js",
     "prepare-deploy": "npm run validate-routes && npm run build && node generate-sitemap.js",
     "deploy-local-test": "npm run prepare-deploy && npm run preview"
   },
@@ -65,6 +66,7 @@
     "xlsx": "^0.18.5"
   },
   "devDependencies": {
+    "@resvg/resvg-js": "^2.6.2",
     "@types/react": "^18.2.64",
     "@types/react-dom": "^18.2.21",
     "@vitejs/plugin-react": "^4.2.1",
