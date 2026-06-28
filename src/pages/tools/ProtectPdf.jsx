@@ -3,11 +3,11 @@ import RelatedTools from '../../components/tools/RelatedTools'
 import ToolLayout from '../../components/tools/ToolLayout'
 import { useDropzone } from 'react-dropzone'
 import { Lock, Download, Loader2, Shield } from 'lucide-react'
-import { PDFDocument } from 'pdf-lib'
+import { PDFDocument } from '@cantoo/pdf-lib'
 import { saveAs } from 'file-saver'
 
 const features = [
-    { title: 'Bank-Grade Encryption', desc: 'Sectuary encryption using standard algorithms (RC4/AES).', icon: <Lock color="var(--primary)" size={24} /> },
+    { title: 'Bank-Grade Encryption', desc: 'Strong AES-128 encryption applied to every PDF you protect.', icon: <Lock color="var(--primary)" size={24} /> },
     { title: '100% Client-Side Privacy', desc: 'Files never leave your device.', icon: <Shield color="var(--primary)" size={24} /> },
     { title: 'Universal Compatibility', desc: 'Works on all devices.', icon: <Download color="var(--primary)" size={24} /> }
 ]
@@ -45,7 +45,26 @@ const ProtectPdf = () => {
         setIsProcessing(true)
         try {
             const arrayBuffer = await file.arrayBuffer()
-            const pdfDoc = await PDFDocument.load(arrayBuffer)
+
+            let pdfDoc
+            try {
+                pdfDoc = await PDFDocument.load(arrayBuffer)
+            } catch (loadErr) {
+                if ((loadErr?.message || '').toLowerCase().includes('encrypted')) {
+                    alert('This PDF is already password-protected. Please unlock it first, then protect it with a new password.')
+                    return
+                }
+                throw loadErr
+            }
+
+            // @cantoo/pdf-lib selects the cipher from the document's PDF version
+            // (1.4/1.5 -> RC4, 1.6/1.7 -> AES). Force the header to 1.7 so every
+            // file is encrypted with AES-128 instead of the weak RC4 default.
+            if (pdfDoc.context.header) {
+                pdfDoc.context.header.major = '1'
+                pdfDoc.context.header.minor = '7'
+            }
+
             pdfDoc.encrypt({
                 userPassword: password,
                 ownerPassword: password,
@@ -59,6 +78,7 @@ const ProtectPdf = () => {
                     documentAssembly: false,
                 },
             })
+
             const pdfBytes = await pdfDoc.save()
             const blob = new Blob([pdfBytes], { type: 'application/pdf' })
             saveAs(blob, `protected-${file.name}`)

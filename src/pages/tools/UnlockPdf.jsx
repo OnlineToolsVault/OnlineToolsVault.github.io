@@ -3,7 +3,7 @@ import RelatedTools from '../../components/tools/RelatedTools'
 import ToolLayout from '../../components/tools/ToolLayout'
 import { useDropzone } from 'react-dropzone'
 import { Unlock, Download, Loader2, ShieldCheck, Key } from 'lucide-react'
-import { PDFDocument } from 'pdf-lib'
+import { PDFDocument } from '@cantoo/pdf-lib'
 import { saveAs } from 'file-saver'
 
 const features = [
@@ -35,7 +35,7 @@ const faqs = [
     },
     {
         question: "Will the quality decrease?",
-        answer: "No, unlocking is a non-destructive process. It merely decrypts the content; images and text remain bit-perfect."
+        answer: "No. Unlocking only removes the encryption layer, so the text, images, and formatting stay exactly as they were in the original document."
     }
 ]
 
@@ -46,19 +46,38 @@ const UnlockPdf = () => {
     const [error, setError] = useState('')
 
     const handleUnlock = async () => {
-        if (!file || !password) return
+        if (!file) return
         setIsProcessing(true)
         setError('')
         try {
             const arrayBuffer = await file.arrayBuffer()
-            // Try to load with password
-            const pdfDoc = await PDFDocument.load(arrayBuffer, { password })
+
+            // Mainline pdf-lib cannot decrypt protected PDFs, so we use the
+            // @cantoo/pdf-lib fork. Loading with the password decrypts the
+            // document (an empty password also clears owner-only permission
+            // restrictions); saving then writes a clean, unencrypted copy with
+            // all text, images, and formatting preserved intact.
+            let pdfDoc
+            try {
+                pdfDoc = await PDFDocument.load(arrayBuffer, { password: password || '' })
+            } catch (err) {
+                const msg = (err?.message || '').toLowerCase()
+                if (msg.includes('incorrect')) {
+                    setError('Incorrect password. Please check it and try again.')
+                } else if (msg.includes('needs password') || msg.includes('encrypted')) {
+                    setError('This PDF is password-protected. Please enter its password below.')
+                } else {
+                    setError('Could not read this PDF. The file may be corrupted or not a valid PDF.')
+                }
+                return
+            }
+
             const pdfBytes = await pdfDoc.save()
             const blob = new Blob([pdfBytes], { type: 'application/pdf' })
             saveAs(blob, `unlocked-${file.name}`)
         } catch (err) {
             console.error(err)
-            setError('Incorrect password or file error.')
+            setError('Could not unlock this PDF. Please make sure the file is valid and try again.')
         } finally {
             setIsProcessing(false)
         }
@@ -119,13 +138,14 @@ const UnlockPdf = () => {
                             </div>
 
                             <div style={{ marginBottom: '1.5rem' }}>
-                                <label htmlFor="unlock-pdf-password-input" style={{ display: 'block', marginBottom: '0.5rem', fontWeight: 'bold' }}>Enter Password</label>
+                                <label htmlFor="unlock-pdf-password-input" style={{ display: 'block', marginBottom: '0.5rem', fontWeight: 'bold' }}>Enter Password <span style={{ fontWeight: 'normal', color: '#64748b' }}>(leave blank to remove restrictions only)</span></label>
                                 <input
                                     id="unlock-pdf-password-input"
                                     type="password"
                                     value={password}
                                     onChange={(e) => setPassword(e.target.value)}
-                                    placeholder="Current password"
+                                    onKeyDown={(e) => { if (e.key === 'Enter' && !isProcessing) handleUnlock() }}
+                                    placeholder="Current password (if any)"
                                     style={{ width: '100%', padding: '0.75rem', borderRadius: '0.5rem', border: '1px solid var(--border)' }}
                                 />
                                 {error && <p style={{ color: '#ef4444', fontSize: '0.875rem', marginTop: '0.5rem' }}>{error}</p>}
@@ -134,16 +154,16 @@ const UnlockPdf = () => {
                             <button
                                 id="unlock-pdf-submit-btn"
                                 onClick={handleUnlock}
-                                disabled={isProcessing || !password}
+                                disabled={isProcessing}
                                 className="tool-btn-primary"
                                 style={{
                                     width: '100%',
                                     padding: '1rem',
                                     borderRadius: '0.5rem',
-                                    background: isProcessing || !password ? '#cbd5e1' : 'var(--primary)',
+                                    background: isProcessing ? '#cbd5e1' : 'var(--primary)',
                                     color: 'white',
                                     border: 'none',
-                                    cursor: isProcessing || !password ? 'not-allowed' : 'pointer',
+                                    cursor: isProcessing ? 'not-allowed' : 'pointer',
                                     fontWeight: 'bold',
                                     display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '0.5rem'
                                 }}
