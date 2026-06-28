@@ -104,23 +104,26 @@ const backdrop = `
   <circle cx="120" cy="80" r="180" fill="#FFFFFF" opacity="0.04"/>`
 
 // Small rounded-square logo mark + wordmark, top-left.
-const wordmark = (y = 92) => `
+// y is kept well inside the top edge so social cards that crop to a tighter
+// aspect ratio than 1.91:1 don't clip the wordmark.
+const wordmark = (y = 116) => `
   <g>
     <rect x="80" y="${y - 34}" width="48" height="48" rx="12" fill="#FFFFFF" opacity="0.16"/>
     <rect x="94" y="${y - 20}" width="20" height="20" rx="5" fill="#FFFFFF"/>
     <text x="148" y="${y + 2}" font-family="Helvetica, Arial, sans-serif" font-size="30" font-weight="700" fill="#FFFFFF">${escapeXml(BRAND)}</text>
   </g>`
 
+// Footer baseline kept ~100px above the bottom edge for crop safety.
 const footer = (right = DOMAIN) => `
-  <text x="80" y="566" font-family="Helvetica, Arial, sans-serif" font-size="26" font-weight="500" fill="#FFFFFF" opacity="0.78">100% free · runs in your browser</text>
-  <text x="1120" y="566" text-anchor="end" font-family="Helvetica, Arial, sans-serif" font-size="26" font-weight="700" fill="#FFFFFF" opacity="0.92">${escapeXml(right)}</text>`
+  <text x="80" y="532" font-family="Helvetica, Arial, sans-serif" font-size="26" font-weight="500" fill="#FFFFFF" opacity="0.78">100% free · runs in your browser</text>
+  <text x="1120" y="532" text-anchor="end" font-family="Helvetica, Arial, sans-serif" font-size="26" font-weight="700" fill="#FFFFFF" opacity="0.92">${escapeXml(right)}</text>`
 
 function toolSvg(tool) {
     const accent = CATEGORY_ACCENT[tool.category] || CATEGORY_ACCENT.default
     const label = (CATEGORY_LABEL[tool.category] || 'Online Tool').toUpperCase()
     const pillW = 70 + label.length * 12
     const nameLines = wrapText(tool.name, 78, 1040, 3)
-    const nameStartY = nameLines.length >= 3 ? 268 : 300
+    const nameStartY = nameLines.length >= 3 ? 288 : nameLines.length === 2 ? 300 : 322
     const descLines = wrapText(tool.description || tool.seoDescription || '', 30, 1010, 2)
     const descStartY = nameStartY + nameLines.length * 84 + 18
 
@@ -129,9 +132,9 @@ function toolSvg(tool) {
   ${backdrop}
   ${wordmark()}
   <g>
-    <rect x="80" y="150" width="${pillW}" height="44" rx="22" fill="#FFFFFF" opacity="0.14"/>
-    <circle cx="106" cy="172" r="7" fill="${accent}"/>
-    <text x="124" y="180" font-family="Helvetica, Arial, sans-serif" font-size="20" font-weight="700" letter-spacing="1.5" fill="#FFFFFF">${escapeXml(label)}</text>
+    <rect x="80" y="172" width="${pillW}" height="44" rx="22" fill="#FFFFFF" opacity="0.14"/>
+    <circle cx="106" cy="194" r="7" fill="${accent}"/>
+    <text x="124" y="202" font-family="Helvetica, Arial, sans-serif" font-size="20" font-weight="700" letter-spacing="1.5" fill="#FFFFFF">${escapeXml(label)}</text>
   </g>
   <text font-family="Helvetica, Arial, sans-serif" font-size="78" font-weight="800" fill="#FFFFFF">${tspans(nameLines, 80, nameStartY, 84)}</text>
   <text font-family="Helvetica, Arial, sans-serif" font-size="30" font-weight="400" fill="#FFFFFF" opacity="0.85">${tspans(descLines, 80, descStartY, 42)}</text>
