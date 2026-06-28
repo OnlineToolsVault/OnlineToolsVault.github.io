@@ -84,7 +84,11 @@ const ProtectPdf = () => {
             saveAs(blob, `protected-${file.name}`)
         } catch (error) {
             console.error(error)
-            alert('Failed to protect PDF. Please try a different file.')
+            if ((error?.message || '').toLowerCase().includes('invalid characters')) {
+                alert('Your password contains unsupported characters. Please use only standard Latin letters, numbers, and common symbols.')
+            } else {
+                alert('Failed to protect PDF. Please try a different file.')
+            }
         } finally {
             setIsProcessing(false)
         }
