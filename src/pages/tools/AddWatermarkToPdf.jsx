@@ -1,10 +1,12 @@
-import React, { useState } from 'react'
+import { useState } from 'react'
 import RelatedTools from '../../components/tools/RelatedTools'
 import ToolLayout from '../../components/tools/ToolLayout'
 import { useDropzone } from 'react-dropzone'
 import { Stamp, Download, Loader2, Shield, Sliders } from 'lucide-react'
-import { PDFDocument, rgb, degrees } from 'pdf-lib'
+import { PDFDocument, rgb, degrees, StandardFonts } from 'pdf-lib'
 import { saveAs } from 'file-saver'
+
+const ANGLE = 45 // watermark rotation, in degrees
 
 const features = [
     { title: 'Professional Protection', desc: 'Secure your documents by adding "Confidential", "Draft", or copyright text stamps to every page instantly.', icon: <Shield color="var(--primary)" size={24} /> },
@@ -46,23 +48,46 @@ const AddWatermarkToPdf = () => {
     const [size, setSize] = useState(50)
     const [isProcessing, setIsProcessing] = useState(false)
 
+    const canWatermark = watermarkText.trim().length > 0
+
     const handleWatermark = async () => {
-        if (!file) return
+        if (!file || !canWatermark) return
         setIsProcessing(true)
         try {
+            const text = watermarkText.trim()
             const arrayBuffer = await file.arrayBuffer()
             const pdfDoc = await PDFDocument.load(arrayBuffer)
+            const font = await pdfDoc.embedFont(StandardFonts.Helvetica)
+            const rad = (ANGLE * Math.PI) / 180
 
             const pages = pdfDoc.getPages()
             pages.forEach(page => {
                 const { width, height } = page.getSize()
-                page.drawText(watermarkText, {
-                    x: width / 2 - (size * watermarkText.length) / 4, // Rough centering
-                    y: height / 2,
-                    size: Number(size),
+                let fontSize = Number(size)
+                let textWidth = font.widthOfTextAtSize(text, fontSize)
+                let textHeight = font.heightAtSize(fontSize)
+
+                // Shrink until the rotated bounding box fits inside the page
+                const scale = Math.min(
+                    1,
+                    (width * 0.9) / (textWidth * Math.cos(rad) + textHeight * Math.sin(rad)),
+                    (height * 0.9) / (textWidth * Math.sin(rad) + textHeight * Math.cos(rad))
+                )
+                if (scale < 1) {
+                    fontSize *= scale
+                    textWidth = font.widthOfTextAtSize(text, fontSize)
+                    textHeight = font.heightAtSize(fontSize)
+                }
+
+                page.drawText(text, {
+                    // Put the middle of the rotated text on the middle of the page
+                    x: width / 2 - (textWidth / 2) * Math.cos(rad) + (textHeight / 4) * Math.sin(rad),
+                    y: height / 2 - (textWidth / 2) * Math.sin(rad) - (textHeight / 4) * Math.cos(rad),
+                    size: fontSize,
+                    font,
                     opacity: Number(opacity),
                     color: rgb(0.5, 0.5, 0.5),
-                    rotate: degrees(45),
+                    rotate: degrees(ANGLE),
                 })
             })
 
@@ -71,7 +96,13 @@ const AddWatermarkToPdf = () => {
             saveAs(blob, `watermarked-${file.name}`)
         } catch (error) {
             console.error(error)
-            alert('Failed to add watermark.')
+            if ((error?.message || '').toLowerCase().includes('cannot encode')) {
+                alert('Your watermark text contains characters Helvetica cannot display. Please use standard Latin letters, numbers, and common symbols.')
+            } else if ((error?.message || '').toLowerCase().includes('encrypted')) {
+                alert('This PDF is password-protected. Please unlock it first, then add a watermark.')
+            } else {
+                alert('Failed to add watermark. Please try a different file.')
+            }
         } finally {
             setIsProcessing(false)
         }
@@ -113,7 +144,7 @@ const AddWatermarkToPdf = () => {
                                 transition: 'all 0.2s ease'
                             }}
                         >
-                            <input {...getInputProps()} />
+                            <input {...getInputProps()} aria-label="Choose a file for Add Watermark to PDF" />
                             <div style={{ width: '64px', height: '64px', background: '#e0f2fe', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 1rem', color: '#0284c7' }}>
                                 <Stamp size={32} />
                             </div>
@@ -137,6 +168,7 @@ const AddWatermarkToPdf = () => {
                                         type="text"
                                         value={watermarkText}
                                         onChange={(e) => setWatermarkText(e.target.value)}
+                                        placeholder="Enter watermark text"
                                         style={{ width: '100%', padding: '0.75rem', borderRadius: '0.5rem', border: '1px solid var(--border)' }}
                                     />
                                 </div>
@@ -155,7 +187,7 @@ const AddWatermarkToPdf = () => {
                                         <label htmlFor="watermark-pdf-opacity-input" style={{ display: 'block', marginBottom: '0.5rem', fontWeight: 'bold' }}>Opacity: {Math.round(opacity * 100)}%</label>
                                         <input
                                             id="watermark-pdf-opacity-input"
-                                            type="range" min="01" max="1" step="0.1" value={opacity}
+                                            type="range" min="0.1" max="1" step="0.1" value={opacity}
                                             onChange={(e) => setOpacity(Number(e.target.value))}
                                             style={{ width: '100%' }}
                                         />
@@ -166,16 +198,16 @@ const AddWatermarkToPdf = () => {
                             <button
                                 id="watermark-pdf-add-btn"
                                 onClick={handleWatermark}
-                                disabled={isProcessing}
+                                disabled={isProcessing || !canWatermark}
                                 className="tool-btn-primary"
                                 style={{
                                     width: '100%',
                                     padding: '1rem',
                                     borderRadius: '0.5rem',
-                                    background: 'var(--primary)',
+                                    background: isProcessing || !canWatermark ? '#cbd5e1' : 'var(--primary)',
                                     color: 'white',
                                     border: 'none',
-                                    cursor: isProcessing ? 'wait' : 'pointer',
+                                    cursor: isProcessing ? 'wait' : (canWatermark ? 'pointer' : 'not-allowed'),
                                     fontWeight: 'bold',
                                     display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '0.5rem'
                                 }}

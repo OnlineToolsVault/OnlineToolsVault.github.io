@@ -1,14 +1,17 @@
-import React, { useState, useEffect } from 'react'
+import { useState, useEffect } from 'react'
 import ToolLayout from '../../components/tools/ToolLayout'
 import RelatedTools from '../../components/tools/RelatedTools'
 import { useDropzone } from 'react-dropzone'
 import * as PDFJS from 'pdfjs-dist'
+// Bundled by Vite from the installed package, so the worker is self-hosted and can never
+// drift from the pdfjs-dist version the way the old cdnjs URL could.
+import pdfWorkerUrl from 'pdfjs-dist/build/pdf.worker.min.mjs?url'
 import JSZip from 'jszip'
 import { saveAs } from 'file-saver'
-import { Upload, Download, FileText, Image as ImageIcon, Loader2, Settings, Zap, Shield } from 'lucide-react'
+import { Download, FileText, Image as ImageIcon, Loader2, Shield } from 'lucide-react'
 
 // Worker setup for Vite
-PDFJS.GlobalWorkerOptions.workerSrc = `//cdnjs.cloudflare.com/ajax/libs/pdf.js/${PDFJS.version}/pdf.worker.min.mjs`
+PDFJS.GlobalWorkerOptions.workerSrc = pdfWorkerUrl
 
 const features = [
   { title: 'High-Fidelity Extraction', desc: 'Convert every PDF page into a high-quality JPG image. Choose from screen resolution up to professional 600 DPI print quality.', icon: <ImageIcon color="var(--primary)" size={24} /> },
@@ -177,7 +180,7 @@ const PdfToJpg = () => {
               display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center'
             }}
           >
-            <input {...getInputProps()} />
+            <input {...getInputProps()} aria-label="Choose a file for PDF to JPG Converter" />
             <div style={{
               width: '64px', height: '64px',
               background: '#fee2e2',
@@ -272,7 +275,6 @@ const PdfToJpg = () => {
               <div style={{ textAlign: 'center', padding: '4rem' }}>
                 <Loader2 className="spin" size={48} style={{ color: 'var(--primary)', marginBottom: '1rem', animation: 'spin 1s linear infinite' }} />
                 <p style={{ fontWeight: '500' }}>Processing PDF... {progress}%</p>
-                <style>{`@keyframes spin { 100 % { transform: rotate(360deg); } } `}</style>
               </div>
             )}
 

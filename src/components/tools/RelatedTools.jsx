@@ -1,10 +1,12 @@
-import React from 'react'
 import { Link, useLocation } from 'react-router-dom'
 import { tools } from '../../data/tools'
 
 const RelatedTools = () => {
     const location = useLocation()
-    const currentPath = location.pathname
+    // GitHub Pages serves each route as a directory index, so it 301s /merge-pdf to /merge-pdf/.
+    // Every organic visitor therefore arrives on the trailing-slash form, which would not match
+    // the slash-less paths in tools.js.
+    const currentPath = location.pathname.replace(/\/+$/, '') || '/'
 
     // Find current tool to get its category
     const currentTool = tools.find(t => t.path === currentPath)
@@ -52,7 +54,7 @@ const RelatedTools = () => {
 
             <div className="tools-grid" style={{
                 display: 'grid',
-                gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))',
+                gridTemplateColumns: 'repeat(auto-fill, minmax(min(280px, 100%), 1fr))',
                 gap: '1.5rem'
             }}>
                 {relatedTools.map(tool => (

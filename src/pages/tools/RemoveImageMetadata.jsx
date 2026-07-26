@@ -1,44 +1,151 @@
-import React, { useState } from 'react'
+import { useState } from 'react'
 import RelatedTools from '../../components/tools/RelatedTools'
 import ToolLayout from '../../components/tools/ToolLayout'
 import { useDropzone } from 'react-dropzone'
 import { Eraser, Download, Loader2, ShieldCheck, Zap, Lock } from 'lucide-react'
 import { saveAs } from 'file-saver'
+import { orientation as exifrOrientation } from 'exifr'
+
+const ICC_PROFILE_TAG = [0x49, 0x43, 0x43, 0x5f, 0x50, 0x52, 0x4f, 0x46, 0x49, 0x4c, 0x45, 0x00]
+
+// Rewrites a JPEG without its APP0-APP15 (EXIF, XMP, IPTC) and comment segments.
+// The compressed scan data is copied verbatim, so no quality is lost, and the ICC
+// colour profile is kept because dropping it would visibly shift the colours.
+const stripJpegSegments = (buffer) => {
+    const bytes = new Uint8Array(buffer)
+    if (bytes[0] !== 0xff || bytes[1] !== 0xd8) return null
+    const keep = [bytes.subarray(0, 2)]
+    let i = 2
+    while (i < bytes.length - 1) {
+        if (bytes[i] !== 0xff) return null
+        const marker = bytes[i + 1]
+        if (marker === 0xff) {
+            // Fill byte between segments
+            i += 1
+            continue
+        }
+        if (marker === 0x01 || (marker >= 0xd0 && marker <= 0xd9)) {
+            i += 2
+            continue
+        }
+        if (marker === 0xda) {
+            // Start of scan: the rest of the file is entropy-coded data
+            keep.push(bytes.subarray(i))
+            break
+        }
+        const length = (bytes[i + 2] << 8) | bytes[i + 3]
+        if (length < 2 || i + 2 + length > bytes.length) return null
+        const isColourProfile = marker === 0xe2 && ICC_PROFILE_TAG.every((byte, k) => bytes[i + 4 + k] === byte)
+        const isMetadata = ((marker >= 0xe0 && marker <= 0xef) || marker === 0xfe) && !isColourProfile
+        if (!isMetadata) keep.push(bytes.subarray(i, i + 2 + length))
+        i += 2 + length
+    }
+    const total = keep.reduce((sum, part) => sum + part.length, 0)
+    const out = new Uint8Array(total)
+    let offset = 0
+    keep.forEach((part) => {
+        out.set(part, offset)
+        offset += part.length
+    })
+    return out
+}
+
 const RemoveImageMetadata = () => {
     const [file, setFile] = useState(null)
     const [isProcessing, setIsProcessing] = useState(false)
+    const [error, setError] = useState('')
 
-    const onDrop = (acceptedFiles) => {
+    const onDrop = (acceptedFiles, fileRejections) => {
         if (acceptedFiles?.length > 0) {
             setFile(acceptedFiles[0])
+            setError('')
+        } else if (fileRejections?.length > 0) {
+            // Clear the previous selection too, so the error is not shown above a stale file card.
+            setFile(null)
+            setError('That file type is not supported. Please choose a JPG, PNG, or WebP image.')
         }
     }
 
     const { getRootProps, getInputProps, isDragActive } = useDropzone({
         onDrop,
-        accept: { 'image/*': [] },
+        accept: {
+            'image/jpeg': ['.jpg', '.jpeg'],
+            'image/png': ['.png'],
+            'image/webp': ['.webp']
+        },
         multiple: false
     })
 
-    const handleRemove = () => {
-        if (!file) return
-        setIsProcessing(true)
+    const decodeToPngBlob = (source) => new Promise((resolve, reject) => {
+        const url = URL.createObjectURL(source)
         const img = new Image()
         img.onload = () => {
             const canvas = document.createElement('canvas')
-            canvas.width = img.width
-            canvas.height = img.height
-            const ctx = canvas.getContext('2d')
-            ctx.drawImage(img, 0, 0)
-
-            // Converting to Blob strips standard EXIF unless explicitly preserved (which browsers don't do by default for canvas export)
+            canvas.width = img.naturalWidth
+            canvas.height = img.naturalHeight
+            canvas.getContext('2d').drawImage(img, 0, 0)
             canvas.toBlob((blob) => {
-                saveAs(blob, `clean-${file.name}`)
-                setIsProcessing(false)
-            }, file.type)
+                URL.revokeObjectURL(url)
+                if (blob) resolve(blob)
+                else reject(new Error('encode failed'))
+            }, 'image/png')
         }
-        img.onerror = () => setIsProcessing(false)
-        img.src = URL.createObjectURL(file)
+        img.onerror = () => {
+            URL.revokeObjectURL(url)
+            reject(new Error('decode failed'))
+        }
+        img.src = url
+    })
+
+    // Re-encodes a rotated JPEG upright. createImageBitmap with imageOrientation 'from-image'
+    // applies the EXIF rotation while decoding, so the pixels come out the way the photo is
+    // meant to be seen and the tag is no longer needed. Quality 0.95 keeps the loss invisible.
+    const decodeToOrientedJpegBlob = async (source) => {
+        const bitmap = await createImageBitmap(source, { imageOrientation: 'from-image' })
+        const canvas = document.createElement('canvas')
+        canvas.width = bitmap.width
+        canvas.height = bitmap.height
+        canvas.getContext('2d').drawImage(bitmap, 0, 0)
+        bitmap.close()
+        const blob = await new Promise((resolve) => canvas.toBlob(resolve, 'image/jpeg', 0.95))
+        if (!blob) throw new Error('encode failed')
+        return blob
+    }
+
+    const handleRemove = async () => {
+        if (!file) return
+        setIsProcessing(true)
+        setError('')
+        try {
+            // A phone photo is usually stored in the sensor's orientation, with an EXIF
+            // Orientation tag telling viewers how to rotate it. Stripping that tag losslessly
+            // would leave the photo displayed sideways, so those files have to be re-encoded
+            // with the rotation physically applied instead.
+            const buffer = await file.arrayBuffer()
+            const orientation = await exifrOrientation(buffer).catch(() => undefined)
+
+            if (!orientation || orientation === 1) {
+                // stripJpegSegments sniffs the SOI marker, so it also rules out mislabelled files.
+                const clean = stripJpegSegments(buffer)
+                if (clean) {
+                    saveAs(new Blob([clean], { type: 'image/jpeg' }), `clean-${file.name}`)
+                    return
+                }
+            } else if (file.type === 'image/jpeg') {
+                const rotated = await decodeToOrientedJpegBlob(file)
+                saveAs(rotated, `clean-${file.name}`)
+                return
+            }
+            // PNG and WebP go through the canvas, which drops every metadata chunk.
+            // Output is always PNG so nothing is re-compressed at a lossy default.
+            const blob = await decodeToPngBlob(file)
+            saveAs(blob, `clean-${file.name.replace(/\.[^.]+$/, '')}.png`)
+        } catch (err) {
+            console.error(err)
+            setError('Could not read this image. Please try a standard JPG, PNG, or WebP file.')
+        } finally {
+            setIsProcessing(false)
+        }
     }
 
     return (
@@ -50,6 +157,12 @@ const RemoveImageMetadata = () => {
             faqs={RemoveImageMetadata.defaultProps.faqs}
         >
             <div className="tool-workspace" style={{ maxWidth: '1000px', margin: '0 auto' }}>
+                {error && (
+                    <p role="alert" style={{ maxWidth: '600px', margin: '0 auto 1.5rem', padding: '1rem', background: '#fef2f2', border: '1px solid #fee2e2', borderRadius: '0.5rem', color: '#b91c1c', textAlign: 'center' }}>
+                        {error}
+                    </p>
+                )}
+
                 {!file ? (
                     <div
                         className="tool-upload-area"
@@ -65,7 +178,7 @@ const RemoveImageMetadata = () => {
                             boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.05)'
                         }}
                     >
-                        <input {...getInputProps()} />
+                        <input {...getInputProps()} aria-label="Choose a file for Remove Image Metadata" />
                         <div style={{
                             width: '80px',
                             height: '80px',
@@ -86,7 +199,7 @@ const RemoveImageMetadata = () => {
                             or click to browse files
                         </p>
                         <p style={{ marginTop: '1rem', fontSize: '0.9rem', color: '#94a3b8' }}>
-                            Supports JPG, PNG, WebP, TIFF
+                            Supports JPG, PNG, WebP
                         </p>
                     </div>
                 ) : (
@@ -135,7 +248,7 @@ const RemoveImageMetadata = () => {
                         <div style={{ textAlign: 'center', marginTop: '1.5rem' }}>
                             <button
                                 className="tool-btn-secondary"
-                                onClick={() => setFile(null)}
+                                onClick={() => { setFile(null); setError('') }}
                                 style={{ background: 'none', border: 'none', color: 'var(--text-secondary)', textDecoration: 'underline', cursor: 'pointer', fontSize: '1rem' }}
                             >
                                 Cancel

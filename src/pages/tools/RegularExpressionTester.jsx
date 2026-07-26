@@ -1,7 +1,7 @@
 import React, { useState } from 'react'
 import RelatedTools from '../../components/tools/RelatedTools'
 import ToolLayout from '../../components/tools/ToolLayout'
-import { Search, Zap, Highlighter, Flag } from 'lucide-react'
+import { Zap, Highlighter, Flag } from 'lucide-react'
 
 const features = [
     { title: 'Real-time Testing', desc: 'Instantly see matches as you type your regex pattern.', icon: <Zap color="var(--primary)" size={24} /> },
@@ -36,17 +36,21 @@ const faqs = [
     }
 ]
 
+const MATCH_LIMIT = 10000
+
 const RegularExpressionTester = () => {
     const [regexStr, setRegexStr] = useState('')
     const [flags, setFlags] = useState('g')
     const [text, setText] = useState('The quick brown fox jumps over the lazy dog.')
     const [matches, setMatches] = useState([])
+    const [truncated, setTruncated] = useState(false)
     const [error, setError] = useState(null)
 
     const testRegex = () => {
         try {
             if (!regexStr) {
                 setMatches([])
+                setTruncated(false)
                 setError(null)
                 return
             }
@@ -59,15 +63,18 @@ const RegularExpressionTester = () => {
             if (!flags.includes('g')) {
                 const m = re.exec(text)
                 if (m) found.push({ index: m.index, match: m[0] })
+                setTruncated(false)
             } else {
-                // Clone regex to avoid state issues or ensure state
-                let loopCount = 0
+                let limitHit = false
                 while ((match = re.exec(text)) !== null) {
                     found.push({ index: match.index, match: match[0] })
                     if (match.index === re.lastIndex) re.lastIndex++ // Avoid infinite loop on zero-width matches
-                    loopCount++
-                    if (loopCount > 1000) break // Safety break
+                    if (found.length >= MATCH_LIMIT) { // Safety break
+                        limitHit = re.exec(text) !== null // only report truncation if more remain
+                        break
+                    }
                 }
+                setTruncated(limitHit)
             }
 
             setMatches(found)
@@ -75,6 +82,7 @@ const RegularExpressionTester = () => {
         } catch (e) {
             setError(e.message)
             setMatches([])
+            setTruncated(false)
         }
     }
 
@@ -117,8 +125,8 @@ const RegularExpressionTester = () => {
             faqs={faqs}
         >
             <div className="tool-workspace" style={{ maxWidth: '1000px', margin: '0 auto', padding: '2rem', background: 'white', borderRadius: '1rem', border: '1px solid var(--border)' }}>
-                <div style={{ display: 'flex', gap: '1rem', marginBottom: '1.5rem' }}>
-                    <div style={{ flex: 1 }}>
+                <div style={{ display: 'flex', flexWrap: 'wrap', gap: '1rem', marginBottom: '1.5rem' }}>
+                    <div style={{ flex: 1, minWidth: 0 }}>
                         <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: 'bold' }}>Pattern</label>
                         <div style={{ position: 'relative', display: 'flex', alignItems: 'center' }}>
                             <span style={{ padding: '0.5rem', background: '#f8fafc', border: '1px solid var(--border)', borderRight: 'none', borderRadius: '0.5rem 0 0 0.5rem' }}>/</span>
@@ -127,7 +135,7 @@ const RegularExpressionTester = () => {
                                 value={regexStr}
                                 onChange={(e) => setRegexStr(e.target.value)}
                                 placeholder="e.g. [a-z]+"
-                                style={{ flex: 1, padding: '0.75rem', border: '1px solid var(--border)', fontSize: '1rem', fontFamily: 'monospace', outline: 'none' }}
+                                style={{ flex: 1, minWidth: 0, padding: '0.75rem', border: '1px solid var(--border)', fontSize: '1rem', fontFamily: 'monospace', outline: 'none' }}
                             />
                             <span style={{ padding: '0.5rem', background: '#f8fafc', border: '1px solid var(--border)', borderLeft: 'none' }}>/</span>
                             <input
@@ -144,8 +152,9 @@ const RegularExpressionTester = () => {
                 {error && <div style={{ color: 'red', marginBottom: '1rem' }}>Error: {error}</div>}
 
                 <div style={{ marginBottom: '2rem' }}>
-                    <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: 'bold' }}>Test String</label>
+                    <label htmlFor="regex-test-string" style={{ display: 'block', marginBottom: '0.5rem', fontWeight: 'bold' }}>Test String</label>
                     <textarea
+                        id="regex-test-string"
                         value={text}
                         onChange={(e) => setText(e.target.value)}
                         style={{ width: '100%', minHeight: '150px', padding: '1rem', borderRadius: '0.5rem', border: '1px solid var(--border)', fontSize: '1rem', fontFamily: 'monospace' }}
@@ -153,7 +162,12 @@ const RegularExpressionTester = () => {
                 </div>
 
                 <div>
-                    <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: 'bold' }}>Matches ({matches.length})</label>
+                    <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: 'bold' }}>Matches ({matches.length}{truncated ? '+' : ''})</label>
+                    {truncated && (
+                        <div style={{ marginBottom: '0.5rem', color: '#b45309', fontSize: '0.9rem' }}>
+                            Showing the first {MATCH_LIMIT.toLocaleString()} matches. Your text contains more — results past this point are not highlighted.
+                        </div>
+                    )}
                     <div style={{ padding: '1rem', minHeight: '100px', background: '#f8fafc', borderRadius: '0.5rem', border: '1px solid var(--border)', fontFamily: 'monospace', whiteSpace: 'pre-wrap' }}>
                         {highlightText()}
                     </div>

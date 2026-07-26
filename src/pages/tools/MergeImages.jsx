@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { useDropzone } from 'react-dropzone'
 import { Upload, Download, X, Layout, Maximize2, Layers, Shield, Square, Minus, Trash2 } from 'lucide-react'
 import './MergeImages.css'
@@ -29,6 +29,16 @@ const faqs = [
     }
 ]
 
+// An over-large canvas never allocates its backing store, and toDataURL then returns the literal
+// string "data:," rather than throwing — which renders as a broken preview and saves a 0-byte file.
+const canvasToPngUrl = (canvas) => {
+    const url = canvas.toDataURL('image/png')
+    if (!url.split(',')[1]) {
+        throw new Error('The merged image is too large for your browser to render. Remove an image, or reduce the border/gap.')
+    }
+    return url
+}
+
 const MergeImages = () => {
     const [images, setImages] = useState([])
     const [options, setOptions] = useState({
@@ -41,6 +51,7 @@ const MergeImages = () => {
     })
     const [mergedImageUrl, setMergedImageUrl] = useState(null)
     const [isProcessing, setIsProcessing] = useState(false)
+    const [error, setError] = useState(null)
 
     // Handle Drop
     const onDrop = useCallback((acceptedFiles) => {
@@ -96,22 +107,29 @@ const MergeImages = () => {
     const generateMergedImage = useCallback(async () => {
         if (images.length < 2) {
             setMergedImageUrl(null)
+            setIsProcessing(false)
+            setError(null)
             return
         }
 
         setIsProcessing(true)
+        setError(null)
 
         try {
             // Load all images and get their natural dimensions
             const loadedImages = await Promise.all(
                 images.map(imgData => {
-                    return new Promise((resolve) => {
+                    return new Promise((resolve, reject) => {
                         const img = new Image()
                         img.onload = () => resolve({
                             element: img,
                             width: img.naturalWidth,
                             height: img.naturalHeight
                         })
+                        // Without this the promise never settles and the tool hangs on "Generating..."
+                        img.onerror = () => reject(
+                            new Error(`Could not read "${imgData.file?.name || 'image'}". Your browser may not support this format (e.g. HEIC or TIFF), or the file is damaged.`)
+                        )
                         img.src = imgData.preview
                     })
                 })
@@ -208,20 +226,25 @@ const MergeImages = () => {
                 fCtx.shadowOffsetY = shadowOffset
 
                 fCtx.drawImage(canvas, padding, padding)
-                setMergedImageUrl(finalCanvas.toDataURL('image/png'))
+                setMergedImageUrl(canvasToPngUrl(finalCanvas))
             } else {
-                setMergedImageUrl(canvas.toDataURL('image/png'))
+                setMergedImageUrl(canvasToPngUrl(canvas))
             }
 
-        } catch (error) {
-            console.error('Merge error:', error)
+        } catch (err) {
+            console.error('Merge error:', err)
+            setMergedImageUrl(null)
+            setError(err.message || 'Failed to merge images.')
         } finally {
             setIsProcessing(false)
         }
     }, [images, options])
 
     useEffect(() => {
-        generateMergedImage()
+        // The border/gap sliders fire on every step of a drag, and each run re-decodes every source
+        // image and PNG-encodes a multi-megapixel canvas. Coalesce a drag into one regeneration.
+        const timer = setTimeout(() => { generateMergedImage() }, 200)
+        return () => clearTimeout(timer)
     }, [images, options, generateMergedImage])
 
     const handleDownload = () => {
@@ -247,7 +270,7 @@ const MergeImages = () => {
                         {/* Sidebar Controls */}
                         <div className="options-panel">
                             <div {...getRootProps()} className={`tool-upload-area paste-drop-zone ${isDragActive ? 'active' : ''}`}>
-                                <input {...getInputProps()} />
+                                <input {...getInputProps()} aria-label="Choose a file for Merge Images" />
                                 <Upload size={32} className="text-primary" />
                                 <p>Click, Drag, or <strong>Paste (Cmd+V)</strong></p>
                             </div>
@@ -355,8 +378,10 @@ const MergeImages = () => {
                                 <div className="preview-canvas-wrapper">
                                     {isProcessing ? (
                                         <div className="empty-preview">Generating...</div>
+                                    ) : error ? (
+                                        <div className="empty-preview" style={{ color: '#ef4444', textAlign: 'center' }}>{error}</div>
                                     ) : (
-                                        <img src={mergedImageUrl} alt="Merged Preview" className="merged-image-preview" />
+                                        mergedImageUrl && <img src={mergedImageUrl} alt="Merged Preview" className="merged-image-preview" />
                                     )}
                                 </div>
                             ) : (

@@ -1,8 +1,8 @@
-import React, { useState } from 'react'
+import { useState } from 'react'
 import RelatedTools from '../../components/tools/RelatedTools'
 import ToolLayout from '../../components/tools/ToolLayout'
 import { useDropzone } from 'react-dropzone'
-import { Image as ImageIcon, Download, Loader2, Smartphone, RefreshCw, Zap, ShieldCheck } from 'lucide-react'
+import { Image as ImageIcon, Download, Loader2, Smartphone, RefreshCw, ShieldCheck } from 'lucide-react'
 import heic2any from 'heic2any'
 import { saveAs } from 'file-saver'
 const features = [
@@ -42,6 +42,7 @@ const HeicToJpg = () => {
     const [file, setFile] = useState(null)
     const [isProcessing, setIsProcessing] = useState(false)
     const [convertedUrl, setConvertedUrl] = useState(null)
+    const [error, setError] = useState(null)
 
     const handleConvert = async () => {
         if (!file) return
@@ -57,8 +58,8 @@ const HeicToJpg = () => {
             const resultBlob = Array.isArray(blob) ? blob[0] : blob
             const url = URL.createObjectURL(resultBlob)
             setConvertedUrl(url)
-        } catch (error) {
-            console.error(error)
+        } catch (err) {
+            console.error(err)
             alert('Error converting HEIC. Make sure the file is a valid HEIC image.')
         } finally {
             setIsProcessing(false)
@@ -67,20 +68,33 @@ const HeicToJpg = () => {
 
     const download = () => {
         if (convertedUrl) {
-            saveAs(convertedUrl, file.name.replace(/\.heic$/i, '.jpg'))
+            saveAs(convertedUrl, file.name.replace(/\.(heic|heif|heics|heifs)$/i, '.jpg'))
         }
     }
 
-    const onDrop = (acceptedFiles) => {
+    const onDrop = (acceptedFiles, fileRejections) => {
         if (acceptedFiles?.length > 0) {
+            setError(null)
             setFile(acceptedFiles[0])
             setConvertedUrl(null)
+            return
+        }
+        if (fileRejections?.length > 0) {
+            const tooMany = fileRejections.some(r => r.errors?.some(e => e.code === 'too-many-files'))
+            setError(tooMany
+                ? 'Please drop only one photo at a time.'
+                : 'That file is not a HEIC/HEIF photo. Please choose a .heic or .heif image.')
         }
     }
 
     const { getRootProps, getInputProps, isDragActive } = useDropzone({
         onDrop,
-        accept: { 'image/heic': ['.heic'] },
+        accept: {
+            'image/heic': ['.heic'],
+            'image/heif': ['.heif'],
+            'image/heic-sequence': ['.heics'],
+            'image/heif-sequence': ['.heifs']
+        },
         multiple: false
     })
 
@@ -95,27 +109,32 @@ const HeicToJpg = () => {
             <div className="tool-workspace" style={{ maxWidth: '1000px', margin: '0 auto' }}>
                 <div style={{ background: 'white', border: '1px solid var(--border)', borderRadius: '1rem', padding: '2rem' }}>
                     {!file ? (
-                        <div
-                            id="heic-to-jpg-dropzone"
-                            className="tool-upload-area"
-                            {...getRootProps()}
-                            style={{
-                                border: '2px dashed var(--border)',
-                                borderRadius: '0.75rem',
-                                padding: '3rem 2rem',
-                                textAlign: 'center',
-                                cursor: 'pointer',
-                                background: isDragActive ? 'var(--secondary)' : '#f8fafc',
-                                transition: 'all 0.2s ease'
-                            }}
-                        >
-                            <input {...getInputProps()} />
-                            <div style={{ width: '64px', height: '64px', background: '#e0f2fe', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 1rem', color: '#0284c7' }}>
-                                <ImageIcon size={32} />
+                        <>
+                            <div
+                                id="heic-to-jpg-dropzone"
+                                className="tool-upload-area"
+                                {...getRootProps()}
+                                style={{
+                                    border: '2px dashed var(--border)',
+                                    borderRadius: '0.75rem',
+                                    padding: '3rem 2rem',
+                                    textAlign: 'center',
+                                    cursor: 'pointer',
+                                    background: isDragActive ? 'var(--secondary)' : '#f8fafc',
+                                    transition: 'all 0.2s ease'
+                                }}
+                            >
+                                <input {...getInputProps()} aria-label="Choose a file for HEIC to JPG Converter" />
+                                <div style={{ width: '64px', height: '64px', background: '#e0f2fe', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 1rem', color: '#0284c7' }}>
+                                    <ImageIcon size={32} />
+                                </div>
+                                <h3 style={{ fontSize: '1.25rem', fontWeight: '600', marginBottom: '0.5rem' }}>Drag & drop HEIC file here</h3>
+                                <p style={{ color: '#64748b' }}>or click to select file</p>
                             </div>
-                            <h3 style={{ fontSize: '1.25rem', fontWeight: '600', marginBottom: '0.5rem' }}>Drag & drop HEIC file here</h3>
-                            <p style={{ color: '#64748b' }}>or click to select file</p>
-                        </div>
+                            {error && (
+                                <p role="alert" style={{ marginTop: '1rem', color: '#dc2626', textAlign: 'center' }}>{error}</p>
+                            )}
+                        </>
                     ) : (
                         <div style={{ maxWidth: '600px', margin: '0 auto', padding: '2rem', background: '#f8fafc', borderRadius: '1rem', border: '1px solid var(--border)', textAlign: 'center' }}>
                             <div style={{ marginBottom: '2rem' }}>
@@ -178,11 +197,10 @@ const HeicToJpg = () => {
                                 </div>
                             )}
 
-                            <style>{`@keyframes spin { 100% { transform: rotate(360deg); } }`}</style>
                             <div style={{ marginTop: '1.5rem' }}>
                                 <button
                                     id="heic-to-jpg-reset-btn"
-                                    onClick={() => { setFile(null); setConvertedUrl(null); }}
+                                    onClick={() => { setFile(null); setConvertedUrl(null); setError(null); }}
                                     style={{ background: 'none', border: 'none', color: '#64748b', textDecoration: 'underline', cursor: 'pointer' }}
                                 >
                                     Convert Another

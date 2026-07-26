@@ -1,8 +1,8 @@
-import React, { useState } from 'react'
+import { useState, useRef } from 'react'
 import RelatedTools from '../../components/tools/RelatedTools'
 import ToolLayout from '../../components/tools/ToolLayout'
 import { useDropzone } from 'react-dropzone'
-import { Image as ImageIcon, Download, Loader2, Wand2, EyeOff, Shield } from 'lucide-react'
+import { Download, Wand2, EyeOff, Shield } from 'lucide-react'
 import { saveAs } from 'file-saver'
 const features = [
     { title: 'Custom Blur Control', desc: 'Adjust blur intensity with precision to get the exact artistic or privacy effect you need.', icon: <Wand2 color="var(--primary)" size={24} /> },
@@ -41,6 +41,7 @@ const BlurImage = () => {
     const [file, setFile] = useState(null)
     const [blur, setBlur] = useState(5)
     const [preview, setPreview] = useState(null)
+    const previewRef = useRef(null)
 
     const handleSelect = (f) => {
         setFile(f)
@@ -52,18 +53,87 @@ const BlurImage = () => {
 
         const img = new Image()
         img.onload = () => {
-            const canvas = document.createElement('canvas')
-            canvas.width = img.width
-            canvas.height = img.height
-            const ctx = canvas.getContext('2d')
+            const w = img.naturalWidth || img.width
+            const h = img.naturalHeight || img.height
 
-            // Apply blur filter
-            ctx.filter = `blur(${blur}px)`
-            ctx.drawImage(img, 0, 0)
+            // The preview blurs the on-screen <img>, so its radius is in rendered
+            // CSS px. The canvas works in natural px, so scale the radius up or the
+            // export comes out far weaker than what the user approved.
+            const displayedWidth = previewRef.current?.getBoundingClientRect().width
+            const scale = displayedWidth > 0 ? w / displayedWidth : 1
+            let radius = blur * scale
+
+            // Browsers cap a canvas by BOTH its longest side and its total area; iOS Safari's
+            // ~16.7 Mpx area ceiling is the tightest. Bounding only the side let a 12MP photo at
+            // a high blur ask for a 50+ Mpx intermediate, which fails allocation and downloads
+            // nothing (or a blank image).
+            const MAX_CANVAS_SIDE = 16384
+            const MAX_CANVAS_AREA = 16 * 1024 * 1024
+            // Largest uniform pad p with (w+2p)(h+2p) <= MAX_CANVAS_AREA.
+            const sum = w + h
+            const disc = sum * sum - 4 * (w * h - MAX_CANVAS_AREA)
+            const padByArea = disc <= 0 ? 0 : Math.floor((Math.sqrt(disc) - sum) / 4)
+            const padBySide = Math.floor((MAX_CANVAS_SIDE - Math.max(w, h)) / 2)
+            const maxPad = Math.max(0, Math.min(padByArea, padBySide))
+
+            // Gaussian kernel reaches ~3 sigma. If that much padding will not fit, lower the
+            // radius to match rather than blur past the replicated border.
+            let pad = Math.ceil(radius * 3)
+            if (pad > maxPad) {
+                pad = maxPad
+                radius = pad / 3
+            }
+
+            // Pad the source with edge-replicated pixels so the blur has real pixels
+            // to sample at the borders instead of the transparent backdrop, which
+            // would show up as a dark smeared frame once JPEG flattens the alpha.
+            const src = document.createElement('canvas')
+            src.width = w + pad * 2
+            src.height = h + pad * 2
+            const sctx = src.getContext('2d')
+            if (!sctx) {
+                alert('This image is too large for your browser to process. Try a smaller image or a lower blur intensity.')
+                return
+            }
+            if (pad > 0) {
+                sctx.drawImage(img, 0, 0, 1, 1, 0, 0, pad, pad)
+                sctx.drawImage(img, w - 1, 0, 1, 1, pad + w, 0, pad, pad)
+                sctx.drawImage(img, 0, h - 1, 1, 1, 0, pad + h, pad, pad)
+                sctx.drawImage(img, w - 1, h - 1, 1, 1, pad + w, pad + h, pad, pad)
+                sctx.drawImage(img, 0, 0, w, 1, pad, 0, w, pad)
+                sctx.drawImage(img, 0, h - 1, w, 1, pad, pad + h, w, pad)
+                sctx.drawImage(img, 0, 0, 1, h, 0, pad, pad, h)
+                sctx.drawImage(img, w - 1, 0, 1, h, pad + w, pad, pad, h)
+            }
+            sctx.drawImage(img, pad, pad)
+
+            const canvas = document.createElement('canvas')
+            canvas.width = w
+            canvas.height = h
+            const ctx = canvas.getContext('2d')
+            if (!ctx) {
+                alert('This image is too large for your browser to process. Try a smaller image or a lower blur intensity.')
+                return
+            }
+            if (file.type === 'image/jpeg' || file.type === 'image/jpg') {
+                // Must be filled before ctx.filter is set, or the fill gets blurred too
+                ctx.fillStyle = '#ffffff'
+                ctx.fillRect(0, 0, w, h)
+            }
+            ctx.filter = `blur(${radius}px)`
+            ctx.drawImage(src, -pad, -pad)
+            ctx.filter = 'none'
 
             canvas.toBlob((blob) => {
+                if (!blob) {
+                    alert('Could not export the blurred image. The picture may be too large for your browser to process.')
+                    return
+                }
                 saveAs(blob, `blurred-${file.name}`)
             }, file.type)
+        }
+        img.onerror = () => {
+            alert(`Could not read "${file.name}". This image format may not be supported by your browser.`)
         }
         img.src = preview
     }
@@ -103,7 +173,7 @@ const BlurImage = () => {
                             transition: 'all 0.2s ease'
                         }}
                     >
-                        <input {...getInputProps()} />
+                        <input {...getInputProps()} aria-label="Choose a file for Blur Image" />
                         <div style={{ width: '64px', height: '64px', background: '#e0f2fe', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 1rem', color: '#0284c7' }}>
                             <Wand2 size={32} />
                         </div>
@@ -115,6 +185,7 @@ const BlurImage = () => {
                         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '2rem' }}>
                             <div style={{ textAlign: 'center', overflow: 'hidden', maxHeight: '500px', border: '1px solid #eee', borderRadius: '0.5rem' }}>
                                 <img
+                                    ref={previewRef}
                                     src={preview}
                                     alt="Preview"
                                     style={{

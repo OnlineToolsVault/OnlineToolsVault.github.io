@@ -1,16 +1,26 @@
-import React, { useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { useEditor } from './EditorContext';
-import * as pdfjsLib from 'pdfjs-dist';
 import { Canvas, Image as FabricImage, IText, Rect, Circle, PencilBrush } from 'fabric';
 
+// Rasterizing a page allocates a full-page bitmap, so run the pages one at a
+// time instead of firing N render tasks in the same tick.
+let renderQueue = Promise.resolve();
+
+// Upper bound on a single rasterized page, so zooming in cannot blow up memory
+const MAX_RENDER_PIXELS = 4e6;
+
+// Keystrokes are coalesced into a single history entry after this quiet period
+const TYPING_HISTORY_DELAY = 600;
+
 const PDFPage = ({ page, pageIndex }) => {
-    const containerRef = useRef(null);
     const canvasRef = useRef(null);
     const {
         scale, registerCanvas, unregisterCanvas, activeTool, activeColor, activeSize,
         activeStrokeColor, activeStrokeWidth, highlightOpacity,
-        setSelectedObjectId, setActivePageIndex
+        setSelectedObjectId, pushHistory, nearRange
     } = useEditor();
+
+    const isNear = pageIndex >= nearRange.start && pageIndex <= nearRange.end;
 
     const fabricCanvasRef = useRef(null);
     const activeToolRef = useRef(activeTool); // Ref to track current tool for event handlers
@@ -70,23 +80,103 @@ const PDFPage = ({ page, pageIndex }) => {
         });
         fCanvas.on('selection:cleared', () => setSelectedObjectId(null));
 
-        // Mark paths created with highlight tool (using ref for current value)
-        fCanvas.on('path:created', (e) => {
+        // Mark paths created with the highlight tool. This must be 'before:path:created':
+        // PencilBrush fires that before canvas.add(), whereas 'path:created' fires only after
+        // 'object:added' has already snapshotted the path — the flag would then be missing from
+        // that snapshot and the Opacity control would vanish for the stroke after an undo.
+        fCanvas.on('before:path:created', (e) => {
             if (e.path && activeToolRef.current === 'highlight') {
                 e.path.isHighlight = true;
             }
         });
 
+        // Undo/redo history: snapshot the page after every completed mutation
+        pushHistory(pageIndex, fCanvas); // baseline, so the first Undo has somewhere to land
+        const record = (e) => {
+            const target = e && e.target;
+            const isText = !!(target && target.isType && target.isType('i-text'));
+            // A still-empty text box is a half-finished action, not one to undo. But once its text
+            // has reached a snapshot, emptying it IS a real edit — otherwise deleting all the text
+            // is never recorded and Undo silently does nothing.
+            if (isText && !target.text && !target.hasBeenRecorded) return;
+            if (isText && target.text) target.hasBeenRecorded = true;
+            pushHistory(pageIndex, fCanvas);
+        };
+
+        // 'text:changed' fires on every keystroke. One snapshot per character
+        // would evict the whole stack, so coalesce a typing burst into one entry.
+        let typingTimer = null;
+        let typingTarget = null;
+        const flushTyping = () => {
+            if (typingTimer === null) return;
+            clearTimeout(typingTimer);
+            typingTimer = null;
+            const target = typingTarget;
+            typingTarget = null;
+            record({ target });
+        };
+        const recordTyping = (e) => {
+            typingTarget = e && e.target;
+            if (typingTimer !== null) clearTimeout(typingTimer);
+            typingTimer = setTimeout(flushTyping, TYPING_HISTORY_DELAY);
+        };
+
+        fCanvas.on('object:added', record);
+        fCanvas.on('object:removed', record);
+        fCanvas.on('object:modified', record);
+        fCanvas.on('text:changed', recordTyping);
+        fCanvas.on('text:editing:exited', flushTyping);
+
         return () => {
             log("[Fabric Init] Disposing Fabric Canvas...");
+            if (typingTimer !== null) clearTimeout(typingTimer);
+            fCanvas.off('object:added', record);
+            fCanvas.off('object:removed', record);
+            fCanvas.off('object:modified', record);
+            fCanvas.off('text:changed', recordTyping);
+            fCanvas.off('text:editing:exited', flushTyping);
             fCanvas.dispose();
             fabricCanvasRef.current = null;
             unregisterCanvas(pageIndex);
         };
-    }, [pageIndex, registerCanvas, unregisterCanvas]); // Depend on stable props
+    }, [pageIndex, registerCanvas, unregisterCanvas, pushHistory]); // Depend on stable props
+
+    // Drop the page bitmap without touching the user's annotations
+    const releaseBackground = useCallback(() => {
+        const fCanvas = fabricCanvasRef.current;
+        const bg = fCanvas && fCanvas.backgroundImage;
+        if (!bg) return;
+
+        fCanvas.backgroundImage = null;
+        fCanvas.requestRenderAll();
+
+        const el = bg.getElement ? bg.getElement() : null;
+        if (el && el.tagName === 'CANVAS') {
+            // Zeroing the element frees the backing store right away
+            el.width = 0;
+            el.height = 0;
+        }
+    }, []);
+
+    // Fabric keeps a lower + upper canvas per page, both at devicePixelRatio, so
+    // a long document retains tens of MB per page even with the page raster gone.
+    // Zeroing the backing stores of far-away pages costs nothing to undo: the CSS
+    // size (and therefore the layout) stays, the object model stays, the canvas
+    // stays registered for export, and the next setDimensions() call below
+    // reallocates the pixels when the page comes back into range.
+    const releaseBitmaps = useCallback(() => {
+        const fCanvas = fabricCanvasRef.current;
+        if (!fCanvas) return;
+        [fCanvas.lowerCanvasEl, fCanvas.upperCanvasEl].forEach(el => {
+            if (el && el.width !== 0) {
+                el.width = 0;
+                el.height = 0;
+            }
+        });
+    }, []);
 
     // -------------------------------------------------------------------------
-    // 2. PDF Rendering & Update Effect (Runs on scale/page change)
+    // 2. PDF Rendering & Update Effect (Runs on scale/page/visibility change)
     // -------------------------------------------------------------------------
     useEffect(() => {
         if (!page) return;
@@ -94,19 +184,60 @@ const PDFPage = ({ page, pageIndex }) => {
 
         const log = (msg) => window.__PDF_LOGS ? window.__PDF_LOGS.push(`[${Date.now()}] ${msg}`) : null;
 
+        const currentScale = renderedScale;
+        const displayViewport = page.getViewport({ scale: currentScale });
+
+        // Size the canvas even for pages we are not rasterizing, so the scroll
+        // container keeps the right height and objects follow a zoom change.
+        const fCanvas = fabricCanvasRef.current;
+        if (fCanvas) {
+            const prevWidth = fCanvas.width;
+            const newWidth = displayViewport.width;
+            const newHeight = displayViewport.height;
+            const scaleFactor = prevWidth > 0 ? newWidth / prevWidth : 1;
+
+            fCanvas.setDimensions({ width: newWidth, height: newHeight });
+
+            // The previous raster keeps painting until this page reaches the front
+            // of the render queue, so stretch it to the new size straight away.
+            // Otherwise a zoom leaves white gutters on every visible page.
+            const bg = fCanvas.backgroundImage;
+            if (bg && bg.width > 0 && bg.height > 0) {
+                bg.scaleX = newWidth / bg.width;
+                bg.scaleY = newHeight / bg.height;
+            }
+
+            // Rescale Objects if this was a Zoom operation (heuristic: prevWidth > 0)
+            if (prevWidth > 0 && prevWidth !== newWidth) {
+                fCanvas.getObjects().forEach(obj => {
+                    obj.left *= scaleFactor;
+                    obj.top *= scaleFactor;
+                    obj.scaleX *= scaleFactor;
+                    obj.scaleY *= scaleFactor;
+                    obj.setCoords();
+                });
+            }
+            fCanvas.requestRenderAll();
+        }
+
+        if (!isNear) {
+            releaseBackground();
+            releaseBitmaps();
+            return;
+        }
+
         const renderPage = async () => {
-            log(`[Render] Starting. Index: ${pageIndex}, Scale: ${renderedScale}`);
+            if (isCancelled) return;
+            log(`[Render] Starting. Index: ${pageIndex}, Scale: ${currentScale}`);
 
-            // Wait for Fabric to be ready (it should be since effect 1 runs first typically, but ref might be laggy)
-            // Actually, in React 18, effects run in order.
-
-            const currentScale = renderedScale;
-            const pixelRatio = window.devicePixelRatio || 1;
-            const targetScale = Math.max(pixelRatio, 2);
-            const finalRenderScale = currentScale * targetScale;
-
+            const pixelRatio = Math.min(Math.max(window.devicePixelRatio || 1, 1), 2);
+            let finalRenderScale = currentScale * pixelRatio;
+            const probe = page.getViewport({ scale: finalRenderScale });
+            const pixels = probe.width * probe.height;
+            if (pixels > MAX_RENDER_PIXELS) {
+                finalRenderScale *= Math.sqrt(MAX_RENDER_PIXELS / pixels);
+            }
             const renderViewport = page.getViewport({ scale: finalRenderScale });
-            const displayViewport = page.getViewport({ scale: currentScale });
 
             // 1. Render High-Res PDF to Offscreen Canvas
             const tempCanvas = document.createElement('canvas');
@@ -129,55 +260,33 @@ const PDFPage = ({ page, pageIndex }) => {
             if (isCancelled) return;
 
             // 2. Update Fabric Canvas Background
-            const fCanvas = fabricCanvasRef.current;
-            if (!fCanvas) {
+            const target = fabricCanvasRef.current;
+            if (!target) {
                 log("[Render] Warning: Fabric canvas ref missing during render update");
                 return;
             }
 
-            // Update Dimensions
-            const prevWidth = fCanvas.width;
-            const prevHeight = fCanvas.height;
-            const newWidth = displayViewport.width;
-            const newHeight = displayViewport.height;
-            const scaleFactor = prevWidth > 0 ? newWidth / prevWidth : 1;
-
-            // If dimensions changed (Zooming)
-            fCanvas.setDimensions({ width: newWidth, height: newHeight });
-
-            // Set Background Image
             try {
                 const img = new FabricImage(tempCanvas);
-                img.scaleX = newWidth / img.width;
-                img.scaleY = newHeight / img.height;
-                fCanvas.backgroundImage = img;
-                fCanvas.requestRenderAll();
+                img.scaleX = target.width / img.width;
+                img.scaleY = target.height / img.height;
+                img.excludeFromExport = true; // never serialize the page raster
+                target.backgroundImage = img;
+                target.requestRenderAll();
                 log("[Render] Background updated");
             } catch (err) {
                 console.error("Error setting background image", err);
             }
-
-            // Rescale Objects if this was a Zoom operation (heuristic: prevWidth > 0)
-            // Note: On first load, prevWidth might be default/0.
-            // But we can just rescale everything based on the ratio.
-            if (prevWidth > 0 && prevWidth !== newWidth) {
-                fCanvas.getObjects().forEach(obj => {
-                    obj.left *= scaleFactor;
-                    obj.top *= scaleFactor;
-                    obj.scaleX *= scaleFactor;
-                    obj.scaleY *= scaleFactor;
-                    obj.setCoords();
-                });
-                fCanvas.requestRenderAll();
-            }
         };
 
-        renderPage();
+        renderQueue = renderQueue
+            .then(renderPage)
+            .catch(err => console.error("PDF Render Error:", err));
 
         return () => {
             isCancelled = true;
         };
-    }, [page, renderedScale]);
+    }, [page, pageIndex, renderedScale, isNear, releaseBackground, releaseBitmaps]);
 
 
     // Helper to update drawing mode on a canvas
@@ -232,12 +341,19 @@ const PDFPage = ({ page, pageIndex }) => {
 
             if (tool === 'text') {
                 console.log("[PDFPage] Creating Text Object");
-                const text = new IText('Type here', {
+                const text = new IText('', {
                     left: pointer.x,
                     top: pointer.y,
                     fontFamily: 'Helvetica',
                     fill: color,
                     fontSize: size
+                });
+                // Drop the box again if the user clicks away without typing
+                text.on('editing:exited', () => {
+                    if (!text.text || !text.text.trim()) {
+                        canvas.remove(text);
+                        canvas.requestRenderAll();
+                    }
                 });
                 canvas.add(text);
                 canvas.setActiveObject(text);
@@ -294,29 +410,9 @@ const PDFPage = ({ page, pageIndex }) => {
     // Guard against division by zero though scale shouldn't be 0
     const cssScale = renderedScale ? (scale / renderedScale) : 1;
 
-    // Track visibility for active page index
-    useEffect(() => {
-        if (!containerRef.current) return;
-
-        const observer = new IntersectionObserver((entries) => {
-            entries.forEach(entry => {
-                if (entry.isIntersecting && entry.intersectionRatio > 0.4) {
-                    setActivePageIndex(pageIndex);
-                }
-            });
-        }, {
-            threshold: [0.1, 0.5, 0.9] // Multiple thresholds key
-        });
-
-        observer.observe(containerRef.current);
-
-        return () => observer.disconnect();
-    }, [pageIndex, setActivePageIndex]);
-
     return (
         <div
             id={`pdf-page-${pageIndex}`}
-            ref={containerRef}
             style={{
                 marginBottom: '2rem',
                 position: 'relative' // For absolute positioning if needed, but flex column is fine

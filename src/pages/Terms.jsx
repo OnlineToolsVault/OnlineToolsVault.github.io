@@ -1,4 +1,3 @@
-import React from 'react'
 import { Helmet } from 'react-helmet-async'
 import './StandardPage.css'
 
@@ -8,6 +7,7 @@ const Terms = () => {
             <Helmet>
                 <title>Terms of Service - Proprietary License | FreeTools</title>
                 <meta name="description" content="Read our terms of service and proprietary license details." />
+                <link rel="canonical" href="https://onlinetoolsvault.com/terms/" />
             </Helmet>
 
             <div className="standard-page">

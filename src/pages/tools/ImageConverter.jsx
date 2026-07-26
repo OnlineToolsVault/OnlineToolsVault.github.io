@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import { useState } from 'react'
 import RelatedTools from '../../components/tools/RelatedTools'
 import ToolLayout from '../../components/tools/ToolLayout'
 import { useDropzone } from 'react-dropzone'
@@ -37,6 +37,50 @@ const faqs = [
     }
 ]
 
+// Chrome caps a canvas at 268,435,456 px; beyond that toBlob hands back null.
+const MAX_CANVAS_AREA = 16384 * 16384
+const MAX_CANVAS_SIDE = 32767
+
+// No browser canvas can encode BMP, so write the 24-bit BI_RGB file ourselves.
+const encodeBmp = (imageData) => {
+    const { width, height, data } = imageData
+    const rowSize = Math.floor((24 * width + 31) / 32) * 4
+    const pixelArraySize = rowSize * height
+    const fileSize = 54 + pixelArraySize
+    const buf = new ArrayBuffer(fileSize)
+    const view = new DataView(buf)
+    const bytes = new Uint8Array(buf)
+
+    // BITMAPFILEHEADER
+    bytes[0] = 0x42
+    bytes[1] = 0x4d
+    view.setUint32(2, fileSize, true)
+    view.setUint32(10, 54, true)
+
+    // BITMAPINFOHEADER
+    view.setUint32(14, 40, true)
+    view.setInt32(18, width, true)
+    view.setInt32(22, height, true) // positive height = bottom-up rows
+    view.setUint16(26, 1, true)
+    view.setUint16(28, 24, true)
+    view.setUint32(30, 0, true)
+    view.setUint32(34, pixelArraySize, true)
+    view.setInt32(38, 2835, true) // ~72 DPI
+    view.setInt32(42, 2835, true)
+
+    for (let y = 0; y < height; y++) {
+        const srcRow = (height - 1 - y) * width * 4
+        let dst = 54 + y * rowSize
+        for (let x = 0; x < width; x++) {
+            const s = srcRow + x * 4
+            bytes[dst++] = data[s + 2]
+            bytes[dst++] = data[s + 1]
+            bytes[dst++] = data[s]
+        }
+    }
+    return new Blob([buf], { type: 'image/bmp' })
+}
+
 const ImageConverter = () => {
     const [file, setFile] = useState(null)
     const [format, setFormat] = useState('image/jpeg')
@@ -44,50 +88,89 @@ const ImageConverter = () => {
     const [scale, setScale] = useState(1)
     const [isProcessing, setIsProcessing] = useState(false)
     const [convertedUrl, setConvertedUrl] = useState(null)
+    const [error, setError] = useState(null)
 
     const handleConvert = () => {
         if (!file) return
+        setError(null)
         setIsProcessing(true)
+
         const img = new Image()
+        const objectUrl = URL.createObjectURL(file)
+
+        const fail = (message) => {
+            URL.revokeObjectURL(objectUrl)
+            setIsProcessing(false)
+            setError(message)
+        }
+
+        const succeed = (blob) => {
+            URL.revokeObjectURL(objectUrl)
+            setConvertedUrl(URL.createObjectURL(blob))
+            setIsProcessing(false)
+        }
+
+        img.onerror = () => fail('We could not read this image. It may be corrupt or in a format your browser cannot decode (for example HEIC). Try a JPG, PNG, or WebP file.')
+
         img.onload = () => {
-            const canvas = document.createElement('canvas')
-            const width = Math.round(img.width * scale)
-            const height = Math.round(img.height * scale)
-            canvas.width = width
-            canvas.height = height
-            const ctx = canvas.getContext('2d')
+            try {
+                const width = Math.round(img.width * scale)
+                const height = Math.round(img.height * scale)
+                if (width * height > MAX_CANVAS_AREA || width > MAX_CANVAS_SIDE || height > MAX_CANVAS_SIDE) {
+                    fail(`That scale would create a ${width}x${height} image, which is larger than your browser can render. Lower the Scale / Resize slider and try again.`)
+                    return
+                }
 
-            // Handle transparency for JPEG
-            if (format === 'image/jpeg') {
-                ctx.fillStyle = '#FFFFFF'
-                ctx.fillRect(0, 0, canvas.width, canvas.height)
-            }
+                const canvas = document.createElement('canvas')
+                canvas.width = width
+                canvas.height = height
+                const ctx = canvas.getContext('2d')
+                if (!ctx) {
+                    fail('Your browser ran out of memory for an image this large. Lower the Scale / Resize slider and try again.')
+                    return
+                }
 
-            // High quality smoothing for scaling
-            ctx.imageSmoothingEnabled = true
-            ctx.imageSmoothingQuality = 'high'
-            ctx.drawImage(img, 0, 0, width, height)
+                // Handle transparency for formats without an alpha channel
+                if (format === 'image/jpeg' || format === 'image/bmp') {
+                    ctx.fillStyle = '#FFFFFF'
+                    ctx.fillRect(0, 0, canvas.width, canvas.height)
+                }
 
-            if (format === 'image/svg+xml') {
-                // Special handling for SVG output: Embed as base64 inside SVG
-                const dataUrl = canvas.toDataURL('image/png')
-                const svgContent = `<svg xmlns="http://www.w3.org/2000/svg" width="${width}" height="${height}">
+                // High quality smoothing for scaling
+                ctx.imageSmoothingEnabled = true
+                ctx.imageSmoothingQuality = 'high'
+                ctx.drawImage(img, 0, 0, width, height)
+
+                if (format === 'image/svg+xml') {
+                    // Special handling for SVG output: Embed as base64 inside SVG
+                    const dataUrl = canvas.toDataURL('image/png')
+                    if (!dataUrl.startsWith('data:image/png')) {
+                        fail('Conversion failed - the resulting image was too large for your browser. Try a lower scale or a different format.')
+                        return
+                    }
+                    const svgContent = `<svg xmlns="http://www.w3.org/2000/svg" width="${width}" height="${height}">
     <image href="${dataUrl}" width="${width}" height="${height}" />
 </svg>`
-                const blob = new Blob([svgContent], { type: 'image/svg+xml' })
-                const url = URL.createObjectURL(blob)
-                setConvertedUrl(url)
-                setIsProcessing(false)
-            } else {
-                // Standard raster conversion
-                canvas.toBlob((blob) => {
-                    const url = URL.createObjectURL(blob)
-                    setConvertedUrl(url)
-                    setIsProcessing(false)
-                }, format, quality)
+                    succeed(new Blob([svgContent], { type: 'image/svg+xml' }))
+                } else if (format === 'image/bmp') {
+                    succeed(encodeBmp(ctx.getImageData(0, 0, width, height)))
+                } else {
+                    // Standard raster conversion
+                    canvas.toBlob((blob) => {
+                        if (!blob) {
+                            fail('Conversion failed - the resulting image was too large for your browser. Try a lower scale or a different format.')
+                            return
+                        }
+                        succeed(blob)
+                    }, format, quality)
+                }
+            } catch (err) {
+                console.error(err)
+                fail('Something went wrong while converting this image. Try a lower scale or a different format.')
             }
         }
-        img.src = URL.createObjectURL(file)
+
+        img.src = objectUrl
     }
 
     const download = () => {
@@ -105,6 +188,7 @@ const ImageConverter = () => {
         if (acceptedFiles?.length > 0) {
             setFile(acceptedFiles[0])
             setConvertedUrl(null)
+            setError(null)
             // Reset options on new file
             setScale(1)
             setQuality(0.92)
@@ -144,7 +228,7 @@ const ImageConverter = () => {
                                 transition: 'all 0.2s ease'
                             }}
                         >
-                            <input {...getInputProps()} />
+                            <input {...getInputProps()} aria-label="Choose a file for Image Converter" />
                             <div style={{ width: '64px', height: '64px', background: '#e0f2fe', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 1rem', color: '#0284c7' }}>
                                 <ImageIcon size={32} />
                             </div>
@@ -186,7 +270,7 @@ const ImageConverter = () => {
                                     <div style={{ marginBottom: '1.5rem', textAlign: 'left' }}>
                                         <label style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.5rem', fontWeight: 'bold', color: '#334155' }}>
                                             <span>Scale / Resize:</span>
-                                            <span className="text-primary">{Math.round(scale * 100)}%</span>
+                                            <span style={{ color: 'var(--primary)' }}>{Math.round(scale * 100)}%</span>
                                         </label>
                                         <input
                                             type="range"
@@ -197,7 +281,7 @@ const ImageConverter = () => {
                                             onChange={(e) => setScale(parseFloat(e.target.value))}
                                             style={{ width: '100%', accentColor: 'var(--primary)' }}
                                         />
-                                        <p className="text-xs text-gray-400 mt-1">Resize the output image (20% to 700%)</p>
+                                        <p style={{ fontSize: '0.75rem', color: 'var(--text-tertiary)', marginTop: '0.25rem' }}>Resize the output image (20% to 700%)</p>
                                     </div>
 
                                     {/* Quality Slider (Only for JPG and WebP) */}
@@ -205,7 +289,7 @@ const ImageConverter = () => {
                                         <div style={{ marginBottom: '1.5rem', textAlign: 'left' }}>
                                             <label style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.5rem', fontWeight: 'bold', color: '#334155' }}>
                                                 <span>Compression Quality:</span>
-                                                <span className="text-primary">{Math.round(quality * 100)}%</span>
+                                                <span style={{ color: 'var(--primary)' }}>{Math.round(quality * 100)}%</span>
                                             </label>
                                             <input
                                                 type="range"
@@ -216,7 +300,7 @@ const ImageConverter = () => {
                                                 onChange={(e) => setQuality(parseFloat(e.target.value))}
                                                 style={{ width: '100%', accentColor: 'var(--primary)' }}
                                             />
-                                            <p className="text-xs text-gray-400 mt-1">Lower quality = smaller file size</p>
+                                            <p style={{ fontSize: '0.75rem', color: 'var(--text-tertiary)', marginTop: '0.25rem' }}>Lower quality = smaller file size</p>
                                         </div>
                                     )}
 
@@ -238,6 +322,12 @@ const ImageConverter = () => {
                                     >
                                         Convert Image
                                     </button>
+                                </div>
+                            )}
+
+                            {error && !isProcessing && (
+                                <div role="alert" style={{ marginBottom: '1.5rem', padding: '0.75rem 1rem', borderRadius: '0.5rem', background: '#fef2f2', border: '1px solid #fecaca', color: '#b91c1c', textAlign: 'left' }}>
+                                    {error}
                                 </div>
                             )}
 
@@ -273,11 +363,10 @@ const ImageConverter = () => {
                                     </button>
                                 </div>
                             )}
-                            <style>{`@keyframes spin { 100% { transform: rotate(360deg); } }`}</style>
                             <div style={{ marginTop: '1.5rem' }}>
                                 <button
                                     id="image-converter-reset-btn"
-                                    onClick={() => { setFile(null); setConvertedUrl(null); }}
+                                    onClick={() => { setFile(null); setConvertedUrl(null); setIsProcessing(false); setError(null); }}
                                     style={{ background: 'none', border: 'none', color: '#64748b', textDecoration: 'underline', cursor: 'pointer' }}
                                 >
                                     Start Over

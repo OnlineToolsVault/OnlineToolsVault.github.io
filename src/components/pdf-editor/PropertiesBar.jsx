@@ -64,7 +64,9 @@ const PropertiesBar = () => {
         if (selectedObjectId) {
             // Text Properties
             if (selectedObjectId.type === 'i-text' || selectedObjectId.type === 'text') {
-                setActiveColor(selectedObjectId.fill);
+                if (typeof selectedObjectId.fill === 'string' && selectedObjectId.fill !== 'transparent') {
+                    setActiveColor(selectedObjectId.fill);
+                }
                 setActiveSize(selectedObjectId.fontSize);
                 setIsBold(selectedObjectId.fontWeight === 'bold');
                 setIsItalic(selectedObjectId.fontStyle === 'italic');
@@ -72,13 +74,46 @@ const PropertiesBar = () => {
                 setIsLinethrough(selectedObjectId.linethrough);
             }
             // Shape Properties
-            else if (['rect', 'circle', 'path'].includes(selectedObjectId.type)) {
-                setActiveColor(selectedObjectId.fill);
+            else if (['rect', 'circle'].includes(selectedObjectId.type)) {
+                // A 'transparent' or null fill is not usable as a brush/text colour, and copying it
+                // into activeColor would make every subsequent stroke invisible.
+                if (typeof selectedObjectId.fill === 'string' && selectedObjectId.fill !== 'transparent') {
+                    setActiveColor(selectedObjectId.fill);
+                }
                 setActiveStrokeColor(selectedObjectId.stroke || '#000000');
+                setActiveStrokeWidth(selectedObjectId.strokeWidth || 2);
+            }
+            // Freehand strokes: fabric's PencilBrush builds Paths with fill:null and the colour on
+            // stroke, so read the colour from there and drop any highlight alpha suffix.
+            else if (selectedObjectId.type === 'path') {
+                const stroke = selectedObjectId.stroke;
+                if (typeof stroke === 'string' && /^#[0-9a-f]{6}/i.test(stroke)) {
+                    setActiveColor(stroke.slice(0, 7));
+                }
+                setActiveStrokeColor(typeof stroke === 'string' ? stroke.slice(0, 7) : '#000000');
                 setActiveStrokeWidth(selectedObjectId.strokeWidth || 2);
             }
         }
     }, [selectedObjectId, setActiveColor, setActiveSize, setActiveStrokeColor, setActiveStrokeWidth]);
+
+    // The undo stack records on 'object:modified', which fabric does not fire for programmatic
+    // set() calls — without this, changing a colour or font size could not be undone.
+    const commit = (object) => {
+        object.canvas?.requestRenderAll();
+        object.canvas?.fire('object:modified', { target: object });
+    };
+
+    // Dragging a slider fires on every step; coalesce a drag into one history entry.
+    const sliderCommitRef = React.useRef(null);
+    const commitDebounced = (object) => {
+        object.canvas?.requestRenderAll();
+        clearTimeout(sliderCommitRef.current);
+        sliderCommitRef.current = setTimeout(() => {
+            object.canvas?.fire('object:modified', { target: object });
+        }, 400);
+    };
+
+    React.useEffect(() => () => clearTimeout(sliderCommitRef.current), []);
 
     const toggleProperty = (prop, value) => {
         if (selectedObjectId && (selectedObjectId.type === 'i-text' || selectedObjectId.type === 'text')) {
@@ -95,7 +130,7 @@ const PropertiesBar = () => {
                 if (prop === 'fontWeight') setIsBold(next === 'bold');
                 if (prop === 'fontStyle') setIsItalic(next === 'italic');
             }
-            selectedObjectId.canvas.requestRenderAll();
+            commit(selectedObjectId);
         }
     };
 
@@ -103,7 +138,7 @@ const PropertiesBar = () => {
         setActiveColor(color);
         if (selectedObjectId) {
             selectedObjectId.set('fill', color);
-            selectedObjectId.canvas.requestRenderAll();
+            commit(selectedObjectId);
         }
     };
 
@@ -111,7 +146,7 @@ const PropertiesBar = () => {
         setActiveStrokeColor(color);
         if (selectedObjectId) {
             selectedObjectId.set('stroke', color);
-            selectedObjectId.canvas.requestRenderAll();
+            commit(selectedObjectId);
         }
     };
 
@@ -119,7 +154,7 @@ const PropertiesBar = () => {
         setActiveSize(size);
         if (selectedObjectId && (selectedObjectId.type === 'i-text' || selectedObjectId.type === 'text')) {
             selectedObjectId.set('fontSize', size);
-            selectedObjectId.canvas.requestRenderAll();
+            commit(selectedObjectId);
         }
     };
 
@@ -127,7 +162,7 @@ const PropertiesBar = () => {
         setActiveStrokeWidth(width);
         if (selectedObjectId) {
             selectedObjectId.set('strokeWidth', width);
-            selectedObjectId.canvas.requestRenderAll();
+            commit(selectedObjectId);
         }
     };
 
@@ -221,7 +256,7 @@ const PropertiesBar = () => {
                         // If a path is selected, update its strokeWidth immediately
                         if (selectedObjectId && selectedObjectId.type === 'path') {
                             selectedObjectId.set('strokeWidth', size);
-                            selectedObjectId.canvas?.requestRenderAll();
+                            commitDebounced(selectedObjectId);
                         }
                     }} unit="px" />
                 </div>
@@ -236,7 +271,7 @@ const PropertiesBar = () => {
                         // If a path is selected, update its opacity immediately
                         if (selectedObjectId && selectedObjectId.type === 'path') {
                             selectedObjectId.set('opacity', val / 100);
-                            selectedObjectId.canvas?.requestRenderAll();
+                            commitDebounced(selectedObjectId);
                         }
                     }} unit="%" />
                 </div>

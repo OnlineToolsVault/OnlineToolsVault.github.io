@@ -1,10 +1,10 @@
 
-import React, { useState } from 'react'
+import { useState } from 'react'
 import RelatedTools from '../../components/tools/RelatedTools'
 import ToolLayout from '../../components/tools/ToolLayout'
 import { useDropzone } from 'react-dropzone'
 import { Eraser, Download, Loader2, Zap, ShieldCheck } from 'lucide-react'
-import { PDFDocument } from 'pdf-lib'
+import { PDFDocument, PDFDict, PDFName } from 'pdf-lib'
 import { saveAs } from 'file-saver'
 
 const features = [
@@ -49,7 +49,9 @@ const RemovePdfMetadata = () => {
         setIsProcessing(true)
         try {
             const arrayBuffer = await file.arrayBuffer()
-            const pdfDoc = await PDFDocument.load(arrayBuffer)
+            // updateMetadata:false stops pdf-lib stamping a fresh ModDate/Producer on load
+            const pdfDoc = await PDFDocument.load(arrayBuffer, { updateMetadata: false })
+            const context = pdfDoc.context
 
             pdfDoc.setTitle('')
             pdfDoc.setAuthor('')
@@ -58,13 +60,29 @@ const RemovePdfMetadata = () => {
             pdfDoc.setProducer('')
             pdfDoc.setCreator('')
 
-            // Note: This removes standard metadata. 
-            // XMP metadata might persist depending on pdf-lib's behavior, 
-            // but standard props are cleared.
+            // Deleting the key is not enough on its own: the writer serializes every
+            // object still registered in the context, so drop the referenced object too.
+            const dropKey = (dict, name) => {
+                if (!(dict instanceof PDFDict)) return
+                const key = PDFName.of(name)
+                const value = dict.get(key)
+                if (value === undefined) return
+                dict.delete(key)
+                context.delete(value)
+            }
+
+            const info = context.lookup(context.trailerInfo.Info)
+            dropKey(info, 'CreationDate')
+            dropKey(info, 'ModDate')
+
+            // pdf-lib's setters only touch the Info dict; the XMP packet lives in a
+            // separate /Metadata stream on the catalog and on individual page nodes.
+            dropKey(pdfDoc.catalog, 'Metadata')
+            pdfDoc.getPages().forEach(page => dropKey(page.node, 'Metadata'))
 
             const pdfBytes = await pdfDoc.save()
             const blob = new Blob([pdfBytes], { type: 'application/pdf' })
-            saveAs(blob, `clean - ${file.name} `)
+            saveAs(blob, `clean-${file.name}`)
         } catch (error) {
             console.error(error)
             alert('Failed to remove metadata.')
@@ -109,7 +127,7 @@ const RemovePdfMetadata = () => {
                                 transition: 'all 0.2s ease'
                             }}
                         >
-                            <input {...getInputProps()} />
+                            <input {...getInputProps()} aria-label="Choose a file for Remove PDF Metadata" />
                             <div style={{ width: '64px', height: '64px', background: '#e0f2fe', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 1rem', color: '#0284c7' }}>
                                 <Eraser size={32} />
                             </div>
@@ -149,7 +167,7 @@ const RemovePdfMetadata = () => {
                                 {isProcessing ? <Loader2 className="spin" size={20} style={{ animation: 'spin 1s linear infinite' }} /> : <Download size={20} />}
                                 {isProcessing ? 'Cleaning...' : 'Remove Metadata & Download'}
                             </button>
-                            <style>{`@keyframes spin { 100 % { transform: rotate(360deg); } } `}</style>
+                            <style>{`@keyframes spin { 100% { transform: rotate(360deg); } }`}</style>
                             <div style={{ textAlign: 'center', marginTop: '1rem' }}>
                                 <button
                                     id="remove-pdf-metadata-reset-btn"

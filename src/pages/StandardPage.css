@@ -94,6 +94,19 @@
     transform: translateY(-2px);
 }
 
+/* index.css resets every anchor to `color: inherit; text-decoration: none`, which left the inline
+   links in the Privacy Policy and Terms indistinguishable from body text. */
+.standard-content a {
+    color: var(--primary);
+    text-decoration: underline;
+    text-underline-offset: 2px;
+}
+
+.standard-content a:hover,
+.standard-content a:focus-visible {
+    text-decoration-thickness: 2px;
+}
+
 @media (max-width: 768px) {
     .standard-container {
         padding: 2rem;

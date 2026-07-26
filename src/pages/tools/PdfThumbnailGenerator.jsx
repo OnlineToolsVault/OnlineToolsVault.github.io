@@ -1,13 +1,16 @@
-import React, { useState } from 'react'
+import { useState } from 'react'
 import RelatedTools from '../../components/tools/RelatedTools'
 import ToolLayout from '../../components/tools/ToolLayout'
 import FileUploader from '../../components/tools/FileUploader'
 import { Image as ImageIcon, Download, Loader2, Shield } from 'lucide-react'
 import * as PDFJS from 'pdfjs-dist'
+// Bundled by Vite from the installed package, so the worker is self-hosted and can never
+// drift from the pdfjs-dist version the way the old cdnjs URL could.
+import pdfWorkerUrl from 'pdfjs-dist/build/pdf.worker.min.mjs?url'
 import JSZip from 'jszip'
 import { saveAs } from 'file-saver'
 
-PDFJS.GlobalWorkerOptions.workerSrc = `//cdnjs.cloudflare.com/ajax/libs/pdf.js/${PDFJS.version}/pdf.worker.min.mjs`
+PDFJS.GlobalWorkerOptions.workerSrc = pdfWorkerUrl
 
 const features = [
     { title: 'Generates Thumbnails', desc: 'Creates a thumbnail image for every page in your PDF document.', icon: <ImageIcon color="var(--primary)" size={24} /> },

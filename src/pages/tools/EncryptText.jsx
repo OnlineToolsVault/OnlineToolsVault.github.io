@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import { useState } from 'react'
 import RelatedTools from '../../components/tools/RelatedTools'
 import ToolLayout from '../../components/tools/ToolLayout'
 import { Lock, Copy, Check, Shield, Zap } from 'lucide-react'
@@ -29,6 +29,14 @@ const EncryptText = () => {
         setEncrypted(ciphertext)
     }
 
+    // The output no longer matches the inputs once either one is edited.
+    const invalidateOutput = () => {
+        if (encrypted) {
+            setEncrypted('')
+            setCopied(false)
+        }
+    }
+
     const copyToClipboard = () => {
         navigator.clipboard.writeText(encrypted)
         setCopied(true)
@@ -50,7 +58,7 @@ const EncryptText = () => {
                         <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: 'bold' }}>Text to Encrypt</label>
                         <textarea
                             value={text}
-                            onChange={(e) => setText(e.target.value)}
+                            onChange={(e) => { setText(e.target.value); invalidateOutput() }}
                             placeholder="Enter secret message..."
                             style={{ width: '100%', minHeight: '120px', padding: '1rem', borderRadius: '0.5rem', border: '1px solid var(--border)', fontSize: '1rem' }}
                         />
@@ -60,7 +68,7 @@ const EncryptText = () => {
                         <input
                             type="password"
                             value={password}
-                            onChange={(e) => setPassword(e.target.value)}
+                            onChange={(e) => { setPassword(e.target.value); invalidateOutput() }}
                             placeholder="Enter strong password"
                             style={{ width: '100%', padding: '1rem', borderRadius: '0.5rem', border: '1px solid var(--border)', fontSize: '1rem' }}
                         />

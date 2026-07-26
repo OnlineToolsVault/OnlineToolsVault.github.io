@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import { useState } from 'react'
 import RelatedTools from '../../components/tools/RelatedTools'
 import ToolLayout from '../../components/tools/ToolLayout'
 import { ArrowRight, Box, Zap, Target } from 'lucide-react'
@@ -7,7 +7,7 @@ const UnitConverter = () => {
     const [category, setCategory] = useState('length')
     const [fromUnit, setFromUnit] = useState('meter')
     const [toUnit, setToUnit] = useState('feet')
-    const [value, setValue] = useState(1)
+    const [value, setValue] = useState('1') // raw field text, so "-" / "" / "1." stay typable
 
     const categories = {
         length: {
@@ -28,28 +28,13 @@ const UnitConverter = () => {
         }
     }
 
-    const convert = () => {
-        if (category === 'temperature') {
-            let k
-            // Convert to Kelvin first
-            if (fromUnit === 'celsius') k = value + 273.15
-            else if (fromUnit === 'fahrenheit') k = (value - 32) * 5 / 9 + 273.15
-            else k = value
-
-            // Convert K to target
-            if (toUnit === 'celsius') return k - 273.15
-            if (toUnit === 'fahrenheit') return (k - 273.15) * 9 / 9 + 32 // Wait 9/5
-            return k
-        } else {
-            const base = value * categories[category].rates[fromUnit]
-            return base / categories[category].rates[toUnit]
-        }
-    }
-
-    // Fix Temp Logic
     const getResult = () => {
+        // `value` is the raw field text so a leading "-" or "." survives typing; anything that is
+        // not yet a finite number simply has no result rather than silently converting 0.
+        const numeric = Number(value)
+        if (value === '' || !Number.isFinite(numeric)) return NaN
         if (category === 'temperature') {
-            let val = Number(value)
+            let val = numeric
             if (fromUnit === toUnit) return val
 
             if (fromUnit === 'celsius' && toUnit === 'fahrenheit') return (val * 9 / 5) + 32
@@ -65,11 +50,20 @@ const UnitConverter = () => {
         } else {
             const rateFrom = categories[category].rates[fromUnit]
             const rateTo = categories[category].rates[toUnit]
-            return (value * rateFrom) / rateTo
+            return (numeric * rateFrom) / rateTo
         }
     }
 
     const result = getResult()
+
+    const formatResult = (n) => {
+        if (!Number.isFinite(n)) return '—'
+        if (n === 0) return '0'
+        const abs = Math.abs(n)
+        // Outside this range 6 fraction digits rounds to "0" or loses the integer part
+        if (abs < 1e-6 || abs >= 1e15) return n.toExponential(6)
+        return n.toLocaleString(undefined, { maximumFractionDigits: 6 })
+    }
 
     return (
         <ToolLayout
@@ -109,11 +103,13 @@ const UnitConverter = () => {
                             <input
                                 id="unit-input-value"
                                 type="number"
+                                aria-label="Value to convert"
                                 value={value}
-                                onChange={(e) => setValue(Number(e.target.value))}
+                                onChange={(e) => setValue(e.target.value)}
                                 style={{ width: '100%', padding: '1rem', fontSize: '1.2rem', borderRadius: '0.5rem', border: '1px solid var(--border)', marginBottom: '0.5rem' }}
                             />
                             <select
+                                aria-label="Convert from unit"
                                 value={fromUnit}
                                 onChange={(e) => setFromUnit(e.target.value)}
                                 style={{ width: '100%', padding: '0.5rem', borderRadius: '0.5rem', border: '1px solid var(--border)', textTransform: 'capitalize' }}
@@ -126,9 +122,10 @@ const UnitConverter = () => {
 
                         <div>
                             <div style={{ width: '100%', padding: '1rem', fontSize: '1.2rem', borderRadius: '0.5rem', background: '#f8fafc', border: '1px solid var(--border)', marginBottom: '0.5rem', minHeight: '54px' }}>
-                                {result.toLocaleString(undefined, { maximumFractionDigits: 6 })}
+                                {formatResult(result)}
                             </div>
                             <select
+                                aria-label="Convert to unit"
                                 value={toUnit}
                                 onChange={(e) => setToUnit(e.target.value)}
                                 style={{ width: '100%', padding: '0.5rem', borderRadius: '0.5rem', border: '1px solid var(--border)', textTransform: 'capitalize' }}

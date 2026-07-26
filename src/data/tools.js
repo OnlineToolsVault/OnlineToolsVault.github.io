@@ -3,12 +3,10 @@ import {
     QrCode,
     FileImage,
     Minimize2,
-    MoveHorizontal,
     FileText,
     Image as ImageIcon,
     Scissors,
     Maximize,
-    Settings,
     Edit3,
     Sparkles,
     Crop,
@@ -34,7 +32,6 @@ import {
     Layout,
     FileAudio,
     Music,
-    Wrench
 } from 'lucide-react'
 
 export const tools = [

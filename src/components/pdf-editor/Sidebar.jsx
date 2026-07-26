@@ -1,10 +1,11 @@
-import React, { useEffect, useRef, memo, useState } from 'react';
+import { useEffect, useRef, memo, useState } from 'react';
 import { useEditor } from './EditorContext';
 
 const Thumbnail = memo(({ page, pageIndex, scrollToPage, shouldRender, onComplete, isActive }) => {
     const canvasRef = useRef(null);
     const hasRendered = useRef(false);
     const lastPageRef = useRef(null);
+    const renderTaskRef = useRef(null);
 
     useEffect(() => {
         // Reset when page object changes (new PDF loaded)
@@ -18,6 +19,15 @@ const Thumbnail = memo(({ page, pageIndex, scrollToPage, shouldRender, onComplet
         let active = true;
 
         const renderDirectly = async () => {
+            // hasRendered is only set after the await below, so an effect re-run (a new onComplete
+            // identity is enough) could start a second render on this same canvas while the first
+            // is still in flight — pdf.js rejects that with "Cannot use the same canvas during
+            // multiple render() operations". Cancel whatever is running before starting.
+            if (renderTaskRef.current) {
+                renderTaskRef.current.cancel();
+                renderTaskRef.current = null;
+            }
+
             try {
                 const viewport = page.getViewport({ scale: 0.3 }); // 0.3 scale for sidebar (approx 200px wide)
                 const canvas = canvasRef.current;
@@ -28,18 +38,22 @@ const Thumbnail = memo(({ page, pageIndex, scrollToPage, shouldRender, onComplet
                 canvas.width = viewport.width;
                 context.clearRect(0, 0, canvas.width, canvas.height);
 
-                const renderContext = {
+                const task = page.render({
                     canvasContext: context,
                     viewport: viewport,
-                };
-
-                await page.render(renderContext).promise;
+                });
+                renderTaskRef.current = task;
+                await task.promise;
+                renderTaskRef.current = null;
 
                 if (active) {
                     hasRendered.current = true;
                 }
             } catch (error) {
-                console.error(`Error rendering thumbnail ${pageIndex}:`, error);
+                // A cancelled render is the expected outcome of a re-run, not a failure.
+                if (error?.name !== 'RenderingCancelledException') {
+                    console.error(`Error rendering thumbnail ${pageIndex}:`, error);
+                }
             } finally {
                 if (active) {
                     onComplete(pageIndex);
@@ -49,7 +63,13 @@ const Thumbnail = memo(({ page, pageIndex, scrollToPage, shouldRender, onComplet
 
         renderDirectly();
 
-        return () => { active = false; };
+        return () => {
+            active = false;
+            if (renderTaskRef.current) {
+                renderTaskRef.current.cancel();
+                renderTaskRef.current = null;
+            }
+        };
     }, [shouldRender, page, pageIndex, onComplete]);
 
     return (
@@ -97,6 +117,8 @@ const Thumbnail = memo(({ page, pageIndex, scrollToPage, shouldRender, onComplet
         </div>
     );
 });
+
+Thumbnail.displayName = 'Thumbnail';
 
 const Sidebar = () => {
     const { pages, fileName, activePageIndex } = useEditor();

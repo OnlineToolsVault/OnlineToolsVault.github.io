@@ -1,6 +1,5 @@
-import React from 'react'
 import { Helmet } from 'react-helmet-async'
-import { Award, Zap, Shield, Globe } from 'lucide-react'
+import { Zap, Shield, Globe } from 'lucide-react'
 import './StandardPage.css'
 
 const About = () => {
@@ -9,6 +8,7 @@ const About = () => {
             <Helmet>
                 <title>About Us - FreeTools | Our Mission & Vision</title>
                 <meta name="description" content="Learn about FreeTools, our mission to provide high-quality, privacy-focused online tools for everyone." />
+                <link rel="canonical" href="https://onlinetoolsvault.com/about/" />
             </Helmet>
 
             <div className="standard-page">

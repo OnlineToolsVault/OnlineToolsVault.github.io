@@ -1,9 +1,9 @@
-import React, { useState } from 'react'
+import { useState } from 'react'
 import RelatedTools from '../../components/tools/RelatedTools'
 import ToolLayout from '../../components/tools/ToolLayout'
 import { useDropzone } from 'react-dropzone'
 import { FileText, Image as ImageIcon, Copy, Check, Loader2, Upload, Languages } from 'lucide-react'
-import { createWorker } from 'tesseract.js'
+import { createWorker, OEM } from 'tesseract.js'
 
 const features = [
     { title: 'Optical Character Recognition', desc: 'Extract text from images using advanced OCR technology.', icon: <FileText color="var(--primary)" size={24} /> },
@@ -45,6 +45,7 @@ const ImageToText = () => {
     const [isProcessing, setIsProcessing] = useState(false)
     const [progress, setProgress] = useState(0)
     const [copied, setCopied] = useState(false)
+    const [error, setError] = useState('')
 
     const onDrop = (acceptedFiles) => {
         if (acceptedFiles?.length > 0) {
@@ -65,24 +66,38 @@ const ImageToText = () => {
     const handleOcr = async (file) => {
         setIsProcessing(true)
         setProgress(0)
+        setError('')
+        let worker = null
         try {
-            const worker = await createWorker({
-                logger: m => {
-                    if (m.status === 'recognizing text') {
-                        setProgress(Math.round(m.progress * 100))
-                    }
-                }
-            })
+            // createWorker never settles when the engine fails to load, so race it against errorHandler
+            let reportFailure
+            const engineFailure = new Promise((_, reject) => { reportFailure = reject })
+            engineFailure.catch(() => { }) // errorHandler also fires after the race settles
+            worker = await Promise.race([
+                createWorker('eng', OEM.LSTM_ONLY, {
+                    // Served from our own origin (staged into public/tesseract by the prebuild
+                    // step). Without these, tesseract.js falls back to cdn.jsdelivr.net and the
+                    // tool cannot work offline or on a CDN-restricted network.
+                    workerPath: `${import.meta.env.BASE_URL}tesseract/worker.min.js`,
+                    corePath: `${import.meta.env.BASE_URL}tesseract`,
+                    langPath: `${import.meta.env.BASE_URL}tesseract/lang`,
+                    logger: m => {
+                        if (m.status === 'recognizing text') {
+                            setProgress(Math.round(m.progress * 100))
+                        }
+                    },
+                    errorHandler: err => reportFailure(new Error(typeof err === 'string' ? err : 'Could not load the OCR engine. Check your connection and try again.'))
+                }),
+                engineFailure
+            ])
 
-            await worker.loadLanguage('eng')
-            await worker.initialize('eng')
-            const { data: { text } } = await worker.recognize(file)
-            setText(text)
-            await worker.terminate()
-        } catch (error) {
-            console.error(error)
-            alert('Error processing image')
+            const { data } = await worker.recognize(file)
+            setText(data.text)
+        } catch (err) {
+            console.error(err)
+            setError(err?.message || 'Could not read text from this image. Try a clearer or higher-contrast image.')
         } finally {
+            if (worker) await worker.terminate()
             setIsProcessing(false)
         }
     }
@@ -125,7 +140,7 @@ const ImageToText = () => {
                                     alignItems: 'center'
                                 }}
                             >
-                                <input {...getInputProps()} />
+                                <input {...getInputProps()} aria-label="Choose a file for Image to Text (OCR)" />
                                 <div style={{
                                     width: '80px', height: '80px', background: 'var(--primary-light)', borderRadius: '50%',
                                     display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: '1.5rem',
@@ -145,7 +160,7 @@ const ImageToText = () => {
                                         <ImageIcon size={20} /> Original Image
                                     </h3>
                                     <button
-                                        onClick={() => { setImage(null); setPreview(null); setText('') }}
+                                        onClick={() => { setImage(null); setPreview(null); setText(''); setError('') }}
                                         style={{ color: '#ef4444', background: 'none', border: 'none', cursor: 'pointer', textDecoration: 'underline' }}
                                     >
                                         Upload New
@@ -201,6 +216,10 @@ const ImageToText = () => {
                                         </div>
                                         <p style={{ marginTop: '0.5rem', fontSize: '0.9rem' }}>{progress}%</p>
                                     </div>
+                                ) : error ? (
+                                    <p role="alert" style={{ padding: '1rem', background: '#fef2f2', color: '#b91c1c', border: '1px solid #fecaca', borderRadius: '0.5rem' }}>
+                                        {error}
+                                    </p>
                                 ) : (
                                     <textarea
                                         value={text || 'No text found in image.'}

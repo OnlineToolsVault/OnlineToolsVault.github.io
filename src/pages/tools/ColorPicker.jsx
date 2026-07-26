@@ -1,7 +1,7 @@
-import React, { useState } from 'react'
+import { useState } from 'react'
 import RelatedTools from '../../components/tools/RelatedTools'
 import ToolLayout from '../../components/tools/ToolLayout'
-import { Palette, Copy, RefreshCw } from 'lucide-react'
+import { Palette, Copy, RefreshCw, Check } from 'lucide-react'
 
 
 const features = [
@@ -11,10 +11,31 @@ const features = [
 ]
 
 
+const copyBtnStyle = {
+    padding: '0 0.75rem',
+    borderRadius: '0.5rem',
+    border: '1px solid var(--border)',
+    background: 'white',
+    color: 'var(--text-secondary)',
+    cursor: 'pointer',
+    display: 'flex',
+    alignItems: 'center'
+}
+
+// Accepts "#abc", "abc", "#aabbcc" or "aabbcc" and returns "#aabbcc", else null
+const normalizeHex = (raw) => {
+    const v = raw.trim().replace(/^#/, '')
+    if (/^[0-9a-fA-F]{3}$/.test(v)) return '#' + v.split('').map(c => c + c).join('').toLowerCase()
+    if (/^[0-9a-fA-F]{6}$/.test(v)) return '#' + v.toLowerCase()
+    return null
+}
+
 const ColorPicker = () => {
-    const [color, setColor] = useState('#3b82f6')
+    const [color, setColor] = useState('#3b82f6') // always a valid #rrggbb, drives the swatch
+    const [hexInput, setHexInput] = useState('#3b82f6') // raw text while the user types
     const [rgb, setRgb] = useState('rgb(59, 130, 246)')
     const [hsl, setHsl] = useState('hsl(217, 91%, 60%)')
+    const [copied, setCopied] = useState('')
 
     const hexToRgb = (hex) => {
         let r = 0, g = 0, b = 0
@@ -59,18 +80,41 @@ const ColorPicker = () => {
         return `hsl(${h}, ${s}%, ${l}%)`;
     }
 
-    const handleChange = (e) => {
-        const val = e.target.value
-        setColor(val)
-        setRgb(hexToRgb(val))
-        setHsl(hexToHsl(val))
+    const applyHex = (hex) => {
+        setColor(hex)
+        setRgb(hexToRgb(hex))
+        setHsl(hexToHsl(hex))
+    }
+
+    const handleSwatchChange = (e) => {
+        setHexInput(e.target.value)
+        applyHex(e.target.value)
+    }
+
+    const handleHexInput = (e) => {
+        const raw = e.target.value
+        setHexInput(raw)
+        const hex = normalizeHex(raw)
+        // Partial or invalid input keeps the last valid color instead of resetting the swatch to black
+        if (hex) applyHex(hex)
+    }
+
+    const copyValue = async (key, value) => {
+        try {
+            await navigator.clipboard.writeText(value)
+            setCopied(key)
+            setTimeout(() => setCopied(prev => (prev === key ? '' : prev)), 1500)
+        } catch (err) {
+            console.error(err)
+            alert('Your browser blocked clipboard access. Select the value and press Ctrl+C / Cmd+C instead.')
+        }
     }
 
     const faqs = [
         { question: "How do I convert HEX to RGB?", answer: "Simply paste your HEX code into the HEX input field, and the RGB value will appear automatically." },
         { question: "What is HSL?", answer: "HSL stands for Hue, Saturation, and Lightness. It's often used by designers for adjusting color tones." },
         { question: "Is it free to use?", answer: "Yes, this color picker and converter is 100% free and runs in your browser." },
-        { question: "Can I copy the values?", answer: "Yes, simply double click any value to select it and press Ctrl+C or Cmd+C to copy." },
+        { question: "Can I copy the values?", answer: "Yes, click the copy button next to any value to send it straight to your clipboard. You can also select the text and press Ctrl+C or Cmd+C." },
         { question: "What if I enter an invalid HEX?", answer: "The RGB/HSL fields will naturally update to reflect the nearest valid color or retain the last valid state." },
         { question: "Do you support CMYK?", answer: "Currently we focus on web-safe formats (HEX, RGB, HSL), but may add print formats later." }
     ]
@@ -89,22 +133,46 @@ const ColorPicker = () => {
                         <input
                             type="color"
                             value={color}
-                            onChange={handleChange}
+                            onChange={handleSwatchChange}
+                            aria-label="Color swatch"
                             style={{ width: '200px', height: '200px', border: 'none', cursor: 'pointer', background: 'none' }}
                         />
                     </div>
                     <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '1.5rem', justifyContent: 'center' }}>
                         <div>
-                            <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: 'bold' }}>HEX</label>
-                            <input type="text" value={color} readOnly style={{ width: '100%', padding: '0.75rem', fontSize: '1.2rem', fontFamily: 'monospace', borderRadius: '0.5rem', border: '1px solid var(--border)' }} />
+                            <label htmlFor="color-picker-hex" style={{ display: 'block', marginBottom: '0.5rem', fontWeight: 'bold' }}>HEX</label>
+                            <div style={{ display: 'flex', gap: '0.5rem' }}>
+                                <input
+                                    id="color-picker-hex"
+                                    type="text"
+                                    value={hexInput}
+                                    onChange={handleHexInput}
+                                    spellCheck={false}
+                                    placeholder="#3b82f6"
+                                    style={{ flex: 1, minWidth: 0, padding: '0.75rem', fontSize: '1.2rem', fontFamily: 'monospace', borderRadius: '0.5rem', border: '1px solid var(--border)' }}
+                                />
+                                <button onClick={() => copyValue('hex', hexInput)} title="Copy HEX" style={copyBtnStyle}>
+                                    {copied === 'hex' ? <Check size={18} color="var(--primary)" /> : <Copy size={18} />}
+                                </button>
+                            </div>
                         </div>
                         <div>
-                            <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: 'bold' }}>RGB</label>
-                            <input type="text" value={rgb} readOnly style={{ width: '100%', padding: '0.75rem', fontSize: '1.2rem', fontFamily: 'monospace', borderRadius: '0.5rem', border: '1px solid var(--border)' }} />
+                            <label htmlFor="color-picker-rgb" style={{ display: 'block', marginBottom: '0.5rem', fontWeight: 'bold' }}>RGB</label>
+                            <div style={{ display: 'flex', gap: '0.5rem' }}>
+                                <input id="color-picker-rgb" type="text" value={rgb} readOnly style={{ flex: 1, minWidth: 0, padding: '0.75rem', fontSize: '1.2rem', fontFamily: 'monospace', borderRadius: '0.5rem', border: '1px solid var(--border)' }} />
+                                <button onClick={() => copyValue('rgb', rgb)} title="Copy RGB" style={copyBtnStyle}>
+                                    {copied === 'rgb' ? <Check size={18} color="var(--primary)" /> : <Copy size={18} />}
+                                </button>
+                            </div>
                         </div>
                         <div>
-                            <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: 'bold' }}>HSL</label>
-                            <input type="text" value={hsl} readOnly style={{ width: '100%', padding: '0.75rem', fontSize: '1.2rem', fontFamily: 'monospace', borderRadius: '0.5rem', border: '1px solid var(--border)' }} />
+                            <label htmlFor="color-picker-hsl" style={{ display: 'block', marginBottom: '0.5rem', fontWeight: 'bold' }}>HSL</label>
+                            <div style={{ display: 'flex', gap: '0.5rem' }}>
+                                <input id="color-picker-hsl" type="text" value={hsl} readOnly style={{ flex: 1, minWidth: 0, padding: '0.75rem', fontSize: '1.2rem', fontFamily: 'monospace', borderRadius: '0.5rem', border: '1px solid var(--border)' }} />
+                                <button onClick={() => copyValue('hsl', hsl)} title="Copy HSL" style={copyBtnStyle}>
+                                    {copied === 'hsl' ? <Check size={18} color="var(--primary)" /> : <Copy size={18} />}
+                                </button>
+                            </div>
                         </div>
                     </div>
                 </div>

@@ -40,14 +40,20 @@ const Header = () => {
                 </nav>
 
                 {/* Mobile Menu Button */}
-                <button className="nav-mobile-btn" onClick={toggleMenu} aria-label="Toggle menu">
+                <button
+                    className="nav-mobile-btn"
+                    onClick={toggleMenu}
+                    aria-label={isMobileMenuOpen ? 'Close menu' : 'Open menu'}
+                    aria-expanded={isMobileMenuOpen}
+                    aria-controls="mobile-menu"
+                >
                     {isMobileMenuOpen ? <X size={24} /> : <Menu size={24} />}
                 </button>
             </div>
 
             {/* Mobile Nav Dropdown */}
             {isMobileMenuOpen && (
-                <div className="mobile-menu" style={{
+                <nav id="mobile-menu" className="mobile-menu" aria-label="Mobile" style={{
                     position: 'absolute',
                     top: '100%',
                     left: 0,
@@ -79,7 +85,7 @@ const Header = () => {
                             <Linkedin size={20} />
                         </a>
                     </div>
-                </div>
+                </nav>
             )}
         </header>
     )

@@ -1,8 +1,8 @@
-import React, { useState } from 'react'
+import { useState } from 'react'
 import RelatedTools from '../../components/tools/RelatedTools'
 import ToolLayout from '../../components/tools/ToolLayout'
 import FileUploader from '../../components/tools/FileUploader'
-import { FileCode, Loader2, Copy, Check } from 'lucide-react'
+import { FileCode, Loader2, Check } from 'lucide-react'
 import CryptoJS from 'crypto-js'
 
 
@@ -22,48 +22,90 @@ const faqs = [
 ]
 
 
+const CHUNK_SIZE = 4 * 1024 * 1024
+
 const FileChecksumGenerator = () => {
     const [file, setFile] = useState(null)
     const [hashes, setHashes] = useState(null)
     const [isProcessing, setIsProcessing] = useState(false)
     const [progress, setProgress] = useState(0)
+    const [error, setError] = useState(null)
+
+    const reset = () => {
+        setFile(null)
+        setHashes(null)
+        setError(null)
+        setProgress(0)
+    }
 
     const processFile = (f) => {
         setFile(f)
-        setIsProcessing(true)
         setHashes(null)
+        setError(null)
+        setProgress(0)
+        setIsProcessing(true)
 
-        // Use FileReader to read as ArrayBuffer then WordArray
-        // For large files, this needs chunking. For now, simple implementation.
-        const reader = new FileReader()
+        const fail = (msg) => {
+            setIsProcessing(false)
+            setHashes(null)
+            setError(msg)
+        }
 
-        reader.onprogress = (e) => {
-            if (e.lengthComputable) {
-                setProgress(Math.round((e.loaded / e.total) * 100))
+        const md5 = CryptoJS.algo.MD5.create()
+        const sha1 = CryptoJS.algo.SHA1.create()
+        const sha256 = CryptoJS.algo.SHA256.create()
+        let offset = 0
+
+        // Hash slice by slice so memory stays bounded and the tab keeps repainting on multi-GB files.
+        const readNext = () => {
+            const reader = new FileReader()
+
+            reader.onerror = () => fail('Could not read this file. It may have moved or changed since you selected it.')
+            reader.onabort = () => fail('Reading was cancelled.')
+
+            reader.onload = (e) => {
+                try {
+                    const wordArray = CryptoJS.lib.WordArray.create(e.target.result)
+                    md5.update(wordArray)
+                    sha1.update(wordArray)
+                    sha256.update(wordArray)
+                } catch (err) {
+                    console.error(err)
+                    fail('This file is too large to hash in your browser. Try a smaller file.')
+                    return
+                }
+
+                offset += CHUNK_SIZE
+                if (offset < f.size) {
+                    setProgress(Math.round((offset / f.size) * 100))
+                    setTimeout(readNext, 0)
+                    return
+                }
+
+                setProgress(100)
+                try {
+                    setHashes({
+                        MD5: md5.finalize().toString(),
+                        'SHA-1': sha1.finalize().toString(),
+                        'SHA-256': sha256.finalize().toString()
+                    })
+                } catch (err) {
+                    console.error(err)
+                    fail('Could not finish hashing this file.')
+                    return
+                }
+                setIsProcessing(false)
+            }
+
+            try {
+                reader.readAsArrayBuffer(f.slice(offset, offset + CHUNK_SIZE))
+            } catch (err) {
+                console.error(err)
+                fail('Could not read this file.')
             }
         }
 
-        reader.onload = (e) => {
-            const data = e.target.result
-            const wordArray = CryptoJS.lib.WordArray.create(data)
-
-            // Calculate hashes
-            // Note: CryptoJS is slow for large files.
-            setTimeout(() => {
-                const md5 = CryptoJS.MD5(wordArray).toString()
-                const sha1 = CryptoJS.SHA1(wordArray).toString()
-                const sha256 = CryptoJS.SHA256(wordArray).toString()
-
-                setHashes({
-                    MD5: md5,
-                    'SHA-1': sha1,
-                    'SHA-256': sha256
-                })
-                setIsProcessing(false)
-            }, 100)
-        }
-
-        reader.readAsArrayBuffer(f)
+        readNext()
     }
 
     return (
@@ -76,7 +118,7 @@ const FileChecksumGenerator = () => {
         >
 
             <div className="tool-workspace" style={{ maxWidth: '1000px', margin: '0 auto' }}>
-                {!file || (!hashes && !isProcessing && file) ? (
+                {!file || (!hashes && !isProcessing && !error) ? (
                     <FileUploader
                         onFileSelect={processFile}
                         icon={FileCode}
@@ -90,6 +132,13 @@ const FileChecksumGenerator = () => {
                             <div style={{ textAlign: 'center', padding: '2rem' }}>
                                 <Loader2 className="spin" size={32} style={{ margin: '0 auto 1rem auto' }} />
                                 <p>Calculating Hashes... {progress}%</p>
+                            </div>
+                        )}
+
+                        {error && (
+                            <div style={{ textAlign: 'center', padding: '1rem' }}>
+                                <p style={{ color: '#dc2626', marginBottom: '1rem' }}>{error}</p>
+                                <button onClick={reset} style={{ color: '#64748b', background: 'none', border: 'none', textDecoration: 'underline', cursor: 'pointer' }}>Try another file</button>
                             </div>
                         )}
 
@@ -108,7 +157,7 @@ const FileChecksumGenerator = () => {
                                     </div>
                                 ))}
                                 <div style={{ textAlign: 'center', marginTop: '1rem' }}>
-                                    <button onClick={() => setFile(null)} style={{ color: '#64748b', background: 'none', border: 'none', textDecoration: 'underline', cursor: 'pointer' }}>Calculate Another</button>
+                                    <button onClick={reset} style={{ color: '#64748b', background: 'none', border: 'none', textDecoration: 'underline', cursor: 'pointer' }}>Calculate Another</button>
                                 </div>
                             </div>
                         )}

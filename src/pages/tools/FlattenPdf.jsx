@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import { useState } from 'react'
 import RelatedTools from '../../components/tools/RelatedTools'
 import ToolLayout from '../../components/tools/ToolLayout'
 import { useDropzone } from 'react-dropzone'
@@ -38,16 +38,16 @@ const FlattenPdf = () => {
             const arrayBuffer = await file.arrayBuffer()
             const pdfDoc = await PDFDocument.load(arrayBuffer)
 
-            // Flatten forms
+            // getForm() never throws when the PDF has no AcroForm (pdf-lib creates an
+            // empty one), so any error from flatten() is a real failure and must not be
+            // swallowed: flatten() removes fields one at a time, so a mid-loop throw
+            // would otherwise ship a half-flattened, still-editable PDF as a success.
             const form = pdfDoc.getForm()
-            try {
+            if (form.getFields().length > 0) {
                 form.flatten()
-            } catch (e) {
-                // Ignore if no form
-                console.log('No form to flatten or error flattening form')
             }
 
-            // Flatten annotations? pdf-lib doesn't have a direct "flatten all annotations" method easily 
+            // Flatten annotations? pdf-lib doesn't have a direct "flatten all annotations" method easily
             // but form.flatten handles basic fields.
             // For general annotations, it's more complex.
             // But usually "Flatten PDF" implies forms.
@@ -57,7 +57,7 @@ const FlattenPdf = () => {
             saveAs(blob, `flattened-${file.name}`)
         } catch (error) {
             console.error(error)
-            alert('Failed to flatten PDF.')
+            alert('Failed to flatten PDF, so no file was downloaded. The document may be corrupted, password-protected, or contain form fields that cannot be flattened.')
         } finally {
             setIsProcessing(false)
         }
@@ -100,7 +100,7 @@ const FlattenPdf = () => {
                                 transition: 'all 0.2s ease'
                             }}
                         >
-                            <input {...getInputProps()} />
+                            <input {...getInputProps()} aria-label="Choose a file for Flatten PDF" />
                             <div style={{ width: '64px', height: '64px', background: '#e0f2fe', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 1rem', color: '#0284c7' }}>
                                 <Layers size={32} />
                             </div>

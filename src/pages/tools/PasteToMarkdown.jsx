@@ -1,10 +1,44 @@
-import React, { useState, useRef } from 'react'
-import { Helmet } from 'react-helmet-async'
+import { useState, useRef } from 'react'
 import ToolLayout from '../../components/tools/ToolLayout'
 import RelatedTools from '../../components/tools/RelatedTools'
 import { Copy, RefreshCw, Zap, FileText, Shield } from 'lucide-react'
 import TurndownService from 'turndown'
 import './PasteToMarkdown.css'
+
+const turndownService = new TurndownService({
+    headingStyle: 'atx',
+    codeBlockStyle: 'fenced',
+    hr: '---'
+})
+
+// Turndown has no built-in table rules, so pasted tables would otherwise come out
+// as one loose paragraph per cell. Build GFM pipe tables from the DOM instead.
+const cellToMarkdown = (cell) =>
+    turndownService.turndown(cell.innerHTML).replace(/\|/g, '\\|').replace(/\s*\n+\s*/g, ' ').trim()
+
+turndownService.addRule('gfmTable', {
+    filter: 'table',
+    replacement: (content, node) => {
+        const rows = Array.from(node.rows)
+        if (rows.length === 0) return ''
+        const columns = rows.reduce((max, row) => Math.max(max, row.cells.length), 0)
+        const toLine = (cells) => {
+            const values = []
+            for (let i = 0; i < columns; i++) {
+                values.push(cells[i] ? cellToMarkdown(cells[i]) : '')
+            }
+            return `| ${values.join(' | ')} |`
+        }
+        const headerCells = Array.from(rows[0].cells)
+        const hasHeader = headerCells.length > 0 && headerCells.every((cell) => cell.nodeName === 'TH')
+        const lines = []
+        // GFM requires a header row, so emit an empty one when the source has none.
+        lines.push(hasHeader ? toLine(rows[0].cells) : `|${' |'.repeat(columns)}`)
+        lines.push(`|${' --- |'.repeat(columns)}`)
+        rows.slice(hasHeader ? 1 : 0).forEach((row) => lines.push(toLine(row.cells)))
+        return `\n\n${lines.join('\n')}\n\n`
+    }
+})
 
 const PasteToMarkdown = () => {
     const [content, setContent] = useState('')
@@ -23,11 +57,6 @@ const PasteToMarkdown = () => {
         // If HTML exists, convert it; otherwise use plain text
         let markdown = ''
         if (htmlContent) {
-            const turndownService = new TurndownService({
-                headingStyle: 'atx',
-                codeBlockStyle: 'fenced',
-                hr: '---'
-            })
             markdown = turndownService.turndown(htmlContent)
         } else {
             markdown = textContent

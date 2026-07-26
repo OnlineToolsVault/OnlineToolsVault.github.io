@@ -1,9 +1,9 @@
-import React, { useState } from 'react'
+import { useState } from 'react'
 import RelatedTools from '../../components/tools/RelatedTools'
 import ToolLayout from '../../components/tools/ToolLayout'
 import { useDropzone } from 'react-dropzone'
 import { jsPDF } from 'jspdf'
-import { Upload, Download, FileText, ArrowUp, ArrowDown, X, Image as ImageIcon, Settings, Zap } from 'lucide-react'
+import { Upload, Download, ArrowUp, ArrowDown, X, Image as ImageIcon, Settings, Zap } from 'lucide-react'
 
 const features = [
     { title: 'JPG to PDF', desc: 'Specialized conversion engine optimized for turning JPG and JPEG images into high-quality PDF documents.', icon: <ImageIcon color="var(--primary)" size={24} /> },
@@ -86,7 +86,11 @@ const JpgToPdf = () => {
 
             const pageWidth = doc.internal.pageSize.getWidth()
             const pageHeight = doc.internal.pageSize.getHeight()
-            const margin = settings.margin
+            const rawMargin = Number(settings.margin)
+            // Clamp so an empty/negative/oversized field can never produce NaN or a zero-width page area
+            const margin = Number.isFinite(rawMargin)
+                ? Math.max(0, Math.min(rawMargin, Math.min(pageWidth, pageHeight) / 2 - 1))
+                : 0
 
             for (let i = 0; i < images.length; i++) {
                 if (i > 0) doc.addPage()
@@ -116,16 +120,17 @@ const JpgToPdf = () => {
             doc.save('converted-images.pdf')
         } catch (error) {
             console.error(error)
-            alert('Error creating PDF')
+            alert('Error creating PDF: ' + (error?.message || 'unknown error'))
         } finally {
             setIsProcessing(false)
         }
     }
 
     const getImageProperties = (url) => {
-        return new Promise((resolve) => {
+        return new Promise((resolve, reject) => {
             const img = new Image()
             img.onload = () => resolve({ width: img.width, height: img.height })
+            img.onerror = () => reject(new Error('an image could not be read'))
             img.src = url
         })
     }
@@ -154,7 +159,7 @@ const JpgToPdf = () => {
                             marginBottom: '2rem'
                         }}
                     >
-                        <input {...getInputProps()} />
+                        <input {...getInputProps()} aria-label="Choose a file for JPG to PDF Converter" />
                         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '1rem', color: '#64748b' }}>
                             <Upload size={24} />
                             <span style={{ fontWeight: '500' }}>Drop JPG files here or click to upload</span>
@@ -191,8 +196,12 @@ const JpgToPdf = () => {
                                 <label style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.875rem' }}>Margin (mm)</label>
                                 <input
                                     type="number"
+                                    min="0"
                                     value={settings.margin}
-                                    onChange={(e) => setSettings({ ...settings, margin: parseInt(e.target.value) })}
+                                    onChange={(e) => {
+                                        const v = parseInt(e.target.value, 10)
+                                        setSettings({ ...settings, margin: Number.isNaN(v) ? 0 : Math.max(0, v) })
+                                    }}
                                     style={{ width: '100%', padding: '0.5rem', borderRadius: '0.375rem', border: '1px solid var(--border)' }}
                                 />
                             </div>

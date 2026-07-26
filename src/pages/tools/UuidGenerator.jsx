@@ -1,7 +1,7 @@
-import React, { useState, useEffect } from 'react'
+import { useState, useEffect } from 'react'
 import RelatedTools from '../../components/tools/RelatedTools'
 import ToolLayout from '../../components/tools/ToolLayout'
-import { Copy, Check, RefreshCw, Layers, CheckCircle } from 'lucide-react'
+import { Copy, Check, RefreshCw } from 'lucide-react'
 import { v4 as uuidv4 } from 'uuid'
 const faqs = [
     {
@@ -81,6 +81,7 @@ const UuidGenerator = () => {
                             <label style={{ fontWeight: '500', color: 'var(--foreground)' }}>Quantity:</label>
                             <input
                                 type="number"
+                                aria-label="How many UUIDs"
                                 min="1"
                                 max="100"
                                 value={quantity}

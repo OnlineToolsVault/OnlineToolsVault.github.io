@@ -1,4 +1,4 @@
-import React, { Suspense, lazy } from 'react'
+import { Suspense, lazy } from 'react'
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom'
 import { HelmetProvider } from 'react-helmet-async'
 import Layout from './components/layout/Layout'
@@ -123,7 +123,14 @@ const Loading = () => (
 function App() {
     return (
         <HelmetProvider>
-            <Router basename={import.meta.env.BASE_URL.replace(/\/$/, '')}>
+            <Router
+                basename={import.meta.env.BASE_URL.replace(/\/$/, '')}
+                // v7_startTransition is deliberately NOT enabled: every route here is React.lazy,
+                // and wrapping navigation in a transition makes React hold the old page instead of
+                // showing the Suspense fallback below — so a link click looks dead until the chunk
+                // finishes downloading. The console warning it silences is not worth that.
+                future={{ v7_relativeSplatPath: true }}
+            >
                 <Layout>
                     <Suspense fallback={<Loading />}>
                         <Routes>

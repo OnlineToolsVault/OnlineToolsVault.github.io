@@ -1,9 +1,9 @@
-import React, { useState } from 'react'
+import { useState } from 'react'
 import ToolLayout from '../../components/tools/ToolLayout'
 import RelatedTools from '../../components/tools/RelatedTools'
 import { useDropzone } from 'react-dropzone'
 import { removeBackground } from '@imgly/background-removal'
-import { Upload, Download, Scissors, Loader2, AlertTriangle, Zap, ShieldCheck, Image as ImageIcon } from 'lucide-react'
+import { Download, Scissors, Loader2, AlertTriangle, Zap, ShieldCheck, Image as ImageIcon } from 'lucide-react'
 
 const features = [
     { title: 'AI Precision', desc: 'Advanced AI instantly detects subjects and removes backgrounds with incredible accuracy.', icon: <Zap color="var(--primary)" size={24} /> },
@@ -29,6 +29,25 @@ const faqs = [
         answer: "Yes, our AI is trained to handle complex edges like hair and fur, though extremely cluttered backgrounds may vary in results."
     }
 ]
+
+// The ~84 MB ONNX model is vendored into public/imgly by the prebuild step so the tool works on
+// offline / CDN-restricted networks. If staging was skipped (no network at build time) the manifest
+// is absent, and we let the library fall back to its own CDN rather than fail outright.
+let cachedConfig
+const modelConfig = async () => {
+    if (cachedConfig) return cachedConfig
+    const publicPath = new URL(`${import.meta.env.BASE_URL}imgly/`, window.location.origin).href
+    try {
+        // Parse the manifest rather than trusting the status code: a host that rewrites unknown
+        // paths to index.html would answer 200 with HTML and we would wrongly assume it is staged.
+        const res = await fetch(`${publicPath}resources.json`)
+        const manifest = res.ok ? await res.json() : null
+        cachedConfig = manifest?.['/models/isnet_fp16'] ? { publicPath } : {}
+    } catch {
+        cachedConfig = {}
+    }
+    return cachedConfig
+}
 
 const BackgroundRemover = () => {
     const [file, setFile] = useState(null)
@@ -57,7 +76,7 @@ const BackgroundRemover = () => {
         setError(null)
 
         try {
-            const blob = await removeBackground(file)
+            const blob = await removeBackground(file, await modelConfig())
             const url = URL.createObjectURL(blob)
             setProcessedImage(url)
         } catch (err) {
@@ -90,8 +109,9 @@ const BackgroundRemover = () => {
                 <div style={{ background: '#fffbeb', border: '1px solid #fcd34d', color: '#92400e', padding: '1rem', borderRadius: '0.5rem', marginBottom: '2rem', display: 'flex', alignItems: 'start', gap: '0.75rem' }}>
                     <AlertTriangle size={20} style={{ flexShrink: 0, marginTop: '2px' }} />
                     <div>
-                        **Note:** This tool runs entirely in your browser using WebAssembly.
-                        The first time you run it, it may download ~80MB of AI models. Subsequent usages will be much faster.
+                        <strong>Note:</strong> Your image never leaves your device — the AI runs entirely in your
+                        browser using WebAssembly. The model itself (~95&nbsp;MB) is downloaded from this site once on
+                        first use and then cached, so this tool needs an internet connection the first time you run it.
                     </div>
                 </div>
 
@@ -112,7 +132,7 @@ const BackgroundRemover = () => {
                                     background: isDragActive ? 'var(--secondary)' : 'white',
                                 }}
                             >
-                                <input {...getInputProps()} />
+                                <input {...getInputProps()} aria-label="Choose a file for Free Background Remover" />
                                 <div style={{
                                     width: '64px', height: '64px',
                                     background: '#fce7f3',
@@ -157,7 +177,6 @@ const BackgroundRemover = () => {
                                     <Loader2 className="spin" size={48} style={{ color: 'var(--primary)', marginBottom: '1rem', animation: 'spin 1s linear infinite' }} />
                                     <p>Removing background...</p>
                                     <p style={{ fontSize: '0.875rem', color: '#64748b' }}>This might take a moment.</p>
-                                    <style>{`@keyframes spin { 100 % { transform: rotate(360deg); } } `}</style>
                                 </div>
                             ) : processedImage ? (
                                 <img src={processedImage} alt="Processed" style={{ maxWidth: '100%', maxHeight: '400px' }} />

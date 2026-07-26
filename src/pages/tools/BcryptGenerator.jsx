@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import { useState } from 'react'
 import RelatedTools from '../../components/tools/RelatedTools'
 import ToolLayout from '../../components/tools/ToolLayout'
 import { Copy, Check, Shield, Lock, Sliders } from 'lucide-react'
@@ -82,7 +82,7 @@ const BcryptGenerator = () => {
                     <div>
                         <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: 'bold' }}>Salt Rounds (Cost): {rounds}</label>
                         <input
-                            type="range" min="4" max="15" step="1"
+                            type="range" aria-label="Salt rounds" min="4" max="15" step="1"
                             value={rounds}
                             onChange={(e) => setRounds(Number(e.target.value))}
                             style={{ width: '100%' }}

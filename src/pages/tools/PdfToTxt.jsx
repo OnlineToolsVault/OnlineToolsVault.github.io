@@ -1,12 +1,15 @@
-import React, { useState } from 'react'
+import { useState } from 'react'
 import RelatedTools from '../../components/tools/RelatedTools'
 import ToolLayout from '../../components/tools/ToolLayout'
 import { useDropzone } from 'react-dropzone'
 import { FileText, Download, Loader2 } from 'lucide-react'
 import * as PDFJS from 'pdfjs-dist'
+// Bundled by Vite from the installed package, so the worker is self-hosted and can never
+// drift from the pdfjs-dist version the way the old cdnjs URL could.
+import pdfWorkerUrl from 'pdfjs-dist/build/pdf.worker.min.mjs?url'
 import { saveAs } from 'file-saver'
 
-PDFJS.GlobalWorkerOptions.workerSrc = `//cdnjs.cloudflare.com/ajax/libs/pdf.js/${PDFJS.version}/pdf.worker.min.mjs`
+PDFJS.GlobalWorkerOptions.workerSrc = pdfWorkerUrl
 
 const features = [
     { title: 'Pure Text Extraction', desc: 'Strips away images and formatting to give you the raw text content of your PDF document.', icon: <FileText color="var(--primary)" size={24} /> },
@@ -52,7 +55,7 @@ const PdfToTxt = () => {
             }
 
             const blob = new Blob([fullText], { type: 'text/plain;charset=utf-8' })
-            saveAs(blob, file.name.replace('.pdf', '.txt'))
+            saveAs(blob, `${file.name.replace(/\.pdf$/i, '')}.txt`)
         } catch (error) {
             console.error(error)
             alert('Failed to extract text.')
@@ -98,7 +101,7 @@ const PdfToTxt = () => {
                                 transition: 'all 0.2s ease'
                             }}
                         >
-                            <input {...getInputProps()} />
+                            <input {...getInputProps()} aria-label="Choose a file for PDF to Text" />
                             <div style={{ width: '64px', height: '64px', background: '#e0f2fe', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 1rem', color: '#0284c7' }}>
                                 <FileText size={32} />
                             </div>

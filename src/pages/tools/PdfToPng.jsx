@@ -1,14 +1,17 @@
-import React, { useState, useEffect } from 'react'
+import { useState, useEffect } from 'react'
 import ToolLayout from '../../components/tools/ToolLayout'
 import RelatedTools from '../../components/tools/RelatedTools'
 import { useDropzone } from 'react-dropzone'
 import * as PDFJS from 'pdfjs-dist'
+// Bundled by Vite from the installed package, so the worker is self-hosted and can never
+// drift from the pdfjs-dist version the way the old cdnjs URL could.
+import pdfWorkerUrl from 'pdfjs-dist/build/pdf.worker.min.mjs?url'
 import JSZip from 'jszip'
 import { saveAs } from 'file-saver'
-import { Upload, Download, FileText, Image as ImageIcon, Loader2, Zap, Shield, Maximize } from 'lucide-react'
+import { Download, FileText, Image as ImageIcon, Loader2, Shield, Maximize } from 'lucide-react'
 
 // Worker setup for Vite
-PDFJS.GlobalWorkerOptions.workerSrc = `//cdnjs.cloudflare.com/ajax/libs/pdf.js/${PDFJS.version}/pdf.worker.min.mjs`
+PDFJS.GlobalWorkerOptions.workerSrc = pdfWorkerUrl
 
 const features = [
     { title: 'Lossless Quality', desc: 'Convert PDF pages to PNG (Portable Network Graphics) without any loss of quality. Perfect for text and screenshots.', icon: <ImageIcon color="var(--primary)" size={24} /> },
@@ -177,7 +180,7 @@ const PdfToPng = () => {
                             display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center'
                         }}
                     >
-                        <input {...getInputProps()} />
+                        <input {...getInputProps()} aria-label="Choose a file for PDF to PNG Converter" />
                         <div style={{
                             width: '64px', height: '64px',
                             background: '#e0f2fe',
@@ -262,7 +265,6 @@ const PdfToPng = () => {
                             <div style={{ textAlign: 'center', padding: '4rem' }}>
                                 <Loader2 className="spin" size={48} style={{ color: 'var(--primary)', marginBottom: '1rem', animation: 'spin 1s linear infinite' }} />
                                 <p style={{ fontWeight: '500' }}>Processing PDF... {progress}%</p>
-                                <style>{`@keyframes spin { 100 % { transform: rotate(360deg); } } `}</style>
                             </div>
                         )}
 

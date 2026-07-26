@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import { useState } from 'react'
 import RelatedTools from '../../components/tools/RelatedTools'
 import ToolLayout from '../../components/tools/ToolLayout'
 import { Copy, Check, ArrowRight, FileText, Code, Shield } from 'lucide-react'
@@ -24,7 +24,7 @@ const faqs = [
     },
     {
         question: "Does it support UTF-8 characters?",
-        answer: "Yes, this tool creates standard Base64 output. For complex Unicode strings, ensure they are properly formatted before encoding."
+        answer: "Yes. Your text is converted to UTF-8 bytes before encoding, so emoji, accented letters, and any other Unicode characters produce the same Base64 output as a server or command-line tool would."
     }
 ]
 
@@ -35,7 +35,15 @@ const Base64Encoder = () => {
 
     const handleEncode = () => {
         try {
-            setOutput(btoa(input))
+            // btoa() reads a string as Latin-1 bytes, so encode to UTF-8 first to
+            // match what every server/CLI produces (and to accept non-Latin-1 text).
+            const bytes = new TextEncoder().encode(input)
+            let binary = ''
+            const CHUNK = 0x8000
+            for (let i = 0; i < bytes.length; i += CHUNK) {
+                binary += String.fromCharCode.apply(null, bytes.subarray(i, i + CHUNK))
+            }
+            setOutput(btoa(binary))
         } catch (e) {
             alert('Unable to encode. Make sure text contains valid characters.')
         }

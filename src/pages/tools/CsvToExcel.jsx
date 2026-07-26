@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import { useState } from 'react'
 import RelatedTools from '../../components/tools/RelatedTools'
 import ToolLayout from '../../components/tools/ToolLayout'
 import FileUploader from '../../components/tools/FileUploader'
@@ -56,19 +56,24 @@ const CsvToExcel = () => {
         reader.onload = (e) => {
             try {
                 const data = e.target.result
-                const workbook = XLSX.read(data, { type: 'binary' })
-                // It's already parsed, but if it was CSV string, reading usually works. 
-                // If we want to ensure it is saved as XLSX:
+                const workbook = XLSX.read(data, { type: 'string' })
                 const wbout = XLSX.write(workbook, { bookType: 'xlsx', type: 'array' })
                 const blob = new Blob([wbout], { type: 'application/octet-stream' })
-                saveAs(blob, file.name.replace('.csv', '.xlsx'))
+                saveAs(blob, file.name.replace(/\.csv$/i, '') + '.xlsx')
                 setIsProcessing(false)
             } catch (err) {
-                alert('Conversion failed')
+                console.error(err)
+                alert('Conversion failed. Please make sure the file is a valid, non-empty CSV.')
                 setIsProcessing(false)
             }
         }
-        reader.readAsBinaryString(file)
+        reader.onerror = () => {
+            alert('Could not read the file. Please try selecting it again.')
+            setIsProcessing(false)
+        }
+        // readAsText with UTF-8 keeps accents and emoji intact (and strips the BOM);
+        // readAsBinaryString would hand SheetJS latin1-mangled bytes.
+        reader.readAsText(file, 'UTF-8')
     }
 
     return (

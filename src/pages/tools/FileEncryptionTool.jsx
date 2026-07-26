@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import { useState } from 'react'
 import RelatedTools from '../../components/tools/RelatedTools'
 import ToolLayout from '../../components/tools/ToolLayout'
 import FileUploader from '../../components/tools/FileUploader'
@@ -23,7 +23,7 @@ const FileEncryptionTool = () => {
     const [password, setPassword] = useState('')
     const [mode, setMode] = useState('encrypt') // encrypt | decrypt
     const [isProcessing, setIsProcessing] = useState(false)
-    const [progress, setProgress] = useState(0)
+    const [, setProgress] = useState(0)
 
     const processFile = () => {
         if (!file || !password) return
@@ -48,31 +48,47 @@ const FileEncryptionTool = () => {
                     const decryptedString = decryptedBytes.toString(CryptoJS.enc.Utf8)
 
                     if (!decryptedString) throw new Error('Wrong password')
+                    if (!decryptedString.startsWith('data:') || !decryptedString.includes(',')) {
+                        throw new Error('Not a file encrypted by this tool')
+                    }
 
-                    // Note: This only works for text files or data URLs currently due to CryptoJS limitation with binary direct
-                    // For binary files, we need WordArray conversion which is heavy. 
-                    // Assuming DataURL for binary support via CryptoJS logic is easiest for standardized text wrapper.
-                    // But if content is huge, this crashes.
-                    // For this basic tool, let's assume specific wrapper or text.
-                    // Actually, if we read as DataURL, we get a string. Encrypting that string works for any file type.
-                    // Decrypting gets the DataURL string back.
-                    // We can then convert DataURL -> Blob.
-
+                    // Encryption stores the original file as a Data URL, so the
+                    // decrypted string carries both the bytes and the MIME type.
                     resultBlob = dataURItoBlob(decryptedString)
-                    filename = filename.replace('.encrypted', '')
+                    filename = filename.endsWith('.encrypted')
+                        ? filename.slice(0, -'.encrypted'.length)
+                        : filename + '.decrypted'
                 }
 
                 saveAs(resultBlob, filename)
             } catch (err) {
                 console.error(err)
-                alert(mode === 'decrypt' ? 'Decryption failed. Wrong password?' : 'Encryption failed')
+                if (mode !== 'decrypt') {
+                    alert('Encryption failed.')
+                } else if (err.message === 'Not a file encrypted by this tool') {
+                    alert('This file was not encrypted by this tool, so it cannot be decrypted here. Select the .encrypted file you downloaded from the Encrypt tab.')
+                } else {
+                    alert('Decryption failed. Wrong password?')
+                }
             } finally {
                 setIsProcessing(false)
             }
         }
 
-        // Read as Data URL to support all file types via string encryption
-        reader.readAsDataURL(file)
+        reader.onerror = () => {
+            console.error(reader.error)
+            alert('Could not read that file from your device. Try selecting it again.')
+            setIsProcessing(false)
+        }
+
+        // Encrypt: read a binary-safe Data URL so any file type survives string
+        // encryption. Decrypt: the .encrypted file already IS the CryptoJS
+        // OpenSSL base64 string, so it must be read verbatim as text.
+        if (mode === 'decrypt') {
+            reader.readAsText(file)
+        } else {
+            reader.readAsDataURL(file)
+        }
     }
 
     // Helper to convert dataURL to Blob

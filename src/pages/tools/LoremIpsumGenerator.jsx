@@ -64,14 +64,15 @@ const LoremIpsumGenerator = () => {
                         <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: 'bold' }}>Quantity</label>
                         <input
                             id="lorem-count-input"
-                            type="number" min="1" max="100" value={count}
-                            onChange={(e) => setCount(Number(e.target.value))}
+                            type="number" aria-label="How many to generate" min="1" max="100" value={count}
+                            onChange={(e) => setCount(Math.min(100, Math.max(1, parseInt(e.target.value, 10) || 1)))}
                             style={{ padding: '0.75rem', borderRadius: '0.5rem', border: '1px solid var(--border)', width: '100px' }}
                         />
                     </div>
                     <div>
                         <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: 'bold' }}>Unit</label>
                         <select
+                            aria-label="What to generate"
                             id="lorem-unit-select"
                             value={unit}
                             onChange={(e) => setUnit(e.target.value)}

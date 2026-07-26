@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import { useState } from 'react'
 import RelatedTools from '../../components/tools/RelatedTools'
 import ToolLayout from '../../components/tools/ToolLayout'
 import { useDropzone } from 'react-dropzone'
@@ -6,8 +6,11 @@ import { FileText, Download, Trash2, ArrowLeft, ArrowRight, Loader2, LayoutGrid,
 import { PDFDocument } from 'pdf-lib'
 import { saveAs } from 'file-saver'
 import * as PDFJS from 'pdfjs-dist'
+// Bundled by Vite from the installed package, so the worker is self-hosted and can never
+// drift from the pdfjs-dist version the way the old cdnjs URL could.
+import pdfWorkerUrl from 'pdfjs-dist/build/pdf.worker.min.mjs?url'
 
-PDFJS.GlobalWorkerOptions.workerSrc = `//cdnjs.cloudflare.com/ajax/libs/pdf.js/${PDFJS.version}/pdf.worker.min.mjs`
+PDFJS.GlobalWorkerOptions.workerSrc = pdfWorkerUrl
 
 const features = [
     { title: 'Visual Reordering', desc: 'See thumbnails of every page. Drag and drop to sort your PDF pages exactly how you want them.', icon: <LayoutGrid color="var(--primary)" size={24} /> },
@@ -49,6 +52,7 @@ const OrganizePdf = () => {
 
     const loadPdf = async (f) => {
         setFile(f)
+        setPages([])
         setIsProcessing(true)
         try {
             const arrayBuffer = await f.arrayBuffer()
@@ -73,7 +77,9 @@ const OrganizePdf = () => {
             setPages(newPages)
         } catch (error) {
             console.error(error)
-            alert('Error loading PDF')
+            // Return to the dropzone, otherwise the user is left with an empty grid and a Save button that does nothing
+            setFile(null)
+            alert('Could not read this PDF. It may be corrupted or password-protected.')
         } finally {
             setIsProcessing(false)
         }
@@ -94,7 +100,11 @@ const OrganizePdf = () => {
     }
 
     const savePdf = async () => {
-        if (!file || pages.length === 0) return
+        if (!file) return
+        if (pages.length === 0) {
+            alert('You have removed every page. Add a page back before saving — a PDF cannot be empty.')
+            return
+        }
         setIsProcessing(true)
         try {
             const arrayBuffer = await file.arrayBuffer()
@@ -154,7 +164,7 @@ const OrganizePdf = () => {
                                 transition: 'all 0.2s ease'
                             }}
                         >
-                            <input {...getInputProps()} />
+                            <input {...getInputProps()} aria-label="Choose a file for Organize PDF Pages" />
                             <div style={{ width: '64px', height: '64px', background: '#e0f2fe', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 1rem', color: '#0284c7' }}>
                                 <FileText size={32} />
                             </div>
@@ -224,7 +234,7 @@ const OrganizePdf = () => {
 
                                     <div style={{ display: 'flex', justifyContent: 'center', gap: '1rem' }}>
                                         <button
-                                            onClick={() => setFile(null)}
+                                            onClick={() => { setFile(null); setPages([]) }}
                                             className="tool-btn-secondary"
                                             style={{ padding: '1rem 2rem', borderRadius: '0.5rem', background: 'white', border: '1px solid var(--border)', fontWeight: 'bold', cursor: 'pointer' }}
                                         >

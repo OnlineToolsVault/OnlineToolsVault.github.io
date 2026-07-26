@@ -1,60 +1,130 @@
 
 import RelatedTools from '../../components/tools/RelatedTools'
-import React, { useState, useEffect, useRef } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import ToolLayout from '../../components/tools/ToolLayout'
 import Editor from '@monaco-editor/react'
-import { format } from 'prettier/standalone'
-import * as prettierPluginHtml from 'prettier/plugins/html'
-import * as prettierPluginCss from 'prettier/plugins/postcss'
-import * as prettierPluginBabel from 'prettier/plugins/babel'
-import * as prettierPluginEstree from 'prettier/plugins/estree'
-import * as prettierPluginYaml from 'prettier/plugins/yaml'
-import * as prettierPluginXml from '@prettier/plugin-xml'
-import * as prettierPluginSql from 'prettier-plugin-sql'
-import * as prettierPluginPhp from '@prettier/plugin-php/standalone'
 import { Copy, Trash2, Check, AlertCircle, Upload, Code, Zap, Shield } from 'lucide-react'
 
+// Every formatter below is loaded on demand. Prettier plus its language plugins is several
+// megabytes, so importing them eagerly would put that on the critical path of a page where
+// most visitors only ever format one language.
+const loadPrettier = () => import('prettier/standalone')
 
-const basicFormatter = (code, type = 'c-style') => {
-    // SQL Formatter (Regex based)
-    if (type === 'sql') {
-        return code
-            .replace(/\s+/g, ' ')
-            .replace(/\s*([,;])\s*/g, '$1\n')
-            .replace(/\s*\(\s*/g, ' (')
-            .replace(/\s*\)\s*/g, ') ')
-            .replace(/\b(SELECT|FROM|WHERE|AND|OR|((LEFT|RIGHT|INNER|OUTER|CROSS)\s+)?JOIN|ON|GROUP\s+BY|ORDER\s+BY|HAVING|LIMIT|INSERT\s+INTO|VALUES|UPDATE|SET|DELETE|CREATE\s+TABLE|DROP\s+TABLE|ALTER\s+TABLE)\b/gi, match => `\n${match.toUpperCase()}`)
-            .trim()
+// Brace-and-semicolon aware indenter for the curly-brace languages Prettier has no browser
+// plugin for. It re-breaks the source itself rather than relying on existing newlines, so
+// minified single-line input is formatted too. String and comment spans are copied verbatim.
+const braceFormatter = (code, indentSize = 4) => {
+    const out = []
+    let line = ''
+    let depth = 0
+    let i = 0
+
+    const pushLine = (text, levelOffset = 0) => {
+        const trimmed = text.trim()
+        if (trimmed) out.push(' '.repeat(Math.max(0, depth + levelOffset) * indentSize) + trimmed)
     }
 
-    const lines = code.split('\n').map(l => l.trim()).filter(l => l)
+    while (i < code.length) {
+        const ch = code[i]
+
+        // Copy string literals and comments through untouched.
+        if (ch === '"' || ch === "'" || ch === '`') {
+            const quote = ch
+            line += ch
+            i++
+            while (i < code.length) {
+                line += code[i]
+                if (code[i] === '\\') { line += code[i + 1] ?? ''; i += 2; continue }
+                if (code[i] === quote) { i++; break }
+                i++
+            }
+            continue
+        }
+        if (ch === '/' && code[i + 1] === '/') {
+            const end = code.indexOf('\n', i)
+            line += code.slice(i, end === -1 ? code.length : end)
+            i = end === -1 ? code.length : end
+            continue
+        }
+        if (ch === '/' && code[i + 1] === '*') {
+            const end = code.indexOf('*/', i)
+            line += code.slice(i, end === -1 ? code.length : end + 2)
+            i = end === -1 ? code.length : end + 2
+            continue
+        }
+
+        if (ch === '{') {
+            pushLine(line.trimEnd() + ' {')
+            line = ''
+            depth++
+            i++
+            continue
+        }
+        if (ch === '}') {
+            pushLine(line)
+            line = ''
+            depth--
+            pushLine('}')
+            i++
+            // `};` and `},` keep their trailing punctuation on the closing brace line.
+            while (code[i] === ';' || code[i] === ',') { out[out.length - 1] += code[i]; i++ }
+            continue
+        }
+        if (ch === ';') {
+            pushLine(line.trimEnd() + ';')
+            line = ''
+            i++
+            continue
+        }
+        if (ch === '\n') {
+            pushLine(line)
+            line = ''
+            i++
+            continue
+        }
+
+        // Collapse runs of whitespace so minified and pretty input converge on one style.
+        if (/\s/.test(ch)) {
+            if (line && !/\s$/.test(line)) line += ' '
+            i++
+            continue
+        }
+
+        line += ch
+        i++
+    }
+    pushLine(line)
+
+    return out.join('\n') + '\n'
+}
+
+// Fallback for Python if the Ruff WebAssembly module cannot be loaded.
+const pythonHeuristic = (code) => {
     let indentLevel = 0
-    const indentSize = 4
     let formatted = ''
-
-    if (type === 'python') {
-        // Python Indentation Heuristic
-        lines.forEach((line) => {
-            const isStructuralDedent = /^(elif|else|except|finally)/.test(line);
-            if (isStructuralDedent && indentLevel > 0) indentLevel--;
-            formatted += ' '.repeat(indentLevel * indentSize) + line + '\n';
-            if (line.endsWith(':')) indentLevel++;
-        });
-        return formatted;
+    for (const raw of code.split('\n')) {
+        const line = raw.trim()
+        if (!line) continue
+        if (/^(elif|else|except|finally)/.test(line) && indentLevel > 0) indentLevel--
+        formatted += '    '.repeat(indentLevel) + line + '\n'
+        if (line.endsWith(':')) indentLevel++
     }
-
-    lines.forEach(line => {
-        if (line.startsWith('}') || line.startsWith(']') || line.startsWith(')')) {
-            indentLevel = Math.max(0, indentLevel - 1)
-        }
-
-        formatted += ' '.repeat(indentLevel * indentSize) + line + '\n'
-
-        if (line.endsWith('{') || line.endsWith('[') || line.endsWith('(')) {
-            indentLevel++
-        }
-    })
     return formatted
+}
+
+let ruffWorkspace = null
+const formatPython = async (code) => {
+    try {
+        if (!ruffWorkspace) {
+            const ruff = await import('@astral-sh/ruff-wasm-web')
+            await ruff.default()
+            ruffWorkspace = new ruff.Workspace(ruff.Workspace.defaultSettings())
+        }
+        return ruffWorkspace.format(code)
+    } catch (err) {
+        console.warn('Ruff unavailable, using the built-in Python indenter:', err)
+        return pythonHeuristic(code)
+    }
 }
 
 const EXAMPLES = {
@@ -116,7 +186,7 @@ NSLog(@"Fruit at index %lu is %@", (unsigned long)idx, obj); }]; } return 0; }`,
     swift: `import Foundation
 struct User { var name: String; var age: Int }
 let users = [User(name: "Alice", age: 25), User(name: "Bob", age: 30)]
-for user in users { if user.age >= 18 { print("\(user.name) is an adult") } else { print("\(user.name) is a minor") } }`,
+for user in users { if user.age >= 18 { print("\\(user.name) is an adult") } else { print("\\(user.name) is a minor") } }`,
     python: `def calculate_fibonacci(n):
     if n <= 1: return n
     else:
@@ -182,35 +252,57 @@ const CodeFormatter = ({
         })
     }
 
+    // Each entry resolves its own plugin bundle only when that language is actually formatted.
+    const runPrettier = async (source, options, loadPlugins) => {
+        const [{ format }, plugins] = await Promise.all([loadPrettier(), loadPlugins()])
+        return format(source, { ...options, plugins })
+    }
+
+    const FORMATTERS = {
+        html: (src) => runPrettier(src, { parser: 'html', printWidth: 80, tabWidth: 2 },
+            async () => [await import('prettier/plugins/html')]),
+        // Without xmlWhitespaceSensitivity the plugin preserves the original (absent) whitespace
+        // and returns the document unindented, which looks like the formatter doing nothing.
+        xml: (src) => runPrettier(src, { parser: 'xml', printWidth: 80, tabWidth: 2, xmlWhitespaceSensitivity: 'ignore' },
+            async () => { const m = await import('@prettier/plugin-xml'); return [m.default || m] }),
+        css: (src) => runPrettier(src, { parser: 'css', printWidth: 80, tabWidth: 2 },
+            async () => [await import('prettier/plugins/postcss')]),
+        javascript: (src) => runPrettier(src, { parser: 'babel', semi: true, singleQuote: true },
+            async () => [await import('prettier/plugins/babel'), await import('prettier/plugins/estree')]),
+        typescript: (src) => runPrettier(src, { parser: 'babel-ts', semi: true, singleQuote: true },
+            async () => [await import('prettier/plugins/babel'), await import('prettier/plugins/estree')]),
+        json: (src) => runPrettier(src, { parser: 'json' },
+            async () => [await import('prettier/plugins/babel'), await import('prettier/plugins/estree')]),
+        yaml: (src) => runPrettier(src, { parser: 'yaml' },
+            async () => [await import('prettier/plugins/yaml')]),
+        markdown: (src) => runPrettier(src, { parser: 'markdown', printWidth: 80 },
+            async () => [await import('prettier/plugins/markdown')]),
+        // The standalone PHP bundle only registers its parser via the module's default export.
+        php: (src) => runPrettier(src, { parser: 'php' },
+            async () => { const m = await import('@prettier/plugin-php/standalone'); return [m.default || m] }),
+        java: (src) => runPrettier(src, { parser: 'java', tabWidth: 4 },
+            async () => { const m = await import('prettier-plugin-java'); return [m.default || m] }),
+        // A real SQL parser: the previous regex pass rewrote keywords inside string literals.
+        sql: async (src) => {
+            const { format: formatSql } = await import('sql-formatter')
+            return formatSql(src, { language: 'sql', keywordCase: 'upper', tabWidth: 2 })
+        },
+        python: (src) => formatPython(src),
+    }
+
     const handleFormat = async () => {
+        if (!code.trim()) {
+            setFormatted('')
+            setError(null)
+            return
+        }
+
         try {
             setError(null)
-            let result = ''
-
-            switch (language) {
-                case 'html': result = await format(code, { parser: 'html', plugins: [prettierPluginHtml], printWidth: 80, tabWidth: 2 }); break
-                case 'xml': result = await format(code, { parser: 'xml', plugins: [prettierPluginXml.default || prettierPluginXml], printWidth: 80, tabWidth: 2 }); break
-                case 'css': result = await format(code, { parser: 'css', plugins: [prettierPluginCss], printWidth: 80, tabWidth: 2 }); break
-                case 'javascript': result = await format(code, { parser: 'babel', plugins: [prettierPluginBabel, prettierPluginEstree], semi: true, singleQuote: true }); break
-                case 'json': result = await format(code, { parser: 'json', plugins: [prettierPluginBabel, prettierPluginEstree] }); break
-                case 'yaml': result = await format(code, { parser: 'yaml', plugins: [prettierPluginYaml] }); break
-                case 'sql': result = basicFormatter(code, 'sql'); break
-                case 'php': result = await format(code, { parser: 'php', plugins: [prettierPluginPhp] }); break
-                case 'python': result = basicFormatter(code, 'python'); break
-                case 'c':
-                case 'cpp':
-                case 'csharp':
-                case 'objectivec':
-                case 'swift':
-                case 'java':
-                case 'kotlin':
-                case 'protobuf':
-                    result = basicFormatter(code, 'c-style')
-                    break
-                default:
-                    result = code
-            }
-
+            const formatter = FORMATTERS[language]
+            // Kotlin, Swift, Objective-C, C/C++/C# and Protobuf have no browser-capable parser,
+            // so they go through the brace indenter rather than a language-aware printer.
+            const result = formatter ? await formatter(code) : braceFormatter(code)
             setFormatted(result)
         } catch (err) {
             setError(err.message || 'Formatting failed.')
@@ -245,10 +337,12 @@ const CodeFormatter = ({
     const handleLanguageChange = (e) => {
         const lang = e.target.value
         setLanguage(lang)
-        if (EXAMPLES[lang]) {
-            setCode(EXAMPLES[lang])
-            setError(null)
-        }
+        setError(null)
+
+        // Only swap in the sample snippet while the editor still holds a sample (or nothing).
+        // Replacing code the user pasted or uploaded would silently throw their work away.
+        const isUntouched = code.trim() === '' || Object.values(EXAMPLES).some(sample => sample === code)
+        if (isUntouched && EXAMPLES[lang]) setCode(EXAMPLES[lang])
     }
 
     return (
@@ -275,6 +369,7 @@ const CodeFormatter = ({
                         <div className="select-wrapper">
                             <select
                                 id="language-select"
+                                aria-label="Source language"
                                 value={language}
                                 onChange={handleLanguageChange}
                                 style={{
@@ -292,6 +387,7 @@ const CodeFormatter = ({
                                     <option value="html">HTML</option>
                                     <option value="css">CSS</option>
                                     <option value="javascript">JavaScript</option>
+                                    <option value="typescript">TypeScript</option>
                                     <option value="json">JSON</option>
                                     <option value="xml">XML</option>
                                     <option value="php">PHP</option>
@@ -309,12 +405,13 @@ const CodeFormatter = ({
                                 <optgroup label="Data & Config">
                                     <option value="sql">SQL</option>
                                     <option value="yaml">YAML</option>
+                                    <option value="markdown">Markdown</option>
                                     <option value="protobuf">Protobuf</option>
                                 </optgroup>
                             </select>
                         </div>
 
-                        <input id="code-file-upload" type="file" ref={fileInputRef} style={{ display: 'none' }} onChange={handleFileUpload} />
+                        <input id="code-file-upload" type="file" aria-label="Load a code file" ref={fileInputRef} style={{ display: 'none' }} onChange={handleFileUpload} />
                         <button id="upload-btn" onClick={() => fileInputRef.current.click()} className="btn-secondary" style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', padding: '0.5rem 1rem', borderRadius: '0.5rem', border: '1px solid var(--border)', background: 'white', cursor: 'pointer' }}>
                             <Upload size={16} /> Load File
                         </button>
@@ -346,6 +443,7 @@ const CodeFormatter = ({
                                 value={code}
                                 onChange={(value) => setCode(value || '')}
                                 options={{
+                                    ariaLabel: 'Code input',
                                     minimap: { enabled: false },
                                     fontSize: 14,
                                     lineNumbers: 'on',
@@ -364,6 +462,7 @@ const CodeFormatter = ({
                                 theme="light"
                                 value={formatted}
                                 options={{
+                                    ariaLabel: 'Formatted code output',
                                     readOnly: true,
                                     minimap: { enabled: false },
                                     fontSize: 14,

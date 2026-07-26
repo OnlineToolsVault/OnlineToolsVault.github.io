@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import { useState, useMemo } from 'react'
 import RelatedTools from '../../components/tools/RelatedTools'
 import ToolLayout from '../../components/tools/ToolLayout'
 import FileUploader from '../../components/tools/FileUploader'
@@ -21,6 +21,24 @@ const faqs = [
     { question: 'Is my data private?', answer: 'Yes. All file renaming happens locally in your browser. No files are ever uploaded to a server.' }
 ]
 
+// JSZip keys entries by name, so a duplicate would silently overwrite the earlier file
+const uniqueName = (name, used) => {
+    if (!used.has(name)) {
+        used.add(name)
+        return name
+    }
+    const dot = name.lastIndexOf('.')
+    const base = dot > 0 ? name.slice(0, dot) : name
+    const ext = dot > 0 ? name.slice(dot) : ''
+    let i = 1
+    while (used.has(`${base} (${i})${ext}`)) {
+        i += 1
+    }
+    const candidate = `${base} (${i})${ext}`
+    used.add(candidate)
+    return candidate
+}
+
 const BatchFileRenamer = () => {
     const [files, setFiles] = useState([])
     const [prepend, setPrepend] = useState('')
@@ -30,14 +48,15 @@ const BatchFileRenamer = () => {
     const [useCounter, setUseCounter] = useState(false)
     const [isProcessing, setIsProcessing] = useState(false)
 
-    const handleFiles = (newFile) => {
-        // Store file object + custom name state
-        setFiles(prev => [...prev, { file: newFile, newName: newFile.name }])
+    const handleFiles = (selected) => {
+        const incoming = Array.isArray(selected) ? selected : [selected]
+        setFiles(prev => [...prev, ...incoming.map(file => ({ file }))])
     }
 
-    // Effect to auto-update names based on rules
-    React.useEffect(() => {
-        setFiles(prev => prev.map((item, index) => {
+    // Names are derived, never mirrored into state, so the list and the ZIP can never drift from the rules
+    const renamedFiles = useMemo(() => {
+        const used = new Set()
+        return files.map((item, index) => {
             let name = item.file.name
             // 1. Find & Replace
             if (findStr) {
@@ -60,23 +79,22 @@ const BatchFileRenamer = () => {
             if (useCounter) {
                 name = `${index + 1}_${name}`
             }
-            return { ...item, newName: name }
-        }))
-    }, [prepend, append, findStr, replaceStr, useCounter])
-
+            return { ...item, newName: uniqueName(name.trim() || 'unnamed', used) }
+        })
+    }, [files, prepend, append, findStr, replaceStr, useCounter])
 
     const downloadZip = async () => {
-        if (files.length === 0) return
+        if (renamedFiles.length === 0) return
         setIsProcessing(true)
         try {
             const zip = new JSZip()
-            files.forEach(item => {
+            renamedFiles.forEach(item => {
                 zip.file(item.newName, item.file)
             })
             const content = await zip.generateAsync({ type: 'blob' })
             saveAs(content, 'renamed_files.zip')
         } catch (e) {
-            alert('Error processing files')
+            alert(`Error creating ZIP: ${e?.message || 'unknown error'}`)
         } finally {
             setIsProcessing(false)
         }
@@ -120,11 +138,11 @@ const BatchFileRenamer = () => {
                         <div style={{ flex: 1, overflow: 'auto', border: '1px solid var(--border)', borderRadius: '0.5rem', marginBottom: '1rem' }}>
                             {files.length === 0 ? (
                                 <div style={{ height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '2rem' }}>
-                                    <FileUploader id="batch-files-upload" onFileSelect={handleFiles} icon={FilePenLine} label="Add files" style={{ border: 'none' }} />
+                                    <FileUploader id="batch-files-upload" onFileSelect={handleFiles} icon={FilePenLine} label="Add files" multiple style={{ border: 'none' }} />
                                 </div>
                             ) : (
                                 <div style={{ padding: '1rem' }}>
-                                    {files.map((item, i) => (
+                                    {renamedFiles.map((item, i) => (
                                         <div key={i} style={{ display: 'flex', alignItems: 'center', gap: '1rem', padding: '0.5rem', borderBottom: '1px solid #eee' }}>
                                             <div style={{ flex: 1, color: '#64748b', fontSize: '0.9rem' }}>{item.file.name}</div>
                                             <ArrowRight size={16} color="#cbd5e1" />
@@ -133,7 +151,7 @@ const BatchFileRenamer = () => {
                                         </div>
                                     ))}
                                     <div style={{ marginTop: '1rem', textAlign: 'center' }}>
-                                        <FileUploader onFileSelect={handleFiles} label="Add more files" minimal />
+                                        <FileUploader onFileSelect={handleFiles} label="Add more files" multiple minimal />
                                     </div>
                                 </div>
                             )}

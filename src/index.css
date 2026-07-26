@@ -20,8 +20,18 @@
   --input: hsl(214, 32%, 91%);
   --bg-card: #ffffff;
   /* Added for feature cards background */
+  --bg-secondary: hsl(210, 40%, 98%);
+  /* Page-level off-white, matches body — used by drag-active drop zones */
+
+  --text-primary: hsl(222, 47%, 11%);
+  /* Headings inside tool pages */
   --text-secondary: #64748b;
   /* Added for feature description text */
+  --text-tertiary: #94a3b8;
+  /* Muted helper text */
+
+  --primary-light: hsl(var(--primary-h), var(--primary-s), 95%);
+  /* Tinted surface behind primary-coloured icons */
 
   /* Global Tool Card Styles for Interactivity */
   --tool-card-hover-translate: -4px;
@@ -31,6 +41,7 @@
 
   /* Typography */
   --font-sans: 'Inter', system-ui, -apple-system, sans-serif;
+  --font-mono: ui-monospace, SFMono-Regular, 'SF Mono', Menlo, Consolas, 'Liberation Mono', monospace;
 }
 
 * {
@@ -169,7 +180,11 @@ button {
   }
 }
 
-.animate-spin {
+/* Both spellings are used across the tool pages. Many of them relied on a local <style> block
+   that defined .spin, and the ones that forgot showed a frozen "Processing..." icon — which reads
+   as a hung tool. Defining it once here covers every page. */
+.animate-spin,
+.spin {
   animation: spin 1s linear infinite;
 }
 

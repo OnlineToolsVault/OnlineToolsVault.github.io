@@ -1,8 +1,8 @@
-import React, { useState } from 'react'
+import { useState } from 'react'
 import RelatedTools from '../../components/tools/RelatedTools'
 import ToolLayout from '../../components/tools/ToolLayout'
 import FileUploader from '../../components/tools/FileUploader'
-import { FileJson, ArrowRight, Download, Copy, Check, Shield } from 'lucide-react'
+import { FileJson, Download, Copy, Check, Shield } from 'lucide-react'
 import * as XLSX from 'xlsx'
 import { saveAs } from 'file-saver'
 
@@ -22,33 +22,69 @@ const faqs = [
     { question: 'What if my JSON is invalid?', answer: 'The tool will alert you if the JSON format is incorrect. You can use our JSON Formatter tool to fix it first.' }
 ]
 
+// json_to_sheet writes an empty cell for object/array values, so flatten to dotted keys first.
+const flattenRow = (value, prefix = '', out = {}) => {
+    if (value === null || typeof value !== 'object') {
+        out[prefix || 'value'] = value
+        return out
+    }
+    if (Array.isArray(value)) {
+        if (value.length === 0) { out[prefix] = ''; return out }
+        value.forEach((item, i) => flattenRow(item, prefix ? `${prefix}.${i}` : String(i), out))
+        return out
+    }
+    const keys = Object.keys(value)
+    if (keys.length === 0) { out[prefix] = ''; return out }
+    keys.forEach(k => flattenRow(value[k], prefix ? `${prefix}.${k}` : k, out))
+    return out
+}
+
+// Unwrap the common {"users": [...]} envelope so it becomes one row per item.
+const toRows = (json) => {
+    if (Array.isArray(json)) return json
+    if (json && typeof json === 'object') {
+        const arrayKeys = Object.keys(json).filter(k => Array.isArray(json[k]))
+        if (arrayKeys.length === 1 && json[arrayKeys[0]].length > 0) return json[arrayKeys[0]]
+    }
+    return [json]
+}
+
 const JsonToCsv = () => {
     const [file, setFile] = useState(null)
-    const [csv, setCsv] = useState('')
+    const [csv, setCsv] = useState(null)
+    const [error, setError] = useState('')
     const [copied, setCopied] = useState(false)
 
     const handleFile = (f) => {
         setFile(f)
+        setCsv(null)
+        setError('')
         const reader = new FileReader()
+        reader.onerror = () => setError('Could not read the file.')
         reader.onload = (e) => {
+            let jsonData
             try {
-                const jsonData = JSON.parse(e.target.result)
-                // Handle if root is object not array? sheet_to_csv expects usually array of objects
-                const dataArray = Array.isArray(jsonData) ? jsonData : [jsonData]
-
-                const worksheet = XLSX.utils.json_to_sheet(dataArray)
-                const csvOutput = XLSX.utils.sheet_to_csv(worksheet)
-                setCsv(csvOutput)
+                jsonData = JSON.parse(e.target.result)
             } catch (err) {
-                alert('Invalid JSON file')
+                setError('That file is not valid JSON.')
+                return
+            }
+            try {
+                const dataArray = toRows(jsonData).map(row => flattenRow(row))
+                const worksheet = XLSX.utils.json_to_sheet(dataArray)
+                setCsv(XLSX.utils.sheet_to_csv(worksheet))
+            } catch (err) {
+                setError('Could not convert this JSON to a table. Expected an object or an array of objects.')
             }
         }
         reader.readAsText(f)
     }
 
     const download = () => {
-        const blob = new Blob([csv], { type: 'text/csv' })
-        saveAs(blob, file ? file.name.replace('.json', '.csv') : 'converted.csv')
+        // Excel assumes the system codepage without a BOM, which turns any accented or
+        // non-Latin character in the data into mojibake.
+        const blob = new Blob(['\uFEFF' + csv], { type: 'text/csv;charset=utf-8' })
+        saveAs(blob, file ? `${file.name.replace(/\.json$/i, '')}.csv` : 'converted.csv')
     }
 
     const copy = () => {
@@ -66,14 +102,19 @@ const JsonToCsv = () => {
             faqs={faqs}
         >
             <div className="tool-workspace" style={{ maxWidth: '1000px', margin: '0 auto' }}>
-                {!csv ? (
-                    <FileUploader
-                        id="json-upload"
-                        onFileSelect={handleFile}
-                        accept={{ 'application/json': ['.json'] }}
-                        icon={FileJson}
-                        label="Drop JSON file here"
-                    />
+                {csv === null ? (
+                    <>
+                        <FileUploader
+                            id="json-upload"
+                            onFileSelect={handleFile}
+                            accept={{ 'application/json': ['.json'] }}
+                            icon={FileJson}
+                            label="Drop JSON file here"
+                        />
+                        {error && (
+                            <p style={{ marginTop: '1rem', textAlign: 'center', color: '#dc2626', fontWeight: '500' }}>{error}</p>
+                        )}
+                    </>
                 ) : (
                     <div style={{ background: 'white', padding: '2rem', borderRadius: '1rem', border: '1px solid var(--border)' }}>
                         <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '1rem' }}>
@@ -84,13 +125,16 @@ const JsonToCsv = () => {
                                 {copied ? <Check size={16} color="green" /> : <Copy size={16} />} Copy
                             </button>
                         </div>
+                        {csv === '' && (
+                            <p style={{ marginBottom: '1rem', color: 'var(--text-secondary)' }}>This JSON contained no rows, so the CSV is empty.</p>
+                        )}
                         <textarea
                             readOnly
                             value={csv}
                             style={{ width: '100%', height: '400px', padding: '1rem', borderRadius: '0.5rem', border: '1px solid var(--border)', fontFamily: 'monospace', fontSize: '0.9rem', background: '#f8fafc', color: '#334155' }}
                         />
                         <div style={{ textAlign: 'center', marginTop: '1rem' }}>
-                            <button onClick={() => { setFile(null); setCsv('') }} style={{ background: 'none', border: 'none', color: '#64748b', textDecoration: 'underline', cursor: 'pointer' }}>Convert Another</button>
+                            <button onClick={() => { setFile(null); setCsv(null); setError('') }} style={{ background: 'none', border: 'none', color: '#64748b', textDecoration: 'underline', cursor: 'pointer' }}>Convert Another</button>
                         </div>
                     </div>
                 )}

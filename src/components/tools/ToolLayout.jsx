@@ -1,4 +1,3 @@
-import React from 'react'
 import { Helmet } from 'react-helmet-async'
 import { useLocation } from 'react-router-dom'
 
@@ -11,7 +10,10 @@ const ToolLayout = ({
     children
 }) => {
     const location = useLocation()
-    const canonicalUrl = `https://onlinetoolsvault.com${location.pathname === '/' ? '' : location.pathname}`
+    // GitHub Pages serves every route as a directory index and 301s the slash-less form, so the
+    // trailing-slash URL is the one that actually returns 200 — that is what we point canonical at.
+    const canonicalPath = `${location.pathname.replace(/\/+$/, '')}/`
+    const canonicalUrl = `https://onlinetoolsvault.com${canonicalPath}`
 
     const renderStyledText = (text) => {
         if (!text || typeof text !== 'string') return text

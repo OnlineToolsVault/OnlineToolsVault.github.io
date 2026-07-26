@@ -136,3 +136,8 @@ test-humanize.js
 
 # Local Development
 LOCAL_CHANGELOGS.MD
+
+# Tesseract OCR assets are staged from node_modules at build time
+public/tesseract/
+public/imgly/
+.imgly-cache/

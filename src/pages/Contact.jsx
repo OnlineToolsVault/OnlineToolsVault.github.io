@@ -1,4 +1,3 @@
-import React from 'react'
 import { Helmet } from 'react-helmet-async'
 import { Mail, Github, Linkedin, Twitter } from 'lucide-react'
 import './StandardPage.css'
@@ -9,6 +8,7 @@ const Contact = () => {
             <Helmet>
                 <title>Contact Us - FreeTools | Get in Touch</title>
                 <meta name="description" content="Have questions or suggestions? Get in touch with the FreeTools team." />
+                <link rel="canonical" href="https://onlinetoolsvault.com/contact/" />
             </Helmet>
 
             <div className="standard-page">

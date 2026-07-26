@@ -7,12 +7,14 @@
   "scripts": {
     "dev": "vite",
     "build": "vite build",
-    "lint": "eslint .",
+    "lint": "eslint . --ext js,jsx",
     "preview": "vite preview",
     "validate-routes": "node scripts/validate-routes.js",
     "generate-og": "node scripts/generate-og-images.js",
     "prepare-deploy": "npm run validate-routes && npm run build && node generate-sitemap.js",
-    "deploy-local-test": "npm run prepare-deploy && npm run preview"
+    "deploy-local-test": "npm run prepare-deploy && npm run preview",
+    "prebuild": "node scripts/copy-ocr-assets.js",
+    "postbuild": "node scripts/prune-dead-assets.js"
   },
   "dependencies": {
     "@astral-sh/ruff-wasm-web": "^0.14.10",
@@ -24,6 +26,7 @@
     "@monaco-editor/react": "^4.7.0",
     "@prettier/plugin-php": "^0.24.0",
     "@prettier/plugin-xml": "^3.4.2",
+    "@tesseract.js-data/eng": "^1.0.0",
     "bcryptjs": "^3.0.3",
     "browser-image-compression": "^2.0.2",
     "cronstrue": "^3.9.0",

@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import { useState } from 'react'
 import { Link } from 'react-router-dom'
 import { Helmet } from 'react-helmet-async'
 import { Search } from 'lucide-react'
@@ -31,18 +31,23 @@ const Home = () => {
     const structuredData = {
         "@context": "https://schema.org",
         "@type": "ItemList",
+        // ItemList entries have to be ListItem nodes wrapping the item — putting `position`
+        // directly on a SoftwareApplication is not valid schema.org and Google drops the list.
         "itemListElement": tools.map((tool, index) => ({
-            "@type": "SoftwareApplication",
+            "@type": "ListItem",
             "position": index + 1,
-            "name": tool.name,
-            "description": tool.seoDescription || tool.description,
-            "applicationCategory": "UtilityApplication",
-            "operatingSystem": "Web",
-            "url": `https://freetools.com${tool.path}`,
-            "offers": {
-                "@type": "Offer",
-                "price": "0",
-                "priceCurrency": "USD"
+            "item": {
+                "@type": "SoftwareApplication",
+                "name": tool.name,
+                "description": tool.seoDescription || tool.description,
+                "applicationCategory": "UtilityApplication",
+                "operatingSystem": "Web",
+                "url": `https://onlinetoolsvault.com${tool.path}/`,
+                "offers": {
+                    "@type": "Offer",
+                    "price": "0",
+                    "priceCurrency": "USD"
+                }
             }
         }))
     }
@@ -50,8 +55,9 @@ const Home = () => {
     return (
         <>
             <Helmet>
-                <title>Free Online Tools - PDF, Image, and Text Utilities</title>
-                <meta name="description" content="Free, fast, and secure online tools. Convert PDFs, compress images, generate QR codes, and more directly in your browser." />
+                <title>Free Online Tools - PDF, Image &amp; Utility Tools | OnlineToolsVault</title>
+                <meta name="description" content="100% Free, Secure, and Client-Side Online Tools for PDF, Images, and more. Privacy focused." />
+                <link rel="canonical" href="https://onlinetoolsvault.com/" />
                 <script type="application/ld+json">
                     {JSON.stringify(structuredData)}
                 </script>
@@ -93,6 +99,12 @@ const Home = () => {
                                 ))}
                             </div>
                         </div>
+
+                        {filteredTools.length === 0 && (
+                            <p className="tools-empty">
+                                No tools match “{searchQuery}”. Try a different search term or pick another category.
+                            </p>
+                        )}
 
                         <div className="tools-grid">
                             {filteredTools.map(tool => (

@@ -1,8 +1,8 @@
-import React, { useState, useCallback } from 'react'
+import { useState, useCallback } from 'react'
 import RelatedTools from '../../components/tools/RelatedTools'
 import ToolLayout from '../../components/tools/ToolLayout'
 import { useDropzone } from 'react-dropzone'
-import { Image as ImageIcon, Download, Check, RefreshCw, ZoomIn, Globe, Crop } from 'lucide-react'
+import { Image as ImageIcon, Download, RefreshCw, ZoomIn, Globe, Crop } from 'lucide-react'
 import Cropper from 'react-easy-crop'
 import { saveAs } from 'file-saver'
 // Helper for cropping
@@ -159,7 +159,7 @@ const PassportPhotoMaker = () => {
                             margin: '0 auto'
                         }}
                     >
-                        <input {...getInputProps()} />
+                        <input {...getInputProps()} aria-label="Choose a file for Passport Photo Maker" />
                         <div style={{
                             width: '80px',
                             height: '80px',

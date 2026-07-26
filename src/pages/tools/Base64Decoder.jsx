@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import { useState } from 'react'
 import RelatedTools from '../../components/tools/RelatedTools'
 import ToolLayout from '../../components/tools/ToolLayout'
 import { Copy, Check, ArrowRight, Zap, ShieldAlert, Shield } from 'lucide-react'
@@ -14,7 +14,7 @@ const faqs = [
     },
     {
         question: "Why do I see weird characters?",
-        answer: "If the decoded output contains strange symbols, the original data might have been a binary file (like an image) rather than text."
+        answer: "We decode text as UTF-8, so accented letters and emoji come through correctly. If you still see strange symbols, the original data was not text at all — it was a binary file such as an image or a ZIP archive."
     },
     {
         question: "Can I decode output from the Encoder tool?",
@@ -28,6 +28,16 @@ const features = [
     { title: 'Privacy Focused', desc: 'Decode sensitive data fragments locally in your browser without sending them to any server.' }
 ]
 
+const decodeBase64ToText = (b64) => {
+    const binary = atob(b64.trim())
+    const bytes = Uint8Array.from(binary, (ch) => ch.charCodeAt(0))
+    try {
+        return new TextDecoder('utf-8', { fatal: true }).decode(bytes)
+    } catch {
+        return binary // not valid UTF-8: keep the raw bytes (binary data / Latin-1)
+    }
+}
+
 const Base64Decoder = () => {
     const [input, setInput] = useState('')
     const [output, setOutput] = useState('')
@@ -36,7 +46,7 @@ const Base64Decoder = () => {
 
     const handleDecode = () => {
         try {
-            setOutput(atob(input))
+            setOutput(decodeBase64ToText(input))
             setError(false)
         } catch (e) {
             setError(true)

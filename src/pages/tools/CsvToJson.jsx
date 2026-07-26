@@ -1,8 +1,8 @@
-import React, { useState } from 'react'
+import { useState } from 'react'
 import RelatedTools from '../../components/tools/RelatedTools'
 import ToolLayout from '../../components/tools/ToolLayout'
 import FileUploader from '../../components/tools/FileUploader'
-import { FileText, ArrowRight, Download, Copy, Check, Zap, Shield } from 'lucide-react'
+import { FileText, Download, Copy, Check, Zap, Shield } from 'lucide-react'
 // import Papa from 'papaparse' // Removed unused import to fix build 
 // Actually, I'll install papaparse as it's standard. Or use XLSX.
 // I'll use XLSX since it's installed.
@@ -18,14 +18,15 @@ const CsvToJson = () => {
         setFile(f)
         const reader = new FileReader()
         reader.onload = (e) => {
-            const data = e.target.result
-            const workbook = XLSX.read(data, { type: 'binary' })
+            // Read as UTF-8 text; 'binary' treats multi-byte characters as latin1 and mojibakes them.
+            const data = String(e.target.result).replace(/^\uFEFF/, '')
+            const workbook = XLSX.read(data, { type: 'string' })
             const sheetName = workbook.SheetNames[0]
             const sheet = workbook.Sheets[sheetName]
             const jsonData = XLSX.utils.sheet_to_json(sheet)
             setJson(JSON.stringify(jsonData, null, 2))
         }
-        reader.readAsBinaryString(f)
+        reader.readAsText(f)
     }
 
     const download = () => {

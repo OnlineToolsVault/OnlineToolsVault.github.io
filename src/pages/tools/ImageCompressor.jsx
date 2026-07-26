@@ -1,15 +1,40 @@
-import React, { useState, useCallback } from 'react'
+import { useState, useCallback, useEffect } from 'react'
 import ToolLayout from '../../components/tools/ToolLayout'
 import RelatedTools from '../../components/tools/RelatedTools'
 import { useDropzone } from 'react-dropzone'
 import imageCompression from 'browser-image-compression'
-import { Upload, Download, ArrowRight, Image as ImageIcon, Zap, ShieldCheck, Layers } from 'lucide-react'
+import { Upload, Download, Zap, ShieldCheck, Layers } from 'lucide-react'
 
 const ImageCompressor = () => {
   const [originalImage, setOriginalImage] = useState(null)
   const [compressedImage, setCompressedImage] = useState(null)
   const [isCompressing, setIsCompressing] = useState(false)
   const [quality, setQuality] = useState(0.8)
+  const [error, setError] = useState(null)
+  const [originalUrl, setOriginalUrl] = useState(null)
+  const [compressedUrl, setCompressedUrl] = useState(null)
+
+  // Object URLs are created in effects so the previous one is always revoked;
+  // creating them during render would leak a blob on every re-render.
+  useEffect(() => {
+    if (!originalImage) {
+      setOriginalUrl(null)
+      return
+    }
+    const url = URL.createObjectURL(originalImage)
+    setOriginalUrl(url)
+    return () => URL.revokeObjectURL(url)
+  }, [originalImage])
+
+  useEffect(() => {
+    if (!compressedImage) {
+      setCompressedUrl(null)
+      return
+    }
+    const url = URL.createObjectURL(compressedImage)
+    setCompressedUrl(url)
+    return () => URL.revokeObjectURL(url)
+  }, [compressedImage])
 
   const onDrop = useCallback(acceptedFiles => {
     const file = acceptedFiles[0]
@@ -27,6 +52,7 @@ const ImageCompressor = () => {
 
   const compressImage = async (file, q) => {
     setIsCompressing(true)
+    setError(null)
     try {
       const options = {
         maxSizeMB: 2,
@@ -36,8 +62,10 @@ const ImageCompressor = () => {
       }
       const compressedFile = await imageCompression(file, options)
       setCompressedImage(compressedFile)
-    } catch (error) {
-      console.error(error)
+    } catch (err) {
+      console.error(err)
+      setCompressedImage(null)
+      setError(`Could not compress "${file.name}". This format may not be supported by your browser (HEIC, AVIF and SVG often are not) or the file may be damaged. Try converting it to JPG or PNG first.`)
     } finally {
       setIsCompressing(false)
     }
@@ -62,11 +90,13 @@ const ImageCompressor = () => {
   const downloadImage = () => {
     if (!compressedImage) return
     const link = document.createElement('a')
-    link.href = URL.createObjectURL(compressedImage)
+    const url = URL.createObjectURL(compressedImage)
+    link.href = url
     link.download = `compressed-${originalImage.name}`
     document.body.appendChild(link)
     link.click()
     document.body.removeChild(link)
+    URL.revokeObjectURL(url)
   }
 
   return (
@@ -93,7 +123,7 @@ const ImageCompressor = () => {
               transition: 'all 0.2s'
             }}
           >
-            <input {...getInputProps()} />
+            <input {...getInputProps()} aria-label="Choose a file for Image Compressor" />
             <div style={{
               width: '64px', height: '64px',
               background: 'var(--secondary)',
@@ -143,7 +173,7 @@ const ImageCompressor = () => {
                     overflow: 'hidden', display: 'flex', alignItems: 'center', justifyContent: 'center',
                     border: '1px solid var(--border)'
                   }}>
-                    <img src={URL.createObjectURL(originalImage)} alt="Original" style={{ maxHeight: '100%', maxWidth: '100%', objectFit: 'contain' }} />
+                    {originalUrl && <img src={originalUrl} alt="Original" style={{ maxHeight: '100%', maxWidth: '100%', objectFit: 'contain' }} />}
                   </div>
                 </div>
 
@@ -152,7 +182,7 @@ const ImageCompressor = () => {
                   <div style={{ marginBottom: '1rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                     <span style={{ fontWeight: '600', color: 'var(--primary)' }}>Compressed</span>
                     <span style={{ padding: '0.25rem 0.75rem', background: '#dbeafe', color: '#1e40af', borderRadius: '99px', fontSize: '0.875rem' }}>
-                      {compressedImage ? formatSize(compressedImage.size) : '...'}
+                      {compressedImage ? formatSize(compressedImage.size) : (error ? '—' : '...')}
                     </span>
                   </div>
                   <div style={{
@@ -162,8 +192,10 @@ const ImageCompressor = () => {
                   }}>
                     {isCompressing ? (
                       <div style={{ color: 'var(--primary)', fontWeight: '600' }}>Compressing...</div>
+                    ) : error ? (
+                      <div role="alert" style={{ color: '#b91c1c', fontSize: '0.875rem', textAlign: 'center', padding: '1rem' }}>{error}</div>
                     ) : (
-                      compressedImage && <img src={URL.createObjectURL(compressedImage)} alt="Compressed" style={{ maxHeight: '100%', maxWidth: '100%', objectFit: 'contain' }} />
+                      compressedUrl && <img src={compressedUrl} alt="Compressed" style={{ maxHeight: '100%', maxWidth: '100%', objectFit: 'contain' }} />
                     )}
                   </div>
                 </div>
@@ -172,7 +204,7 @@ const ImageCompressor = () => {
               {/* Actions */}
               <div style={{ display: 'flex', gap: '1rem', justifyContent: 'center', marginTop: '1rem' }}>
                 <button
-                  onClick={() => setOriginalImage(null)}
+                  onClick={() => { setOriginalImage(null); setCompressedImage(null); setError(null) }}
                   className="tool-btn-secondary"
                   style={{
                     padding: '0.75rem 1.5rem', borderRadius: '0.5rem',

@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import { useState } from 'react'
 import RelatedTools from '../../components/tools/RelatedTools'
 import ToolLayout from '../../components/tools/ToolLayout'
 import { useDropzone } from 'react-dropzone'
@@ -86,13 +86,15 @@ const ImageToPdf = () => {
 
             const pageWidth = doc.internal.pageSize.getWidth()
             const pageHeight = doc.internal.pageSize.getHeight()
-            const margin = settings.margin
+            const rawMargin = Number(settings.margin)
+            const maxMargin = Math.max(0, Math.min(pageWidth, pageHeight) / 2 - 5)
+            const margin = Number.isFinite(rawMargin) ? Math.min(Math.max(rawMargin, 0), maxMargin) : 0
 
             for (let i = 0; i < images.length; i++) {
                 if (i > 0) doc.addPage()
 
                 const img = images[i]
-                const imgProps = await getImageProperties(img.preview)
+                const imgProps = await getImageProperties(img.preview, img.name)
 
                 // Calculate dimensions to fit page maintaining aspect ratio
                 const availableWidth = pageWidth - (margin * 2)
@@ -116,16 +118,17 @@ const ImageToPdf = () => {
             doc.save('converted-images.pdf')
         } catch (error) {
             console.error(error)
-            alert('Error creating PDF. Some formats might not be fully supported by the converter.')
+            alert(error?.message || 'Error creating PDF. Some formats might not be fully supported by the converter.')
         } finally {
             setIsProcessing(false)
         }
     }
 
-    const getImageProperties = (url) => {
-        return new Promise((resolve) => {
+    const getImageProperties = (url, name) => {
+        return new Promise((resolve, reject) => {
             const img = new Image()
             img.onload = () => resolve({ width: img.width, height: img.height })
+            img.onerror = () => reject(new Error(`Could not decode "${name}". This format may not be supported by your browser.`))
             img.src = url
         })
     }
@@ -153,7 +156,7 @@ const ImageToPdf = () => {
                             marginBottom: '2rem'
                         }}
                     >
-                        <input {...getInputProps()} />
+                        <input {...getInputProps()} aria-label="Choose a file for Image to PDF Converter" />
                         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '1rem', color: '#64748b' }}>
                             <Upload size={24} />
                             <span style={{ fontWeight: '500' }}>Drop images here (JPG, PNG, WebP, GIF)</span>
@@ -190,8 +193,13 @@ const ImageToPdf = () => {
                                 <label style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.875rem' }}>Margin (mm)</label>
                                 <input
                                     type="number"
+                                    min="0"
+                                    step="1"
                                     value={settings.margin}
-                                    onChange={(e) => setSettings({ ...settings, margin: parseInt(e.target.value) })}
+                                    onChange={(e) => {
+                                        const v = parseInt(e.target.value, 10)
+                                        setSettings({ ...settings, margin: Number.isNaN(v) ? '' : v })
+                                    }}
                                     style={{ width: '100%', padding: '0.5rem', borderRadius: '0.375rem', border: '1px solid var(--border)' }}
                                 />
                             </div>

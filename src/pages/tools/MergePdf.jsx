@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import { useState } from 'react'
 import RelatedTools from '../../components/tools/RelatedTools'
 import ToolLayout from '../../components/tools/ToolLayout'
 import { useDropzone } from 'react-dropzone'
@@ -120,7 +120,7 @@ const MergePdf = () => {
                             marginBottom: '2rem'
                         }}
                     >
-                        <input {...getInputProps()} />
+                        <input {...getInputProps()} aria-label="Choose a file for Merge PDF Files" />
                         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '1rem', color: '#64748b' }}>
                             <Upload size={24} />
                             <span style={{ fontWeight: '500' }}>Drop PDFs here or click to upload</span>

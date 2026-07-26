@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import { useState } from 'react'
 import RelatedTools from '../../components/tools/RelatedTools'
 import ToolLayout from '../../components/tools/ToolLayout'
 import { useDropzone } from 'react-dropzone'
@@ -59,7 +59,21 @@ const UnlockPdf = () => {
             // all text, images, and formatting preserved intact.
             let pdfDoc
             try {
-                pdfDoc = await PDFDocument.load(arrayBuffer, { password: password || '' })
+                pdfDoc = await PDFDocument.load(arrayBuffer, { password: password || '', updateMetadata: false })
+                // The decrypting parse also decrypts the cross-reference stream,
+                // which then fails to parse, so the trailer's /Info pointer is
+                // lost and an empty Info dict would be written. The Info object
+                // itself is present and decrypted, so recover its reference
+                // from a non-decrypting parse of the same bytes.
+                if (!pdfDoc.context.trailerInfo.Info) {
+                    try {
+                        const shell = await PDFDocument.load(arrayBuffer, { ignoreEncryption: true, updateMetadata: false })
+                        const infoRef = shell.context.trailerInfo.Info
+                        if (infoRef && pdfDoc.context.lookup(infoRef)) {
+                            pdfDoc.context.trailerInfo.Info = infoRef
+                        }
+                    } catch { /* no recoverable Info; save without it */ }
+                }
             } catch (err) {
                 const msg = (err?.message || '').toLowerCase()
                 if (msg.includes('incorrect')) {
@@ -121,7 +135,7 @@ const UnlockPdf = () => {
                                 transition: 'all 0.2s ease'
                             }}
                         >
-                            <input {...getInputProps()} />
+                            <input {...getInputProps()} aria-label="Choose a file for Unlock PDF" />
                             <div style={{ width: '64px', height: '64px', background: '#e0f2fe', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 1rem', color: '#0284c7' }}>
                                 <Unlock size={32} />
                             </div>

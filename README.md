@@ -34,24 +34,37 @@ A comprehensive collection of free, secure, and client-side online tools for PDF
 
 ## 🚀 Features
 
-This project includes a variety of tools that run entirely in the browser, ensuring data privacy and fast performance.
+**84 tools**, all running entirely in the browser — no uploads, no accounts, no server-side processing.
+The catalogue in [`src/data/tools.js`](src/data/tools.js) is the single source of truth; routes,
+the sitemap and the social preview images are all generated from it.
 
-### 📄 PDF Tools
-- **PDF to JPG**: Convert PDF pages to high-quality images.
-- **JPG to PDF**: Create PDFs from image files.
-- **Compress PDF**: Optimize and reduce PDF file size.
-- **Merge PDF**: Combine multiple PDF files into one.
-- **PDF Editor**: Basic tool to add text and annotations to PDFs.
+### 📄 PDF (23)
+Merge · Split · Compress · Rotate · Flatten · Organize · Protect · Unlock · Add Watermark ·
+Add Page Numbers · Edit · Metadata Editor · Remove Metadata · Extract Images · Thumbnails ·
+PDF ⇄ Word · PDF → Excel · PDF → JPG / PNG / TXT · JPG → PDF
 
-### 🖼️ Image Tools
-- **Background Remover**: Remove image backgrounds automatically using AI (w/ `@imgly/background-removal`).
-- **Image Compressor**: Reduce image file size (PNG, JPG, WebP) without quality loss.
-- **Image Resizer**: Resize images to specific dimensions.
-- **Merge Images**: Combine images horizontally or vertically.
+### 🖼️ Image (18)
+Background Remover (AI) · Compressor · Converter · Resizer · Cropper · Blur · Add Watermark ·
+Passport Photo Maker · Metadata Editor · Remove Metadata · Image → Text (OCR) · Image → PDF ·
+HEIC → JPG · WebP → JPG · Merge Images · Bulk Compressor · Bulk Resizer ·
+Instagram/Twitter Resizer · YouTube Thumbnail Downloader
 
-### 🛠️ Utility Tools
-- **QR Code Generator**: Create custom QR codes.
-- **Word Counter**: Count words and characters in real-time.
+### 🔧 Developer (11)
+Code Formatter (multi-language) · HTML · CSS · JS · JSON · SQL · XML formatters ·
+Cron Parser · Regex Tester · Color Picker
+
+### 🔐 Security (13)
+Hash Generator · Encrypt / Decrypt Text · Bcrypt · UUID · Base64 encode/decode ·
+URL encode/decode · JWT Decoder · Password Strength · File Checksum · File Encryption
+
+### 📝 Text (6)
+Word Counter · Humanize AI Text · Paste to Markdown · Markdown Previewer ·
+Lorem Ipsum Generator · Diff Viewer
+
+### 🧰 Converters & Utilities (13)
+QR Generator · CSV ⇄ JSON · CSV ⇄ Excel · Timestamp Converter · Unit Converter ·
+ZIP Creator / Viewer · File Size Calculator · Batch File Renamer · File Metadata Viewer ·
+Video → Audio · Audio Converter
 
 <div align="center">
   <img src="docs/images/mobile-preview.png" alt="FreeTools Mobile Preview" width="300" style="border-radius: 20px; box-shadow: 0 4px 15px rgba(0,0,0,0.15);">
@@ -124,7 +137,9 @@ The project is already configured for automated deployment to **GitHub Pages** u
 
 ## 📄 License
 
-This project is open-source under the **MIT License**.
+This project is released under a **Proprietary License** — see [`LICENSE`](LICENSE) for the full terms.
+It is **not** open source: the source is published for evaluation only, as described under
+[Usage Limitations](#️-usage-limitations) above.
 
 For the full license terms, please visit: [License Terms](https://github.com/OnlineToolsVault/OnlineToolsVault.github.io?tab=License-1-ov-file)
 
@@ -137,7 +152,7 @@ For the full license terms, please visit: [License Terms](https://github.com/Onl
 This project uses a **Multi-Entry SPA** architecture to ensure perfect compatibility with GitHub Pages, Google AdSense, and SEO crawlers.
 
 ### The Problem it Solves
-GitHub Pages is a static host. By default, visiting a deep link like `/Free-Tools/word-counter` returns a **404 Not Found** because that physical file doesn't exist. This breaks AdSense (which requires HTTP 200 OK) and hurts SEO.
+GitHub Pages is a static host. By default, visiting a deep link like `/word-counter` returns a **404 Not Found** because that physical file doesn't exist. This breaks AdSense (which requires HTTP 200 OK) and hurts SEO.
 
 ### The Solution: Multi-Entry SPA
 During the build process (`npm run build`), we programmatically generate physical directories and `index.html` files for every route:
@@ -152,7 +167,14 @@ dist/
 └── ...
 ```
 
-When a user requests `/word-counter`, GitHub Pages serves the physical file at `dist/word-counter/index.html` with **HTTP 200 OK**.
+When a user requests `/word-counter`, GitHub Pages redirects to `/word-counter/` and serves the physical
+file at `dist/word-counter/index.html` with **HTTP 200 OK**. Because the trailing-slash form is the one
+that actually returns 200, it is what `sitemap.xml`, every `<link rel="canonical">` and `og:url` point at.
+
+Each of those per-route files also carries its own `<title>`, description and Open Graph image, so
+crawlers and social-media unfurlers — which do not execute JavaScript — see real per-tool metadata.
+The three tags React also manages are emitted with `data-rh="true"` so react-helmet-async replaces
+them on hydration instead of appending a conflicting second copy.
 
 ### 🛠️ Automated Workflow
 
@@ -167,9 +189,10 @@ We have automated the entire process to prevent errors:
 
 ### ➕ Adding a New Tool
 
-1.  Add the route in `src/App.jsx`.
-2.  Add the route to the `routes` array in `generate-sitemap.js`.
-3.  Run `npm run validate-routes` to verify.
+1.  Add the tool to `src/data/tools.js` (id, name, description, seoDescription, path, icon, category).
+2.  Add the route in `src/App.jsx`.
+3.  Add the route to the `routes` array in `generate-sitemap.js`.
+4.  Run `npm run validate-routes` to verify, then `npm run generate-og` to render its preview image.
 
 ---
 

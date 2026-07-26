@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from 'react'
+import { useState, useRef, useEffect } from 'react'
 import ToolLayout from '../../components/tools/ToolLayout'
 import RelatedTools from '../../components/tools/RelatedTools'
 import ReactCrop, { centerCrop, makeAspectCrop } from 'react-image-crop'
@@ -21,6 +21,22 @@ function centerAspectCrop(mediaWidth, mediaHeight, aspect) {
     )
 }
 
+// ReactCrop reports drag-completed crops against getBoundingClientRect(), which includes the zoom
+// transform on the wrapper. Percent crops we build ourselves have to be converted on that same basis,
+// or the two sources of completedCrop disagree by the zoom factor.
+const percentCropToPixels = (percentCrop, imageEl) => {
+    const rect = imageEl.getBoundingClientRect()
+    const renderedWidth = rect.width || imageEl.width
+    const renderedHeight = rect.height || imageEl.height
+    return {
+        unit: 'px',
+        x: (percentCrop.x / 100) * renderedWidth,
+        y: (percentCrop.y / 100) * renderedHeight,
+        width: (percentCrop.width / 100) * renderedWidth,
+        height: (percentCrop.height / 100) * renderedHeight,
+    }
+}
+
 const ImageCropper = () => {
     const [imgSrc, setImgSrc] = useState('')
     const [crop, setCrop] = useState()
@@ -31,6 +47,7 @@ const ImageCropper = () => {
     const [isShiftDown, setIsShiftDown] = useState(false)
     const [isCustom, setIsCustom] = useState(false)
     const [customAspect, setCustomAspect] = useState({ w: 16, h: 9 })
+    const [error, setError] = useState('')
 
     // Zoom & Pan State
     const [zoom, setZoom] = useState(1)
@@ -88,15 +105,28 @@ const ImageCropper = () => {
         }
     }, [])
 
-    const onSelectFile = (e) => {
-        if (e.target.files && e.target.files.length > 0) {
-            setCrop(undefined)
-            const reader = new FileReader()
-            reader.addEventListener('load', () =>
-                setImgSrc(reader.result.toString() || ''),
-            )
-            reader.readAsDataURL(e.target.files[0])
+    const loadFile = (file) => {
+        if (!file) return
+        if (!file.type.startsWith('image/')) {
+            setError(`"${file.name}" is not an image. Please choose a JPG, PNG, WebP, or GIF file.`)
+            return
         }
+        setError('')
+        setCrop(undefined)
+        const reader = new FileReader()
+        reader.addEventListener('load', () =>
+            setImgSrc(reader.result?.toString() || ''),
+        )
+        reader.addEventListener('error', () =>
+            setError('Could not read that file. Please try again.'),
+        )
+        reader.readAsDataURL(file)
+    }
+
+    const onSelectFile = (e) => {
+        loadFile(e.target.files?.[0])
+        // Clear so re-picking the same file still fires onChange
+        e.target.value = ''
     }
 
     const onImageLoad = (e) => {
@@ -109,7 +139,7 @@ const ImageCropper = () => {
 
         const newCrop = centerAspectCrop(width, height, originalRatio)
         setCrop(newCrop)
-        setCompletedCrop(newCrop)
+        setCompletedCrop(percentCropToPixels(newCrop, e.currentTarget))
     }
 
     const handleAspectChange = (newAspect, custom = false) => {
@@ -121,13 +151,7 @@ const ImageCropper = () => {
             const newCrop = centerAspectCrop(width, height, newAspect)
             setCrop(newCrop)
             // Immediately update completedCrop for live preview
-            setCompletedCrop({
-                unit: 'px',
-                x: (newCrop.x / 100) * width,
-                y: (newCrop.y / 100) * height,
-                width: (newCrop.width / 100) * width,
-                height: (newCrop.height / 100) * height,
-            })
+            setCompletedCrop(percentCropToPixels(newCrop, imgRef.current))
         }
     }
 
@@ -141,11 +165,16 @@ const ImageCropper = () => {
         const canvas = previewCanvasRef.current
         const crop = completedCrop
 
-        const scaleX = image.naturalWidth / image.width
-        const scaleY = image.naturalHeight / image.height
+        // react-image-crop reports crop coordinates against getBoundingClientRect(), which includes
+        // the zoom transform on the wrapper. image.width is the untransformed layout width, so using
+        // it here scaled every crop by the zoom factor. Measure on the same basis the crop came from.
+        const rect = image.getBoundingClientRect()
+        const renderedWidth = rect.width || image.width
+        const renderedHeight = rect.height || image.height
+        const scaleX = image.naturalWidth / renderedWidth
+        const scaleY = image.naturalHeight / renderedHeight
         const ctx = canvas.getContext('2d')
 
-        const pixelRatio = window.devicePixelRatio
         const actualWidth = Math.floor(crop.width * scaleX)
         const actualHeight = Math.floor(crop.height * scaleY)
         const actualX = Math.floor(crop.x * scaleX)
@@ -153,10 +182,10 @@ const ImageCropper = () => {
 
         setOutputSize({ width: actualWidth, height: actualHeight, x: actualX, y: actualY })
 
-        canvas.width = actualWidth * pixelRatio
-        canvas.height = actualHeight * pixelRatio
+        // Bitmap must match the advertised crop size exactly, so the export is a 1:1 copy
+        canvas.width = actualWidth
+        canvas.height = actualHeight
 
-        ctx.scale(pixelRatio, pixelRatio)
         ctx.imageSmoothingQuality = 'high'
 
         const cropX = crop.x * scaleX
@@ -178,10 +207,16 @@ const ImageCropper = () => {
             actualWidth,
             actualHeight,
         )
-    }, [completedCrop])
+        // zoom changes the rendered size the crop is measured against, so the preview has to be
+        // recomputed when it changes — not only when the crop rectangle itself moves.
+    }, [completedCrop, zoom])
 
     const downloadCroppedImage = () => {
-        if (!previewCanvasRef.current) return
+        if (!previewCanvasRef.current || !completedCrop || !outputSize.width || !outputSize.height) {
+            setError('Select a crop area before downloading.')
+            return
+        }
+        setError('')
 
         const canvas = previewCanvasRef.current
         const base64Image = canvas.toDataURL('image/png')
@@ -216,7 +251,16 @@ const ImageCropper = () => {
     })
 
     // Compute effective aspect ratio
-    const effectiveAspect = aspect || (isShiftDown && crop?.width && crop?.height ? crop.width / crop.height : undefined)
+    const shiftLockAspect = (() => {
+        if (!isShiftDown || !crop?.width || !crop?.height) return undefined
+        if (crop.unit !== '%') return crop.width / crop.height
+        // A percent crop is relative to each axis, so scale by the rendered size to get the visual ratio
+        const img = imgRef.current
+        if (!img?.width || !img?.height) return undefined
+        return (crop.width * img.width) / (crop.height * img.height)
+    })()
+
+    const effectiveAspect = aspect || shiftLockAspect
 
     return (
         <ToolLayout
@@ -246,11 +290,7 @@ const ImageCropper = () => {
                             onDrop={(e) => {
                                 e.preventDefault();
                                 e.currentTarget.style.borderColor = 'var(--border)';
-                                if (e.dataTransfer.files?.[0]) {
-                                    const reader = new FileReader()
-                                    reader.onload = () => setImgSrc(reader.result)
-                                    reader.readAsDataURL(e.dataTransfer.files[0])
-                                }
+                                loadFile(e.dataTransfer.files?.[0])
                             }}
                         >
                             <input
@@ -276,6 +316,9 @@ const ImageCropper = () => {
                             <h3 style={{ fontSize: '1.5rem', fontWeight: '700', marginBottom: '0.5rem' }}>Click or Drag Image Here</h3>
                             <p style={{ color: '#64748b' }}>Supports JPG, PNG, WebP</p>
                         </div>
+                        {error && (
+                            <p role="alert" style={{ color: '#ef4444', marginTop: '1rem', fontSize: '0.9rem', textAlign: 'center' }}>{error}</p>
+                        )}
                     </div>
                 ) : (
                     <div style={{ display: 'grid', gridTemplateColumns: '1fr 340px', gap: '2rem', alignItems: 'start' }} className="cropper-layout">
@@ -286,7 +329,7 @@ const ImageCropper = () => {
                                     <ZoomIn size={20} /> Crop Editor
                                 </h3>
                                 <button
-                                    onClick={() => setImgSrc('')}
+                                    onClick={() => { setImgSrc(''); setError('') }}
                                     style={{
                                         padding: '0.5rem 1rem',
                                         borderRadius: '0.5rem',
@@ -423,6 +466,7 @@ const ImageCropper = () => {
                                                 alt="Crop me"
                                                 src={imgSrc}
                                                 onLoad={onImageLoad}
+                                                onError={() => { setImgSrc(''); setError('That image could not be decoded. Try a JPG, PNG, or WebP file.') }}
                                                 style={{
                                                     display: 'block',
                                                     maxWidth: '100%',
@@ -504,13 +548,7 @@ const ImageCropper = () => {
 
                                                         const nextCrop = { ...crop, x: newX }
                                                         setCrop(nextCrop)
-                                                        setCompletedCrop({
-                                                            unit: 'px',
-                                                            x: (newX / 100) * img.width,
-                                                            y: (crop.y / 100) * img.height,
-                                                            width: (crop.width / 100) * img.width,
-                                                            height: (crop.height / 100) * img.height
-                                                        })
+                                                        setCompletedCrop(percentCropToPixels(nextCrop, img))
                                                     }
                                                 }}
                                                 style={{ border: 'none', background: 'transparent', color: 'var(--primary)', fontSize: '0.75rem', fontWeight: '600', cursor: 'pointer', padding: 0 }}
@@ -617,6 +655,10 @@ const ImageCropper = () => {
                                         }}
                                     />
                                 </div>
+
+                                {error && (
+                                    <p role="alert" style={{ color: '#ef4444', marginBottom: '1rem', fontSize: '0.9rem' }}>{error}</p>
+                                )}
 
                                 <button
                                     onClick={downloadCroppedImage}

@@ -1,4 +1,3 @@
-import React from 'react'
 import CodeFormatter from './CodeFormatter'
 
 const SqlFormatter = () => {

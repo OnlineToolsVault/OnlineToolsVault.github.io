@@ -1,14 +1,17 @@
-import React, { useState } from 'react'
+import { useState } from 'react'
 import RelatedTools from '../../components/tools/RelatedTools'
 import ToolLayout from '../../components/tools/ToolLayout'
 import FileUploader from '../../components/tools/FileUploader'
 import { FileText, Download, Loader2, AlignLeft, Shield } from 'lucide-react'
 import * as PDFJS from 'pdfjs-dist'
+// Bundled by Vite from the installed package, so the worker is self-hosted and can never
+// drift from the pdfjs-dist version the way the old cdnjs URL could.
+import pdfWorkerUrl from 'pdfjs-dist/build/pdf.worker.min.mjs?url'
 import { Document, Packer, Paragraph, TextRun } from 'docx'
 import { saveAs } from 'file-saver'
 
 // Worker setup
-PDFJS.GlobalWorkerOptions.workerSrc = `//cdnjs.cloudflare.com/ajax/libs/pdf.js/${PDFJS.version}/pdf.worker.min.mjs`
+PDFJS.GlobalWorkerOptions.workerSrc = pdfWorkerUrl
 
 const features = [
     { title: 'Editable DOCX', desc: 'Convert static PDFs into fully editable Microsoft Word documents.', icon: <FileText color="var(--primary)" size={24} /> },
@@ -36,10 +39,13 @@ const PdfToWord = () => {
     const [isProcessing, setIsProcessing] = useState(false)
     const [progress, setProgress] = useState(0)
     const [convertedDoc, setConvertedDoc] = useState(null)
+    const [error, setError] = useState(null)
 
     const processPdf = async (pdfFile) => {
         setIsProcessing(true)
         setProgress(0)
+        setError(null)
+        setConvertedDoc(null)
         try {
             const arrayBuffer = await pdfFile.arrayBuffer()
             const pdf = await PDFJS.getDocument(arrayBuffer).promise
@@ -101,9 +107,11 @@ const PdfToWord = () => {
             const blob = await Packer.toBlob(doc)
             setConvertedDoc(blob)
 
-        } catch (error) {
-            console.error('Conversion failed', error)
-            alert('Failed to convert PDF. The file might be encrypted or corrupted.')
+        } catch (err) {
+            console.error('Conversion failed', err)
+            setError(err?.name === 'PasswordException'
+                ? 'This PDF is password-protected. Unlock it first, then try again.'
+                : 'Failed to convert PDF. The file might be encrypted or corrupted.')
         } finally {
             setIsProcessing(false)
         }
@@ -111,7 +119,7 @@ const PdfToWord = () => {
 
     const handleDownload = () => {
         if (convertedDoc) {
-            saveAs(convertedDoc, file.name.replace('.pdf', '.docx'))
+            saveAs(convertedDoc, `${file.name.replace(/\.pdf$/i, '')}.docx`)
         }
     }
 
@@ -149,6 +157,26 @@ const PdfToWord = () => {
                                 <p>Converting... {progress}%</p>
                                 <style>{`@keyframes spin { 100% { transform: rotate(360deg); } } .spin { animation: spin 1s linear infinite; }`}</style>
                             </>
+                        ) : error ? (
+                            <div>
+                                <p role="alert" style={{ color: '#dc2626', fontWeight: 'bold', marginBottom: '1.5rem' }}>{error}</p>
+                                <button
+                                    id="pdf-word-reset-btn"
+                                    onClick={() => { setFile(null); setConvertedDoc(null); setError(null); setProgress(0) }}
+                                    className="tool-btn-primary"
+                                    style={{
+                                        padding: '1rem 2rem',
+                                        fontSize: '1.1rem',
+                                        borderRadius: '0.5rem',
+                                        background: 'var(--primary)',
+                                        color: 'white',
+                                        border: 'none',
+                                        cursor: 'pointer'
+                                    }}
+                                >
+                                    Try Another File
+                                </button>
+                            </div>
                         ) : (
                             <div>
                                 <p style={{ color: 'green', fontWeight: 'bold', marginBottom: '1.5rem' }}>Conversion Complete!</p>
@@ -174,7 +202,7 @@ const PdfToWord = () => {
                                 <div style={{ marginTop: '2rem' }}>
                                     <button
                                         id="pdf-word-reset-btn"
-                                        onClick={() => { setFile(null); setConvertedDoc(null); }}
+                                        onClick={() => { setFile(null); setConvertedDoc(null); setError(null); setProgress(0) }}
                                         style={{ background: 'none', border: 'none', color: '#64748b', textDecoration: 'underline', cursor: 'pointer' }}
                                     >
                                         Convert Another File

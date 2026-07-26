@@ -1,9 +1,9 @@
-import React, { useState } from 'react';
+import { useState, useRef } from 'react';
 import { useEditor } from './EditorContext';
 import {
-    MousePointer2, Type, Pen, Highlighter, Eraser,
+    MousePointer2, Type, Pen, Highlighter,
     Image as ImageIcon, Square, Circle, Ban,
-    Undo, Redo, ZoomIn, ZoomOut, Download, ChevronDown
+    Undo, Redo, ZoomIn, ZoomOut, Download
 } from 'lucide-react';
 
 const ToolGroup = ({ children }) => (
@@ -12,7 +12,7 @@ const ToolGroup = ({ children }) => (
     </div>
 );
 
-const ToolButton = ({ id, icon: Icon, label, active, onClick, disabled }) => {
+const ToolButton = ({ icon: Icon, label, active, onClick, disabled }) => {
     const [hover, setHover] = useState(false);
 
     return (
@@ -60,10 +60,9 @@ const ToolButton = ({ id, icon: Icon, label, active, onClick, disabled }) => {
 };
 
 const Toolbar = ({ onDownload }) => {
-    const { activeTool, setActiveTool, scale, setScale, isProcessing, addImage, undo, redo } = useEditor();
+    const { activeTool, setActiveTool, scale, setScale, isProcessing, addImage, undo, redo, canUndo, canRedo } = useEditor();
 
-    const canUndo = true; // Context doesn't expose stack size yet
-    const canRedo = true;
+    const imageInputRef = useRef(null);
 
     return (
         <div style={{
@@ -97,23 +96,26 @@ const Toolbar = ({ onDownload }) => {
                     <ToolButton id="redact" icon={Ban} label="Redact & Erase" active={activeTool === 'redact'} onClick={() => setActiveTool('redact')} />
 
                     {/* Image Upload */}
+                    {/* A <label> cannot forward clicks to the input past an interactive
+                        descendant like <button>, so open the picker from a ref instead. */}
                     <div style={{ position: 'relative' }}>
-                        <label style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}>
-                            <ToolButton id="image" icon={ImageIcon} label="Add Image" active={false} onClick={() => { }} />
-                            <input
-                                type="file"
-                                accept="image/*"
-                                style={{ display: 'none' }}
-                                onChange={(e) => {
-                                    const file = e.target.files[0];
-                                    if (file) {
-                                        const reader = new FileReader();
-                                        reader.onload = (f) => addImage(f.target.result);
-                                        reader.readAsDataURL(file);
-                                    }
-                                }}
-                            />
-                        </label>
+                        <ToolButton id="image" icon={ImageIcon} label="Add Image" active={false} onClick={() => imageInputRef.current?.click()} />
+                        <input
+                            ref={imageInputRef}
+                            type="file"
+                            accept="image/*"
+                            style={{ display: 'none' }}
+                            onChange={(e) => {
+                                const file = e.target.files[0];
+                                if (file) {
+                                    const reader = new FileReader();
+                                    reader.onload = (f) => addImage(f.target.result);
+                                    reader.onerror = () => alert("That image file could not be read. Please try another one.");
+                                    reader.readAsDataURL(file);
+                                }
+                                e.target.value = ''; // allow re-picking the same file
+                            }}
+                        />
                     </div>
                 </ToolGroup>
 

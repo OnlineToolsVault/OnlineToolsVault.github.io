@@ -124,6 +124,12 @@ const STATIC_META = {
   '/privacy': { title: 'Privacy Policy | OnlineToolsVault', description: 'Privacy policy for OnlineToolsVault. Your files never leave your device.' },
 };
 
+// Every route is deployed as a directory index (dist/merge-pdf/index.html), and GitHub Pages
+// 301-redirects the slash-less form to it. The trailing-slash URL is therefore the only one that
+// answers 200, so it is what canonical tags, og:url and the sitemap must all point at — otherwise
+// we would be advertising URLs that redirect.
+const canonicalUrlFor = (route) => (route === '/' ? `${baseUrl}/` : `${baseUrl}${route}/`);
+
 // Build the route -> meta map. The tool catalogue (src/data/tools.js) is the
 // single source of truth; failure to load it degrades gracefully to a plain
 // index.html copy (the previous behaviour), so deployment can never break here.
@@ -131,7 +137,7 @@ const metaByPath = {};
 for (const [route, m] of Object.entries(STATIC_META)) {
   metaByPath[route] = {
     ...m,
-    url: `${baseUrl}${route}`,
+    url: canonicalUrlFor(route),
     image: `${baseUrl}/og/default.png`,
     imageAlt: 'OnlineToolsVault — Free Online Tools',
   };
@@ -142,7 +148,7 @@ try {
     metaByPath[tool.path] = {
       title: `${tool.name} | OnlineToolsVault`,
       description: tool.seoDescription || tool.description || '',
-      url: `${baseUrl}${tool.path}`,
+      url: canonicalUrlFor(tool.path),
       image: `${baseUrl}/og/${tool.id}.png`,
       imageAlt: `${tool.name} — OnlineToolsVault`,
     };
@@ -154,11 +160,18 @@ try {
 }
 
 // Replace (or insert) the social/SEO tags in a copy of the built index.html.
+// react-helmet-async claims the tags it manages by marking them data-rh="true", and on mount it
+// replaces the ones already carrying that attribute instead of appending its own. Title, description
+// and canonical are all re-declared by ToolLayout/Home/the static pages, so they get the marker —
+// without it every page would end up with two of each, with conflicting values. The og:* and
+// twitter:* tags are NOT re-declared in React, so they must stay unmarked or Helmet would strip them.
 function injectMeta(html, m) {
   const tags = [
-    [/<title>[\s\S]*?<\/title>/i, `<title>${escAttr(m.title)}</title>`],
-    [/<meta\s+name="description"[\s\S]*?>/i, `<meta name="description" content="${escAttr(m.description)}" />`],
-    [/<link\s+rel="canonical"[\s\S]*?>/i, `<link rel="canonical" href="${escAttr(m.url)}" />`],
+    // The patterns tolerate the data-rh attribute so re-running this script over an already
+    // processed index.html replaces the tag instead of appending a second one.
+    [/<title[^>]*>[\s\S]*?<\/title>/i, `<title data-rh="true">${escAttr(m.title)}</title>`],
+    [/<meta[^>]*\sname="description"[\s\S]*?>/i, `<meta data-rh="true" name="description" content="${escAttr(m.description)}" />`],
+    [/<link[^>]*\srel="canonical"[\s\S]*?>/i, `<link data-rh="true" rel="canonical" href="${escAttr(m.url)}" />`],
     [/<meta\s+property="og:title"[\s\S]*?>/i, `<meta property="og:title" content="${escAttr(m.title)}" />`],
     [/<meta\s+property="og:description"[\s\S]*?>/i, `<meta property="og:description" content="${escAttr(m.description)}" />`],
     [/<meta\s+property="og:url"[\s\S]*?>/i, `<meta property="og:url" content="${escAttr(m.url)}" />`],
@@ -186,7 +199,7 @@ function generateSitemap() {
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   ${routes.map(route => `
   <url>
-    <loc>${baseUrl}${route}</loc>
+    <loc>${canonicalUrlFor(route)}</loc>
     <changefreq>weekly</changefreq>
     <priority>${route === '/' ? '1.0' : '0.8'}</priority>
   </url>

@@ -1,8 +1,13 @@
-import React, { useState, useRef, useEffect } from 'react'
+import { useState, useRef, useEffect } from 'react'
 import ToolLayout from '../../components/tools/ToolLayout'
 import RelatedTools from '../../components/tools/RelatedTools'
 import { useDropzone } from 'react-dropzone'
-import { Upload, Download, Maximize, Lock, Unlock, Zap, ShieldCheck, Image as ImageIcon } from 'lucide-react'
+import { Download, Maximize, Lock, Unlock, ShieldCheck } from 'lucide-react'
+
+// Canvas can only encode these; anything else (GIF, SVG, BMP...) falls back to PNG
+const CANVAS_TYPES = ['image/png', 'image/jpeg', 'image/webp']
+const outputTypeFor = (type) => (CANVAS_TYPES.includes(type) ? type : 'image/png')
+const extFor = (type) => (type === 'image/jpeg' ? 'jpg' : type === 'image/webp' ? 'webp' : 'png')
 
 const ImageResizer = () => {
   const [file, setFile] = useState(null)
@@ -55,7 +60,7 @@ const ImageResizer = () => {
       const img = new Image()
       img.onload = () => {
         ctx.drawImage(img, 0, 0, dimensions.width, dimensions.height)
-        setResizedImage(canvas.toDataURL(file.type))
+        setResizedImage(canvas.toDataURL(outputTypeFor(file.type)))
       }
       img.src = previewUrl
     }
@@ -87,9 +92,14 @@ const ImageResizer = () => {
 
   const handleDownload = () => {
     if (!resizedImage) return
+    const outType = outputTypeFor(file.type)
+    // Retag the extension only when the canvas could not honour the source format
+    const name = outType === file.type
+      ? file.name
+      : `${file.name.replace(/\.[^./\\]+$/, '')}.${extFor(outType)}`
     const link = document.createElement('a')
     link.href = resizedImage
-    link.download = `resized-${file.name}`
+    link.download = `resized-${name}`
     document.body.appendChild(link)
     link.click()
     document.body.removeChild(link)
@@ -120,7 +130,7 @@ const ImageResizer = () => {
               display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center'
             }}
           >
-            <input {...getInputProps()} />
+            <input {...getInputProps()} aria-label="Choose a file for Image Resizer" />
             <div style={{
               width: '64px', height: '64px',
               background: '#e0e7ff',
@@ -202,6 +212,11 @@ const ImageResizer = () => {
                   >
                     <Download size={18} /> Download Resized
                   </button>
+                  {outputTypeFor(file.type) !== file.type && (
+                    <p style={{ marginTop: '0.75rem', fontSize: '0.8125rem', color: '#64748b', textAlign: 'center' }}>
+                      This format cannot be re-encoded by your browser, so it is exported as PNG (animation is not preserved).
+                    </p>
+                  )}
                   <button
                     onClick={() => setFile(null)}
                     style={{
@@ -274,7 +289,7 @@ const faqs = [
   },
   {
     question: "What output format do I ge?",
-    answer: "The resized image preserves the original format (JPG, PNG) to maintain compatibility."
+    answer: "JPG, PNG and WebP images keep their original format. Other formats such as GIF or SVG are exported as PNG, and animated GIFs are flattened to their first frame."
   },
   {
     question: "Does it work on mobile?",

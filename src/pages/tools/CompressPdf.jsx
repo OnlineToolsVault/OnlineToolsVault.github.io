@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import { useState } from 'react'
 import ToolLayout from '../../components/tools/ToolLayout'
 import RelatedTools from '../../components/tools/RelatedTools'
 import { PDFDocument } from 'pdf-lib'
@@ -136,7 +136,7 @@ const CompressPdf = () => {
                                     background: isDragActive ? 'var(--secondary)' : '#f8fafc'
                                 }}
                             >
-                                <input {...getInputProps()} />
+                                <input {...getInputProps()} aria-label="Choose a file for Compress PDF" />
                                 <Upload size={32} style={{ color: '#64748b', marginBottom: '1rem' }} />
                                 <p style={{ fontWeight: '500' }}>Drag & Drop PDF or Click to Upload</p>
                             </div>

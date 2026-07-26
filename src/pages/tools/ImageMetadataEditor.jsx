@@ -1,8 +1,8 @@
-import React, { useState } from 'react'
+import { useState } from 'react'
 import RelatedTools from '../../components/tools/RelatedTools'
 import ToolLayout from '../../components/tools/ToolLayout'
 import { useDropzone } from 'react-dropzone'
-import { FileImage, Download, Loader2, Save, X, Edit3, Camera, Calendar, User, Copyright } from 'lucide-react'
+import { Loader2, Save, Edit3, Camera, Calendar, User, Copyright } from 'lucide-react'
 import { saveAs } from 'file-saver'
 import piexif from 'piexifjs'
 const features = [
@@ -29,6 +29,20 @@ const faqs = [
         answer: "We currently support standard JPG and JPEG files, which are the most common formats for EXIF data."
     }
 ]
+
+const EXIF_FIELD_LABELS = {
+    Artist: 'Artist / Author',
+    Copyright: 'Copyright',
+    DateTime: 'Date & Time',
+    Software: 'Software',
+    Make: 'Camera Make',
+    Model: 'Camera Model'
+}
+
+// EXIF ASCII tags are Latin-1 byte strings; anything above U+00FF cannot be encoded.
+const hasNonLatin1 = (s) => [...(s || '')].some(c => c.codePointAt(0) > 0xff)
+
+const emptyExifDict = () => ({ '0th': {}, 'Exif': {}, 'GPS': {}, 'Interop': {}, '1st': {}, thumbnail: null })
 
 const ImageMetadataEditor = () => {
     const [file, setFile] = useState(null)
@@ -65,7 +79,6 @@ const ImageMetadataEditor = () => {
             try {
                 const logs = piexif.load(data)
                 // Extract simple fields for editing
-                const zeroIfObj = (v) => (typeof v === 'object' ? '' : v)
 
                 setExifData({
                     Artist: logs['0th'][piexif.ImageIFD.Artist] || '',
@@ -86,9 +99,25 @@ const ImageMetadataEditor = () => {
 
     const saveExif = () => {
         if (!imgData) return
+
+        const badFields = Object.keys(EXIF_FIELD_LABELS).filter(k => hasNonLatin1(exifData[k]))
+        if (badFields.length > 0) {
+            alert(
+                'EXIF text tags can only store Latin-1 characters, so accented Latin text works but Japanese, Chinese, Korean, Cyrillic, Greek and emoji do not.\n\n' +
+                `Please use Latin characters in: ${badFields.map(k => EXIF_FIELD_LABELS[k]).join(', ')}.`
+            )
+            return
+        }
+
         setIsProcessing(true)
         try {
-            const logs = piexif.load(imgData) // Load existing to keep other tags
+            let logs
+            try {
+                logs = piexif.load(imgData) // Load existing to keep other tags
+            } catch (loadErr) {
+                console.warn('Existing EXIF unreadable, writing fresh metadata', loadErr)
+                logs = emptyExifDict()
+            }
 
             logs['0th'][piexif.ImageIFD.Artist] = exifData.Artist
             logs['0th'][piexif.ImageIFD.Copyright] = exifData.Copyright
@@ -112,7 +141,7 @@ const ImageMetadataEditor = () => {
 
         } catch (error) {
             console.error(error)
-            alert('Error saving EXIF.')
+            alert(`Error saving EXIF: ${error?.message || 'unknown error'}`)
         } finally {
             setIsProcessing(false)
         }
@@ -143,7 +172,7 @@ const ImageMetadataEditor = () => {
                             boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.05)'
                         }}
                     >
-                        <input {...getInputProps()} />
+                        <input {...getInputProps()} aria-label="Choose a file for Image Metadata Editor" />
                         <div style={{
                             width: '80px',
                             height: '80px',

@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import { useState } from 'react'
 import RelatedTools from '../../components/tools/RelatedTools'
 import ToolLayout from '../../components/tools/ToolLayout'
 import { Hash, Copy, Check, ShieldCheck, Cpu } from 'lucide-react'
@@ -34,6 +34,7 @@ const HashGenerator = () => {
     }
 
     const copyToClipboard = (text, key) => {
+        if (!text) return
         navigator.clipboard.writeText(text)
         setCopied(key)
         setTimeout(() => setCopied(null), 2000)
@@ -66,7 +67,15 @@ const HashGenerator = () => {
                                 <span style={{ fontWeight: 'bold', color: 'var(--primary)' }}>{algo}</span>
                                 <button
                                     onClick={() => copyToClipboard(hash, algo)}
-                                    style={{ border: 'none', background: 'none', cursor: 'pointer', color: copied === algo ? 'green' : '#64748b' }}
+                                    disabled={!input}
+                                    aria-label={`Copy ${algo} hash`}
+                                    style={{
+                                        border: 'none',
+                                        background: 'none',
+                                        cursor: input ? 'pointer' : 'not-allowed',
+                                        opacity: input ? 1 : 0.4,
+                                        color: copied === algo ? 'green' : '#64748b'
+                                    }}
                                 >
                                     {copied === algo ? <Check size={18} /> : <Copy size={18} />}
                                 </button>

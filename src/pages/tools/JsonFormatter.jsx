@@ -1,9 +1,8 @@
-import React, { useState, useEffect, useRef } from 'react'
-import ToolLayout from '../../components/tools/ToolLayout'
+import { useState, useEffect, useRef } from 'react'
 import RelatedTools from '../../components/tools/RelatedTools'
 import { Helmet } from 'react-helmet-async'
-import Editor, { useMonaco } from '@monaco-editor/react'
-import { Copy, Trash2, Check, AlertCircle, FileJson, Search, Minimize2, Maximize2, ArrowRight } from 'lucide-react'
+import Editor from '@monaco-editor/react'
+import { Copy, Trash2, Check, AlertCircle, FileJson, Search, Minimize2, Maximize2 } from 'lucide-react'
 const JsonFormatter = () => {
     const [input, setInput] = useState('{"example": "paste your json here"}')
     const [output, setOutput] = useState('')
@@ -12,8 +11,7 @@ const JsonFormatter = () => {
     const [stats, setStats] = useState({ size: '0 B', nodes: 0 })
     const [copied, setCopied] = useState(false)
     const [pathCopied, setPathCopied] = useState(false)
-    const [indentSize, setIndentSize] = useState(2)
-    const monaco = useMonaco()
+    const [indentSize, setIndentSize] = useState('2')
     const outputEditorRef = useRef(null)
 
     useEffect(() => {
@@ -110,7 +108,8 @@ const JsonFormatter = () => {
             }
 
             const parsed = JSON.parse(input)
-            const formatted = JSON.stringify(parsed, null, Number(indentSize))
+            const indent = indentSize === 'tab' ? '\t' : Number(indentSize)
+            const formatted = JSON.stringify(parsed, null, indent)
             setOutput(formatted)
             setError(null)
 
@@ -186,7 +185,7 @@ const JsonFormatter = () => {
     }
 
     // JSON Path finding logic
-    const handleEditorDidMount = (editor, monaco) => {
+    const handleEditorDidMount = (editor) => {
         outputEditorRef.current = editor
 
         editor.onDidChangeCursorPosition((e) => {
@@ -233,11 +232,12 @@ const JsonFormatter = () => {
 
                     {/* Controls */}
                     <div style={{ display: 'flex', gap: '1rem', flexWrap: 'wrap', alignItems: 'center', justifyContent: 'space-between', background: 'var(--card)', padding: '1rem', borderRadius: '1rem', border: '1px solid var(--border)' }}>
-                        <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
+                        <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.5rem', alignItems: 'center' }}>
                             <div className="select-wrapper">
                                 <select
+                                    aria-label="Indentation"
                                     value={indentSize}
-                                    onChange={(e) => setIndentSize(Number(e.target.value))}
+                                    onChange={(e) => setIndentSize(e.target.value)}
                                     style={{
                                         padding: '0.5rem 1rem',
                                         borderRadius: '0.5rem',
@@ -247,11 +247,11 @@ const JsonFormatter = () => {
                                         cursor: 'pointer'
                                     }}
                                 >
-                                    <option value={1}>1 Tab</option>
-                                    <option value={2}>2 Spaces</option>
-                                    <option value={4}>4 Spaces</option>
-                                    <option value={6}>6 Spaces</option>
-                                    <option value={8}>8 Spaces</option>
+                                    <option value="tab">Tab</option>
+                                    <option value="2">2 Spaces</option>
+                                    <option value="4">4 Spaces</option>
+                                    <option value="6">6 Spaces</option>
+                                    <option value="8">8 Spaces</option>
                                 </select>
                             </div>
                             <div style={{ width: '1px', height: '20px', background: 'var(--border)', margin: '0 0.5rem' }}></div>

@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import { useState } from 'react'
 import RelatedTools from '../../components/tools/RelatedTools'
 import ToolLayout from '../../components/tools/ToolLayout'
 import { DiffEditor } from '@monaco-editor/react'
@@ -33,7 +33,7 @@ const DiffViewer = () => {
             <div style={{ display: 'flex', flexDirection: 'column' }}>
                 <div style={{ display: 'grid', gridTemplateColumns: 'minmax(0, 1fr) minmax(0, 1fr)', gap: '1rem', marginBottom: '1rem', flexShrink: 0 }}>
                     <div>
-                        <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: 'bold' }}>Original Text</label>
+                        <label htmlFor="diff-original-input" style={{ display: 'block', marginBottom: '0.5rem', fontWeight: 'bold' }}>Original Text</label>
                         <textarea
                             id="diff-original-input"
                             value={original}
@@ -43,7 +43,7 @@ const DiffViewer = () => {
                         />
                     </div>
                     <div>
-                        <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: 'bold' }}>Modified Text</label>
+                        <label htmlFor="diff-modified-input" style={{ display: 'block', marginBottom: '0.5rem', fontWeight: 'bold' }}>Modified Text</label>
                         <textarea
                             id="diff-modified-input"
                             value={modified}

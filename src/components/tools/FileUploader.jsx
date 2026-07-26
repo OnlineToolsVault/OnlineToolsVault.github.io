@@ -1,6 +1,5 @@
-import React from 'react'
 import { useDropzone } from 'react-dropzone'
-import { FileText, Upload } from 'lucide-react'
+import { FileText } from 'lucide-react'
 
 const FileUploader = ({
     onFileSelect,
@@ -25,6 +24,9 @@ const FileUploader = ({
 
     const inputProps = getInputProps()
     if (props.id) inputProps.id = props.id
+    // react-dropzone renders a bare, visually hidden input. The heading next to it is not
+    // programmatically associated, so screen readers would announce it as an unlabelled control.
+    if (!inputProps['aria-label']) inputProps['aria-label'] = label
 
     return (
         <div

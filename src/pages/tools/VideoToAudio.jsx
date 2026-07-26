@@ -1,8 +1,12 @@
-import React, { useState, useRef, useEffect } from 'react'
+import { useState, useRef, useEffect } from 'react'
 import ToolLayout from '../../components/tools/ToolLayout'
 import { FileVideo, Music, AlertCircle, Loader2, Download, Video } from 'lucide-react'
 import { FFmpeg } from '@ffmpeg/ffmpeg'
 import { fetchFile, toBlobURL } from '@ffmpeg/util'
+// Served from our own origin instead of a CDN, so the converter still works on
+// offline/restricted networks. @ffmpeg/core is single-threaded, so no COOP/COEP needed.
+import ffmpegCoreUrl from '@ffmpeg/core?url'
+import ffmpegWasmUrl from '@ffmpeg/core/wasm?url'
 import RelatedTools from '../../components/tools/RelatedTools'
 
 const features = [
@@ -43,12 +47,11 @@ const VideoToAudio = () => {
     const [error, setError] = useState(null)
     const [loaded, setLoaded] = useState(false)
     const [isLoading, setIsLoading] = useState(true)
-    const [message, setMessage] = useState('Loading...')
+    const [, setMessage] = useState('Loading...')
     const ffmpegRef = useRef(new FFmpeg())
 
     const load = async () => {
         setIsLoading(true)
-        const baseURL = 'https://cdn.jsdelivr.net/npm/@ffmpeg/core@0.12.10/dist/esm'
         const ffmpeg = ffmpegRef.current
 
         // Timeout handling
@@ -66,8 +69,8 @@ const VideoToAudio = () => {
         try {
             await Promise.race([
                 ffmpeg.load({
-                    coreURL: await toBlobURL(`${baseURL}/ffmpeg-core.js`, 'text/javascript'),
-                    wasmURL: await toBlobURL(`${baseURL}/ffmpeg-core.wasm`, 'application/wasm'),
+                    coreURL: await toBlobURL(ffmpegCoreUrl, 'text/javascript'),
+                    wasmURL: await toBlobURL(ffmpegWasmUrl, 'application/wasm'),
                 }),
                 timeout
             ])
@@ -105,15 +108,30 @@ const VideoToAudio = () => {
 
         try {
             await ffmpeg.writeFile('input.mp4', await fetchFile(videoFile))
+            // Drop any output left from a previous run: ffmpeg.exec resolves with an exit
+            // code instead of throwing, so a stale file could be served as a "success".
+            try {
+                await ffmpeg.deleteFile('output.mp3')
+            } catch {
+                // nothing to delete on the first run
+            }
+
             // Extract audio: -vn (no video), -ac 2 (stereo), -b:a 192k (bitrate)
-            await ffmpeg.exec(['-i', 'input.mp4', '-vn', '-ac', '2', '-b:a', '192k', 'output.mp3'])
+            const exitCode = await ffmpeg.exec(['-i', 'input.mp4', '-vn', '-ac', '2', '-b:a', '192k', 'output.mp3'])
+            if (exitCode !== 0) {
+                throw new Error(`ffmpeg exited with code ${exitCode}`)
+            }
+
             const data = await ffmpeg.readFile('output.mp3')
+            if (!data || data.length === 0) {
+                throw new Error('ffmpeg produced an empty audio file')
+            }
             const url = URL.createObjectURL(new Blob([data.buffer], { type: 'audio/mp3' }))
             setDownloadUrl(url)
             setMessage('Conversion complete!')
         } catch (err) {
             console.error(err)
-            setError('An error occurred during processing. The file might be too large or the format unsupported.')
+            setError('Could not extract audio from this video. It may not contain an audio track, or the format is unsupported.')
         } finally {
             setProcessing(false)
         }
@@ -134,11 +152,17 @@ const VideoToAudio = () => {
             features={features}
             faqs={faqs}
         >
-            <div className="max-w-3xl mx-auto space-y-8">
+            <div style={{ maxWidth: '48rem', margin: '0 auto' }}>
                 {/* Main Action Area */}
                 <div
-                    className={`border-2 border-dashed rounded-xl p-10 text-center transition-all ${videoFile ? 'border-primary bg-primary/5' : 'border-gray-300 hover:border-primary'
-                        }`}
+                    style={{
+                        border: `2px dashed ${videoFile ? 'var(--primary)' : 'var(--border)'}`,
+                        borderRadius: '0.75rem',
+                        padding: '2.5rem',
+                        textAlign: 'center',
+                        background: videoFile ? 'var(--bg-secondary)' : 'var(--card)',
+                        transition: 'all 0.2s ease'
+                    }}
                 >
                     {error ? (
                         <div className="error-card">
@@ -168,10 +192,10 @@ const VideoToAudio = () => {
                             </p>
                         </div>
                     ) : isLoading ? (
-                        <div className="flex flex-col items-center justify-center py-8">
-                            <Loader2 className="w-10 h-10 animate-spin text-primary mb-4" />
-                            <h3 className="text-xl font-semibold text-gray-800">Loading Engine...</h3>
-                            <p className="text-gray-500 mt-2">Setting up secure browser environment</p>
+                        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '2rem 0' }}>
+                            <Loader2 className="animate-spin" size={40} style={{ color: 'var(--primary)', marginBottom: '1rem' }} />
+                            <h3 style={{ fontSize: '1.25rem', fontWeight: '600', color: 'var(--text-primary)' }}>Loading Engine...</h3>
+                            <p style={{ color: 'var(--text-secondary)', marginTop: '0.5rem' }}>Setting up secure browser environment</p>
                         </div>
                     ) : (
                         <>
@@ -185,33 +209,54 @@ const VideoToAudio = () => {
                             />
 
                             {!videoFile ? (
-                                <label htmlFor="video-upload" className={`cursor-pointer flex flex-col items-center ${(!loaded || processing) ? 'opacity-50 pointer-events-none' : ''}`}>
-                                    <div className="w-16 h-16 bg-blue-100 text-blue-600 rounded-full flex items-center justify-center mb-4">
+                                <label
+                                    htmlFor="video-upload"
+                                    style={{
+                                        display: 'flex',
+                                        flexDirection: 'column',
+                                        alignItems: 'center',
+                                        cursor: 'pointer',
+                                        opacity: (!loaded || processing) ? 0.5 : 1,
+                                        pointerEvents: (!loaded || processing) ? 'none' : 'auto'
+                                    }}
+                                >
+                                    <div style={{ width: '4rem', height: '4rem', background: '#dbeafe', color: '#2563eb', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: '1rem' }}>
                                         <Video size={32} />
                                     </div>
-                                    <h3 className="text-xl font-semibold text-gray-800 mb-2">Select Video File</h3>
-                                    <p className="text-gray-500 max-w-sm mx-auto">
+                                    <h3 style={{ fontSize: '1.25rem', fontWeight: '600', color: 'var(--text-primary)', marginBottom: '0.5rem' }}>Select Video File</h3>
+                                    <p style={{ color: 'var(--text-secondary)', maxWidth: '24rem', margin: '0 auto' }}>
                                         Click to browse your device. Supports MP4, MOV, MKV, AVI, and more.
                                     </p>
                                 </label>
                             ) : (
                                 <>
-                                    <div className="flex flex-col items-center">
-                                        <div className="w-16 h-16 bg-green-100 text-green-600 rounded-full flex items-center justify-center mb-4">
+                                    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+                                        <div style={{ width: '4rem', height: '4rem', background: '#dcfce7', color: '#16a34a', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: '1rem' }}>
                                             <FileVideo size={32} />
                                         </div>
-                                        <h3 className="text-lg font-medium text-gray-800 mb-1">{videoFile.name}</h3>
-                                        <p className="text-sm text-gray-500 mb-6">{(videoFile.size / 1024 / 1024).toFixed(2)} MB</p>
+                                        <h3 style={{ fontSize: '1.125rem', fontWeight: '500', color: 'var(--text-primary)', marginBottom: '0.25rem' }}>{videoFile.name}</h3>
+                                        <p style={{ fontSize: '0.875rem', color: 'var(--text-secondary)', marginBottom: '1.5rem' }}>{(videoFile.size / 1024 / 1024).toFixed(2)} MB</p>
 
                                         {!downloadUrl ? (
                                             <button
                                                 onClick={extractAudio}
                                                 disabled={processing}
-                                                className={`
-                                                    btn-primary flex items-center gap-2 px-8 py-3 rounded-full text-white font-semibold shadow-lg transition-transform
-                                                    ${processing ? 'opacity-70 cursor-wait' : 'hover:-translate-y-1'}
-                                                `}
-                                                style={{ background: 'var(--primary)' }}
+                                                className="tool-btn-primary"
+                                                style={{
+                                                    display: 'inline-flex',
+                                                    alignItems: 'center',
+                                                    gap: '0.5rem',
+                                                    padding: '0.75rem 2rem',
+                                                    borderRadius: '9999px',
+                                                    background: 'var(--primary)',
+                                                    color: 'white',
+                                                    border: 'none',
+                                                    fontWeight: '600',
+                                                    fontSize: '1rem',
+                                                    boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)',
+                                                    opacity: processing ? 0.7 : 1,
+                                                    cursor: processing ? 'wait' : 'pointer'
+                                                }}
                                             >
                                                 {processing ? (
                                                     <>
@@ -226,19 +271,22 @@ const VideoToAudio = () => {
                                                 )}
                                             </button>
                                         ) : (
-                                            <div className="space-y-4">
-                                                <div className="p-4 bg-green-50 text-green-800 rounded-lg flex items-center gap-2">
+                                            <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+                                                <div style={{ padding: '1rem', background: '#f0fdf4', color: '#166534', borderRadius: '0.5rem', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.5rem' }}>
                                                     <AlertCircle size={20} />
                                                     Success! Audio extracted.
                                                 </div>
-                                                <div className="flex gap-3 justify-center">
-                                                    <label htmlFor="video-upload" className="px-6 py-2 bg-gray-100 text-gray-700 rounded-full cursor-pointer hover:bg-gray-200 font-medium">
+                                                <div style={{ display: 'flex', gap: '0.75rem', justifyContent: 'center' }}>
+                                                    <label
+                                                        htmlFor="video-upload"
+                                                        style={{ display: 'inline-flex', alignItems: 'center', padding: '0.5rem 1.5rem', borderRadius: '9999px', background: '#f3f4f6', color: '#374151', fontWeight: '500', cursor: 'pointer' }}
+                                                    >
                                                         Convert Another
                                                     </label>
                                                     <a
                                                         href={downloadUrl}
                                                         download={`${videoFile.name.split('.')[0]}.mp3`}
-                                                        className="px-6 py-2 bg-green-600 text-white rounded-full flex items-center gap-2 hover:bg-green-700 font-semibold shadow-md"
+                                                        style={{ display: 'inline-flex', alignItems: 'center', gap: '0.5rem', padding: '0.5rem 1.5rem', borderRadius: '9999px', background: '#16a34a', color: 'white', fontWeight: '600', boxShadow: '0 1px 3px rgba(0, 0, 0, 0.1)' }}
                                                     >
                                                         <Download size={18} />
                                                         Download MP3
@@ -256,7 +304,7 @@ const VideoToAudio = () => {
 
             {/* Privacy Info - Only show if no error */}
             {!error && (
-                <div className="bg-gray-50 border border-gray-100 rounded-xl p-6 text-sm text-gray-600 text-center mt-8">
+                <div style={{ background: 'var(--bg-secondary)', border: '1px solid var(--border)', borderRadius: '0.75rem', padding: '1.5rem', fontSize: '0.875rem', color: 'var(--text-secondary)', textAlign: 'center', marginTop: '2rem' }}>
                     <p>
                         Your files are processed securely in your browser using <strong>WebAssembly</strong> technology.
                         No data is sent to our servers.

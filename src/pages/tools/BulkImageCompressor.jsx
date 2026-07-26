@@ -1,8 +1,8 @@
-import React, { useState } from 'react'
+import { useState } from 'react'
 import RelatedTools from '../../components/tools/RelatedTools'
 import ToolLayout from '../../components/tools/ToolLayout'
 import { useDropzone } from 'react-dropzone'
-import { Image as ImageIcon, Download, Loader2, X, Settings, Zap, Archive } from 'lucide-react'
+import { Image as ImageIcon, Loader2, X, Settings, Zap, Archive } from 'lucide-react'
 import imageCompression from 'browser-image-compression'
 import JSZip from 'jszip'
 import { saveAs } from 'file-saver'
@@ -75,37 +75,48 @@ const BulkImageCompressor = () => {
         if (files.length === 0) return
         setIsProcessing(true)
 
-        const processed = [...files]
-        for (let i = 0; i < processed.length; i++) {
-            if (processed[i].status === 'done') continue
+        // Work from the ids captured at the start, but always write back with a functional update
+        // keyed by id. Re-setting a whole snapshot used to wipe anything the user added or removed
+        // while the batch was running.
+        const queue = files.filter(f => !(f.status === 'done' && f.quality === quality))
 
+        for (const item of queue) {
             try {
                 const options = {
                     maxSizeMB: 2,
-                    maxWidthOrHeight: 1920,
                     useWebWorker: true,
-                    initialQuality: quality
+                    initialQuality: quality,
+                    alwaysKeepResolution: true
                 }
-                const compressedFile = await imageCompression(processed[i].file, options)
-                processed[i].compressed = compressedFile
-                processed[i].sizeBefore = processed[i].file.size
-                processed[i].sizeAfter = compressedFile.size
-                processed[i].status = 'done'
+                const compressedFile = await imageCompression(item.file, options)
+                setFiles(prev => prev.map(f => f.id === item.id
+                    ? { ...f, compressed: compressedFile, sizeBefore: f.file.size, sizeAfter: compressedFile.size, status: 'done', quality }
+                    : f))
             } catch (e) {
                 console.error(e)
-                processed[i].status = 'error'
+                setFiles(prev => prev.map(f => f.id === item.id ? { ...f, status: 'error' } : f))
             }
-            // Update state incrementally to show progress
-            setFiles([...processed])
         }
         setIsProcessing(false)
     }
 
     const downloadAll = async () => {
         const zip = new JSZip()
+        // JSZip keys entries by name, so identically-named photos would silently overwrite.
+        const used = new Set()
         files.forEach(f => {
             if (f.status === 'done' && f.compressed) {
-                zip.file(`compressed-${f.file.name}`, f.compressed)
+                let name = `compressed-${f.file.name}`
+                if (used.has(name)) {
+                    const dot = name.lastIndexOf('.')
+                    const base = dot > 0 ? name.slice(0, dot) : name
+                    const ext = dot > 0 ? name.slice(dot) : ''
+                    let i = 1
+                    while (used.has(`${base} (${i})${ext}`)) i += 1
+                    name = `${base} (${i})${ext}`
+                }
+                used.add(name)
+                zip.file(name, f.compressed)
             }
         })
         const content = await zip.generateAsync({ type: 'blob' })
@@ -125,7 +136,7 @@ const BulkImageCompressor = () => {
             title="Bulk Image Compressor"
             description="Compress multiple images (JPG, PNG, WebP) at once."
             seoTitle="Bulk Image Compressor - Optimize Multiple Photos"
-            seoDescription="Batch compress images online. Reduce file size of multiple PNG, JPG, and WebP files simultaneously without quality loss."
+            seoDescription="Batch compress images online. Reduce file size of multiple PNG, JPG, and WebP files simultaneously with minimal quality loss."
             faqs={faqs}
         >
             <div className="tool-workspace" style={{ maxWidth: '1000px', margin: '0 auto' }}>
@@ -137,7 +148,7 @@ const BulkImageCompressor = () => {
                             </label>
                             <input
                                 id="compression-level-slider"
-                                type="range" min="0.1" max="1" step="0.1"
+                                type="range" aria-label="Compression level" min="0.1" max="1" step="0.1"
                                 value={quality}
                                 onChange={(e) => setQuality(parseFloat(e.target.value))}
                                 style={{ width: '200px' }}
@@ -177,7 +188,7 @@ const BulkImageCompressor = () => {
                             transition: 'all 0.2s ease',
                         }}
                     >
-                        <input {...getInputProps()} />
+                        <input {...getInputProps()} aria-label="Choose a file for Bulk Image Compressor" />
                         <div style={{
                             width: '64px',
                             height: '64px',

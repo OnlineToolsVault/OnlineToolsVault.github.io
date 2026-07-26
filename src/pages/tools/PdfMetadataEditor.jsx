@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react'
+import { useState } from 'react'
 import RelatedTools from '../../components/tools/RelatedTools'
 import ToolLayout from '../../components/tools/ToolLayout'
 import { useDropzone } from 'react-dropzone'
@@ -49,7 +49,8 @@ const PdfMetadataEditor = () => {
         setFile(f)
         try {
             const arrayBuffer = await f.arrayBuffer()
-            const doc = await PDFDocument.load(arrayBuffer)
+            // updateMetadata: false stops pdf-lib from overwriting Producer/ModDate before we read them
+            const doc = await PDFDocument.load(arrayBuffer, { updateMetadata: false })
             setPdfDoc(doc)
             setMeta({
                 title: doc.getTitle() || '',
@@ -73,7 +74,9 @@ const PdfMetadataEditor = () => {
             pdfDoc.setTitle(meta.title)
             pdfDoc.setAuthor(meta.author)
             pdfDoc.setSubject(meta.subject)
-            pdfDoc.setKeywords(meta.keywords ? meta.keywords.split(',') : [])
+            // pdf-lib joins the array with a single space, so keep separators inside one element
+            const keywords = meta.keywords.trim()
+            pdfDoc.setKeywords(keywords ? [keywords] : [])
             pdfDoc.setProducer(meta.producer)
             pdfDoc.setCreator(meta.creator)
 
@@ -124,7 +127,7 @@ const PdfMetadataEditor = () => {
                                 transition: 'all 0.2s ease'
                             }}
                         >
-                            <input {...getInputProps()} />
+                            <input {...getInputProps()} aria-label="Choose a file for PDF Metadata Editor" />
                             <div style={{ width: '64px', height: '64px', background: '#e0f2fe', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 1rem', color: '#0284c7' }}>
                                 <FileCode size={32} />
                             </div>

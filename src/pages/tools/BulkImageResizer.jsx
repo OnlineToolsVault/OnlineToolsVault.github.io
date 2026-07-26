@@ -1,8 +1,8 @@
-import React, { useState } from 'react'
+import { useState } from 'react'
 import RelatedTools from '../../components/tools/RelatedTools'
 import ToolLayout from '../../components/tools/ToolLayout'
 import { useDropzone } from 'react-dropzone'
-import { Image as ImageIcon, Download, Loader2, X, Settings, Layout, Archive } from 'lucide-react'
+import { Image as ImageIcon, Loader2, X, Settings, Layout, Archive } from 'lucide-react'
 import JSZip from 'jszip'
 import { saveAs } from 'file-saver'
 
@@ -39,9 +39,15 @@ const faqs = [
     }
 ]
 
+const parseDim = (value) => {
+    const n = Math.floor(Number(value))
+    return Number.isFinite(n) && n > 0 ? Math.min(n, 20000) : null
+}
+
 const BulkImageResizer = () => {
     const [files, setFiles] = useState([])
     const [isProcessing, setIsProcessing] = useState(false)
+    const [error, setError] = useState('')
     const [settings, setSettings] = useState({ width: 800, height: 600, mode: 'width' }) // width, height, exact
 
     const onDrop = (acceptedFiles) => {
@@ -62,7 +68,8 @@ const BulkImageResizer = () => {
             status: 'pending',
             id: Math.random().toString(36).substr(2, 9),
             preview: URL.createObjectURL(f),
-            resizedData: null
+            resizedData: null,
+            settingsKey: null
         }))
         setFiles(prev => [...prev, ...added])
     }
@@ -71,65 +78,136 @@ const BulkImageResizer = () => {
         setFiles(prev => prev.filter(f => f.id !== id))
     }
 
+    const targetWidth = parseDim(settings.width)
+    const targetHeight = parseDim(settings.height)
+    const dimsValid = settings.mode === 'width' ? !!targetWidth
+        : settings.mode === 'height' ? !!targetHeight
+            : !!targetWidth && !!targetHeight
+
     const resizeImage = (fileObj) => {
-        return new Promise((resolve) => {
+        return new Promise((resolve, reject) => {
             const img = new Image()
             img.onload = () => {
-                const canvas = document.createElement('canvas')
-                let w = img.width
-                let h = img.height
+                try {
+                    const canvas = document.createElement('canvas')
+                    let w
+                    let h
 
-                if (settings.mode === 'width') {
-                    w = Number(settings.width)
-                    h = (w / img.width) * img.height
-                } else if (settings.mode === 'height') {
-                    h = Number(settings.height)
-                    w = (h / img.height) * img.width
-                } else {
-                    w = Number(settings.width)
-                    h = Number(settings.height)
+                    if (settings.mode === 'width') {
+                        w = targetWidth
+                        h = (w / img.width) * img.height
+                    } else if (settings.mode === 'height') {
+                        h = targetHeight
+                        w = (h / img.height) * img.width
+                    } else {
+                        w = targetWidth
+                        h = targetHeight
+                    }
+
+                    // A decoded image with a zero dimension makes the derived side
+                    // Infinity or NaN, which silently coerces the canvas to 0px.
+                    if (!Number.isFinite(w) || !Number.isFinite(h) || w <= 0 || h <= 0) {
+                        reject(new Error(`${fileObj.file.name} has no usable dimensions`))
+                        return
+                    }
+
+                    canvas.width = Math.max(1, Math.round(w))
+                    canvas.height = Math.max(1, Math.round(h))
+                    const ctx = canvas.getContext('2d')
+                    ctx.drawImage(img, 0, 0, canvas.width, canvas.height)
+
+                    // An oversized canvas makes toDataURL hand back the empty "data:,"
+                    // instead of throwing, which would ship a 0-byte entry in the ZIP.
+                    // Canvas can only encode png/jpeg/webp. Anything else (GIF, BMP, AVIF, or an
+                    // empty File.type) silently falls back to PNG, so name the entry accordingly
+                    // instead of shipping PNG bytes under the original extension.
+                    const encodable = ['image/jpeg', 'image/png', 'image/webp']
+                    const outType = encodable.includes(fileObj.file.type) ? fileObj.file.type : 'image/png'
+                    const dataUrl = canvas.toDataURL(outType)
+                    if (!dataUrl.split(',')[1]) {
+                        reject(new Error(`Could not encode ${fileObj.file.name}`))
+                        return
+                    }
+                    resolve(dataUrl)
+                } catch (err) {
+                    reject(err)
                 }
-
-                canvas.width = w
-                canvas.height = h
-                const ctx = canvas.getContext('2d')
-                ctx.drawImage(img, 0, 0, w, h)
-                resolve(canvas.toDataURL(fileObj.file.type))
             }
+            img.onerror = () => reject(new Error(`Could not decode ${fileObj.file.name}`))
             img.src = fileObj.preview
         })
     }
 
     const processImages = async () => {
         if (files.length === 0) return
+        if (!dimsValid) {
+            setError('Enter a width and height greater than 0.')
+            return
+        }
+        setError('')
         setIsProcessing(true)
 
-        const processed = [...files]
-        for (let i = 0; i < processed.length; i++) {
-            if (processed[i].status === 'done') continue
+        const key = `${settings.mode}|${targetWidth}|${targetHeight}`
+        // Always write back by id with a functional update. Replacing the whole list from a
+        // snapshot used to silently undo anything the user added or removed mid-batch.
+        const queue = files.filter(f => !(f.status === 'done' && f.settingsKey === key))
+        let failed = 0
 
+        for (const item of queue) {
             try {
-                const dataUrl = await resizeImage(processed[i])
-                processed[i].resizedData = dataUrl
-                processed[i].status = 'done'
+                const dataUrl = await resizeImage(item)
+                setFiles(prev => prev.map(f => f.id === item.id
+                    ? { ...f, resizedData: dataUrl, status: 'done', settingsKey: key }
+                    : f))
             } catch (e) {
                 console.error(e)
-                processed[i].status = 'error'
+                failed++
+                setFiles(prev => prev.map(f => f.id === item.id
+                    ? { ...f, resizedData: null, status: 'error', settingsKey: null }
+                    : f))
             }
-            setFiles([...processed])
         }
         setIsProcessing(false)
+        if (failed > 0) setError(`${failed} image${failed > 1 ? 's' : ''} could not be read and ${failed > 1 ? 'were' : 'was'} skipped.`)
     }
 
     const downloadAll = async () => {
-        const zip = new JSZip()
-        files.forEach(f => {
-            if (f.status === 'done' && f.resizedData) {
-                zip.file(`resized-${f.file.name}`, f.resizedData.split(',')[1], { base64: true })
+        try {
+            const zip = new JSZip()
+            let count = 0
+            // JSZip keys entries by name, so identically-named photos would silently overwrite.
+            const used = new Set()
+            files.forEach(f => {
+                const base64 = f.status === 'done' && f.resizedData ? f.resizedData.split(',')[1] : ''
+                if (base64) {
+                    // Name the entry after the type actually encoded, not the source extension.
+                    const mime = (f.resizedData.match(/^data:([^;,]+)/) || [])[1] || 'image/png'
+                    const ext = { 'image/jpeg': '.jpg', 'image/png': '.png', 'image/webp': '.webp' }[mime] || '.png'
+                    const stem = f.file.name.replace(/\.[^./\\]+$/, '') || 'image'
+                    let name = `resized-${stem}${ext}`
+                    if (used.has(name)) {
+                        const dot = name.lastIndexOf('.')
+                        const base = dot > 0 ? name.slice(0, dot) : name
+                        const ext = dot > 0 ? name.slice(dot) : ''
+                        let i = 1
+                        while (used.has(`${base} (${i})${ext}`)) i += 1
+                        name = `${base} (${i})${ext}`
+                    }
+                    used.add(name)
+                    zip.file(name, base64, { base64: true })
+                    count++
+                }
+            })
+            if (count === 0) {
+                setError('No resized images to download yet.')
+                return
             }
-        })
-        const content = await zip.generateAsync({ type: 'blob' })
-        saveAs(content, 'resized-images.zip')
+            const content = await zip.generateAsync({ type: 'blob' })
+            saveAs(content, 'resized-images.zip')
+        } catch (e) {
+            console.error(e)
+            setError('Could not build the ZIP file. Try downloading fewer images at once.')
+        }
     }
 
     return (
@@ -148,6 +226,7 @@ const BulkImageResizer = () => {
                                 <Settings size={18} /> Resize Mode
                             </label>
                             <select
+                                aria-label="Resize mode"
                                 id="resize-mode-select"
                                 value={settings.mode}
                                 onChange={(e) => setSettings({ ...settings, mode: e.target.value })}
@@ -163,7 +242,7 @@ const BulkImageResizer = () => {
                                 <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: 'bold' }}>Width (px)</label>
                                 <input
                                     id="width-input"
-                                    type="number" value={settings.width} onChange={(e) => setSettings({ ...settings, width: e.target.value })}
+                                    type="number" aria-label="Width in pixels" value={settings.width} onChange={(e) => setSettings({ ...settings, width: e.target.value })}
                                     style={{ width: '100%', padding: '0.6rem', borderRadius: '0.5rem', border: '1px solid var(--border)' }}
                                 />
                             </div>
@@ -173,7 +252,7 @@ const BulkImageResizer = () => {
                                 <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: 'bold' }}>Height (px)</label>
                                 <input
                                     id="height-input"
-                                    type="number" value={settings.height} onChange={(e) => setSettings({ ...settings, height: e.target.value })}
+                                    type="number" aria-label="Height in pixels" value={settings.height} onChange={(e) => setSettings({ ...settings, height: e.target.value })}
                                     style={{ width: '100%', padding: '0.6rem', borderRadius: '0.5rem', border: '1px solid var(--border)' }}
                                 />
                             </div>
@@ -184,7 +263,7 @@ const BulkImageResizer = () => {
                         <button
                             id="resize-all-btn"
                             onClick={processImages}
-                            disabled={isProcessing || files.length === 0}
+                            disabled={isProcessing || files.length === 0 || !dimsValid}
                             className="tool-btn-primary"
                             style={{
                                 padding: '0.75rem 3rem',
@@ -192,13 +271,21 @@ const BulkImageResizer = () => {
                                 background: 'var(--primary)',
                                 color: 'white',
                                 border: 'none',
-                                cursor: (isProcessing || files.length === 0) ? 'not-allowed' : 'pointer',
+                                cursor: (isProcessing || files.length === 0 || !dimsValid) ? 'not-allowed' : 'pointer',
                                 fontWeight: 'bold',
                                 display: 'inline-flex', alignItems: 'center', gap: '0.5rem'
                             }}
                         >
                             {isProcessing ? <><Loader2 className="animate-spin" size={20} /> Resizing...</> : <><Layout size={20} /> Resize All</>}
                         </button>
+                        {!dimsValid && (
+                            <p style={{ marginTop: '0.75rem', color: '#b91c1c', fontSize: '0.9rem' }}>
+                                Enter a {settings.mode === 'height' ? 'height' : settings.mode === 'width' ? 'width' : 'width and height'} greater than 0.
+                            </p>
+                        )}
+                        {error && (
+                            <p role="alert" style={{ marginTop: '0.75rem', color: '#b91c1c', fontSize: '0.9rem' }}>{error}</p>
+                        )}
                     </div>
 
                     <div
@@ -215,7 +302,7 @@ const BulkImageResizer = () => {
                             transition: 'all 0.2s ease',
                         }}
                     >
-                        <input {...getInputProps()} />
+                        <input {...getInputProps()} aria-label="Choose a file for Bulk Image Resizer" />
                         <div style={{
                             width: '64px',
                             height: '64px',
@@ -264,6 +351,8 @@ const BulkImageResizer = () => {
                                     <div style={{ fontSize: '0.8rem', color: '#64748b' }}>
                                         {item.status === 'done' ? (
                                             <span style={{ color: 'green' }}>Resized</span>
+                                        ) : item.status === 'error' ? (
+                                            <span style={{ color: '#b91c1c' }}>Could not read this image</span>
                                         ) : (
                                             <span>Pending</span>
                                         )}
@@ -272,6 +361,7 @@ const BulkImageResizer = () => {
                                 <div>
                                     {item.status === 'pending' && <span style={{ padding: '0.25rem 0.5rem', background: '#f1f5f9', borderRadius: '1rem', fontSize: '0.75rem' }}>Pending</span>}
                                     {item.status === 'done' && <span style={{ padding: '0.25rem 0.5rem', background: '#dcfce7', color: '#166534', borderRadius: '1rem', fontSize: '0.75rem' }}>Done</span>}
+                                    {item.status === 'error' && <span style={{ padding: '0.25rem 0.5rem', background: '#fee2e2', color: '#991b1b', borderRadius: '1rem', fontSize: '0.75rem' }}>Failed</span>}
                                 </div>
                                 <button
                                     id={`remove-file-${item.id}`}

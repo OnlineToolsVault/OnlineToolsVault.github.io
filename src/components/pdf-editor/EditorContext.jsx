@@ -1,6 +1,23 @@
-import React, { createContext, useContext, useState, useRef, useEffect, useCallback } from 'react';
+import { createContext, useContext, useState, useRef, useEffect, useCallback, useMemo } from 'react';
 
 const EditorContext = createContext();
+
+// Custom flags that must survive an undo/redo round-trip
+const HISTORY_PROPS = ['isRedaction', 'isHighlight'];
+const HISTORY_LIMIT = 50;
+// Snapshots inline any added image as a data URL, so also cap the stack by size
+const HISTORY_BYTES = 8e6;
+
+// Serialize the user's annotations only. The page raster lives on the canvas as
+// backgroundImage and would otherwise be embedded as a multi-megabyte data URL
+// in every history entry.
+const serializeCanvas = (canvas) => {
+    const bg = canvas.backgroundImage;
+    canvas.backgroundImage = null;
+    const json = JSON.stringify(canvas.toObject(HISTORY_PROPS));
+    canvas.backgroundImage = bg;
+    return json;
+};
 
 export const EditorProvider = ({ children }) => {
     const [scale, setScale] = useState(1.0);
@@ -18,10 +35,13 @@ export const EditorProvider = ({ children }) => {
     const [isProcessing, setIsProcessing] = useState(false);
     const [pdfDoc, setPdfDoc] = useState(null); // The loaded PDFDocument from pdf-lib
     const [fileName, setFileName] = useState('');
+    // Pages close enough to the viewport to be worth rasterizing
+    const [nearRange, setNearRange] = useState({ start: 0, end: 1 });
 
-    // Undo/Redo history (simple object stack per page)
-    const undoStackRef = useRef({}); // { pageIndex: [objects] }
-    const redoStackRef = useRef({}); // { pageIndex: [objects] }
+    // Undo/Redo history: one snapshot stack per page
+    const historyRef = useRef({}); // { pageIndex: { stack: [{ json, width }], index } }
+    const restoringRef = useRef(false); // suppress recording while a snapshot is applied
+    const [historyTick, setHistoryTick] = useState(0); // re-renders consumers when a stack changes
 
     // Global Key Listener for Delete
     useEffect(() => {
@@ -48,6 +68,7 @@ export const EditorProvider = ({ children }) => {
     }, []);
 
     const unregisterCanvas = useCallback((pageIndex) => {
+        delete historyRef.current[pageIndex];
         setCanvasRefs(prev => {
             const newRefs = { ...prev };
             delete newRefs[pageIndex];
@@ -59,6 +80,7 @@ export const EditorProvider = ({ children }) => {
         const canvas = canvasRefs[activePageIndex];
         if (!canvas) {
             console.error("No active canvas found to add image");
+            alert("Scroll to the page you want the image on, then try again.");
             return;
         }
 
@@ -76,48 +98,94 @@ export const EditorProvider = ({ children }) => {
         // Let's implement a trigger.
         // Or just import fabric here. It's fine.
         import('fabric').then(({ FabricImage }) => {
-            FabricImage.fromURL(dataUrl).then(img => {
+            return FabricImage.fromURL(dataUrl).then(img => {
                 img.scaleToWidth(200);
-                canvas.add(img);
+                // Centre before adding: 'object:added' is what records the history
+                // snapshot and centerObject() fires no event of its own, so adding
+                // first would record (and later redo) the image at 0,0.
                 canvas.centerObject(img);
+                canvas.add(img);
                 canvas.setActiveObject(img);
                 canvas.requestRenderAll();
             });
+        }).catch(err => {
+            console.error("Add image failed:", err);
+            alert("That image could not be loaded. Try a PNG or JPEG file.");
         });
 
     }, [activePageIndex, canvasRefs]);
 
-    // Undo: Remove last object from active canvas, push to redo stack
-    const undo = useCallback(() => {
-        const canvas = canvasRefs[activePageIndex];
-        if (!canvas) return;
+    // Record the state of a page after a completed action
+    const pushHistory = useCallback((pageIndex, canvas) => {
+        if (restoringRef.current || !canvas) return;
 
-        const objects = canvas.getObjects();
-        if (objects.length === 0) return;
+        const entry = historyRef.current[pageIndex] || (historyRef.current[pageIndex] = { stack: [], index: -1 });
+        const json = serializeCanvas(canvas);
+        if (entry.index >= 0 && entry.stack[entry.index].json === json) return;
 
-        const lastObj = objects[objects.length - 1];
-        canvas.remove(lastObj);
-        canvas.requestRenderAll();
+        entry.stack.splice(entry.index + 1); // a new action invalidates the redo tail
+        entry.stack.push({ json, width: canvas.width });
 
-        // Push to redo stack
-        if (!redoStackRef.current[activePageIndex]) {
-            redoStackRef.current[activePageIndex] = [];
+        let bytes = entry.stack.reduce((sum, s) => sum + s.json.length, 0);
+        while (entry.stack.length > 1 && (entry.stack.length > HISTORY_LIMIT || bytes > HISTORY_BYTES)) {
+            bytes -= entry.stack[0].json.length;
+            entry.stack.shift();
         }
-        redoStackRef.current[activePageIndex].push(lastObj);
-    }, [activePageIndex, canvasRefs]);
 
-    // Redo: Restore last removed object from redo stack
-    const redo = useCallback(() => {
-        const canvas = canvasRefs[activePageIndex];
-        if (!canvas) return;
+        entry.index = entry.stack.length - 1;
+        setHistoryTick(t => t + 1);
+    }, []);
 
-        const pageRedoStack = redoStackRef.current[activePageIndex];
-        if (!pageRedoStack || pageRedoStack.length === 0) return;
+    // Move the active page's history cursor and restore that snapshot
+    const applySnapshot = useCallback(async (pageIndex, delta) => {
+        const canvas = canvasRefs[pageIndex];
+        const entry = historyRef.current[pageIndex];
+        if (!canvas || !entry) return;
 
-        const obj = pageRedoStack.pop();
-        canvas.add(obj);
-        canvas.requestRenderAll();
-    }, [activePageIndex, canvasRefs]);
+        const next = entry.index + delta;
+        if (next < 0 || next >= entry.stack.length) return;
+
+        const snapshot = entry.stack[next];
+        const background = canvas.backgroundImage;
+        restoringRef.current = true;
+        try {
+            await canvas.loadFromJSON(snapshot.json);
+            // Snapshots store on-screen coordinates, so re-fit them if the zoom
+            // level changed since the snapshot was taken.
+            const factor = snapshot.width > 0 ? canvas.width / snapshot.width : 1;
+            if (factor !== 1) {
+                canvas.getObjects().forEach(obj => {
+                    obj.left *= factor;
+                    obj.top *= factor;
+                    obj.scaleX *= factor;
+                    obj.scaleY *= factor;
+                    obj.setCoords();
+                });
+            }
+            canvas.backgroundImage = background; // loadFromJSON clears it
+            canvas.requestRenderAll();
+            entry.index = next;
+            setSelectedObjectId(null);
+            setHistoryTick(t => t + 1);
+        } catch (err) {
+            console.error("Undo/redo failed:", err);
+        } finally {
+            restoringRef.current = false;
+        }
+    }, [canvasRefs]);
+
+    const undo = useCallback(() => applySnapshot(activePageIndex, -1), [applySnapshot, activePageIndex]);
+    const redo = useCallback(() => applySnapshot(activePageIndex, 1), [applySnapshot, activePageIndex]);
+
+    const canUndo = useMemo(() => {
+        const entry = historyRef.current[activePageIndex];
+        return !!entry && entry.index > 0;
+    }, [activePageIndex, historyTick]);
+
+    const canRedo = useMemo(() => {
+        const entry = historyRef.current[activePageIndex];
+        return !!entry && entry.index < entry.stack.length - 1;
+    }, [activePageIndex, historyTick]);
 
     return (
         <EditorContext.Provider value={{
@@ -131,7 +199,8 @@ export const EditorProvider = ({ children }) => {
             activePageIndex, setActivePageIndex,
             pages, setPages,
             canvasRefs, registerCanvas, unregisterCanvas, addImage,
-            undo, redo,
+            nearRange, setNearRange,
+            undo, redo, canUndo, canRedo, pushHistory,
             isProcessing, setIsProcessing,
             pdfDoc, setPdfDoc,
             selectedObjectId, setSelectedObjectId,

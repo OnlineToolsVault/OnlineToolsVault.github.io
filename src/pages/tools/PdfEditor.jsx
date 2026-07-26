@@ -1,9 +1,12 @@
-import React, { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { Helmet } from 'react-helmet-async'
 import { useDropzone } from 'react-dropzone'
 import * as pdfjsLib from 'pdfjs-dist'
-import { PDFDocument, rgb } from 'pdf-lib' // For saving
-import { Upload, FileText } from 'lucide-react'
+// Bundled by Vite from the installed package rather than the hand-copied public/ file, which
+// would silently go stale (and break pdf.js's version check) on the next dependency bump.
+import pdfWorkerUrl from 'pdfjs-dist/build/pdf.worker.min.mjs?url'
+import { PDFDocument, degrees } from '@cantoo/pdf-lib' // For saving (this fork can decrypt permission-encrypted PDFs)
+import { Upload } from 'lucide-react'
 import { EditorProvider, useEditor } from '../../components/pdf-editor/EditorContext'
 import Toolbar from '../../components/pdf-editor/Toolbar'
 import Sidebar from '../../components/pdf-editor/Sidebar'
@@ -12,14 +15,36 @@ import PropertiesBar from '../../components/pdf-editor/PropertiesBar'
 
 // Configure PDF.js worker
 // Use local worker file copied to public directory for reliability
-pdfjsLib.GlobalWorkerOptions.workerSrc = '/pdf.worker.min.mjs';
+pdfjsLib.GlobalWorkerOptions.workerSrc = pdfWorkerUrl;
+
+// Export resolution is fixed so the on-screen zoom level cannot change output quality
+const EXPORT_DPI = 150;
+const MAX_EXPORT_PX = 4000;
+
+// How far outside the viewport a page is still worth rasterizing
+const NEAR_MARGIN_PX = 1200;
+
+// The overlay is drawn the way the page is displayed, but pdf-lib writes into
+// unrotated user space. Anchor it at the corner the viewer's /Rotate maps to the
+// bottom-left of the visible page.
+const overlayAnchor = (rotation, box) => {
+    if (rotation === 90) return { x: box.x + box.width, y: box.y };
+    if (rotation === 180) return { x: box.x + box.width, y: box.y + box.height };
+    if (rotation === 270) return { x: box.x, y: box.y + box.height };
+    return { x: box.x, y: box.y };
+};
 
 const PdfEditorContent = () => {
     const {
-        setPages, pages, isProcessing, setIsProcessing,
-        setPdfDoc, canvasRefs, fileName, setFileName, setActiveTool
+        setPages, pages, setIsProcessing,
+        canvasRefs, setFileName, setActiveTool,
+        setActivePageIndex, setNearRange
     } = useEditor()
     const [file, setFile] = useState(null)
+    const scrollRef = useRef(null)
+    const contentRef = useRef(null)
+    const lastActiveRef = useRef(-1)
+    const lastRangeRef = useRef('')
 
     const onDrop = async (acceptedFiles) => {
         const f = acceptedFiles[0]
@@ -67,6 +92,75 @@ const PdfEditorContent = () => {
         }
     }
 
+    // Track the most visible page (drives Undo/Redo, Add Image and the Sidebar
+    // highlight) and the band of pages worth keeping rasterized.
+    useEffect(() => {
+        const el = scrollRef.current
+        if (!el || pages.length === 0) return
+
+        let raf = null
+
+        const update = () => {
+            raf = null
+            const box = el.getBoundingClientRect()
+            let best = 0
+            let bestOverlap = -1
+            let start = -1
+            let end = -1
+
+            for (let i = 0; i < pages.length; i++) {
+                const pageEl = document.getElementById(`pdf-page-${i}`)
+                if (!pageEl) continue
+                const rect = pageEl.getBoundingClientRect()
+                // Absolute visible pixels, so the choice stays deterministic at any zoom
+                const overlap = Math.min(rect.bottom, box.bottom) - Math.max(rect.top, box.top)
+                if (overlap > bestOverlap) {
+                    bestOverlap = overlap
+                    best = i
+                }
+                if (rect.bottom >= box.top - NEAR_MARGIN_PX && rect.top <= box.bottom + NEAR_MARGIN_PX) {
+                    if (start === -1) start = i
+                    end = i
+                }
+            }
+
+            if (bestOverlap > 0 && lastActiveRef.current !== best) {
+                lastActiveRef.current = best
+                setActivePageIndex(best)
+            }
+
+            if (start === -1) {
+                start = 0
+                end = 0
+            }
+            const key = `${start}:${end}`
+            if (lastRangeRef.current !== key) {
+                lastRangeRef.current = key
+                setNearRange({ start, end })
+            }
+        }
+
+        const schedule = () => {
+            if (raf === null) raf = requestAnimationFrame(update)
+        }
+
+        // Pages resize on zoom and when a placeholder is rasterized, neither of
+        // which fires a scroll event.
+        const resizeObserver = new ResizeObserver(schedule)
+        if (contentRef.current) resizeObserver.observe(contentRef.current)
+
+        el.addEventListener('scroll', schedule, { passive: true })
+        window.addEventListener('resize', schedule)
+        schedule()
+
+        return () => {
+            resizeObserver.disconnect()
+            el.removeEventListener('scroll', schedule)
+            window.removeEventListener('resize', schedule)
+            if (raf !== null) cancelAnimationFrame(raf)
+        }
+    }, [pages, setActivePageIndex, setNearRange])
+
     const handleDownload = async () => {
         if (!file) return;
         setIsProcessing(true);
@@ -74,34 +168,79 @@ const PdfEditorContent = () => {
         try {
             // Load original PDF with pdf-lib
             const arrayBuffer = await file.arrayBuffer();
-            const pdfDoc = await PDFDocument.load(arrayBuffer);
+
+            let pdfDoc;
+            try {
+                // Permissions-only ("owner password") encryption is common on bank
+                // statements and invoices. pdf.js opens those silently so the editor
+                // loads them; an empty password lets us decrypt and save them too.
+                pdfDoc = await PDFDocument.load(arrayBuffer, { password: '' });
+            } catch {
+                pdfDoc = await PDFDocument.load(arrayBuffer);
+            }
             const pdfPages = pdfDoc.getPages();
 
             // We'll rebuild pages that have redactions
             const pagesToReplace = [];
+            // Created on the first redacted page so each flattened raster can be
+            // embedded as soon as it exists, instead of holding every page's
+            // full-size PNG in memory until the second pass.
+            let newPdfDoc = null;
 
             for (let i = 0; i < pages.length; i++) {
                 const fabricCanvas = canvasRefs[i];
-                if (!fabricCanvas) continue;
-
                 const pdfPage = pdfPages[i];
-                const { width, height } = pdfPage.getSize();
+                if (!fabricCanvas || !pdfPage) continue;
+
+                // Nothing was drawn here, so leave the original page untouched
+                const objects = fabricCanvas.getObjects();
+                if (objects.length === 0) continue;
+
+                const rotation = (((Math.round(pdfPage.getRotation().angle / 90) * 90) % 360) + 360) % 360;
+                // pdf.js measures the page from the CropBox, pdf-lib's getSize() from the MediaBox
+                const box = pdfPage.getCropBox();
+                const swap = rotation === 90 || rotation === 270;
+                // Dimensions as the page is actually displayed, matching the canvas
+                const visWidth = swap ? box.height : box.width;
+                const visHeight = swap ? box.width : box.height;
+                if (!(visWidth > 0) || !(visHeight > 0) || !(fabricCanvas.width > 0)) continue;
+
+                const targetPx = Math.min(visWidth * (EXPORT_DPI / 72), MAX_EXPORT_PX);
+                const multiplier = targetPx / fabricCanvas.width;
 
                 // Check if this page has any redaction objects
-                const objects = fabricCanvas.getObjects();
                 const hasRedaction = objects.some(obj => obj.isRedaction === true);
 
                 if (hasRedaction) {
                     // FLATTEN THIS PAGE (Secure Redaction)
-                    // Export the FULL canvas (background + all annotations) as a single image
-                    const pngDataUrl = fabricCanvas.toDataURL({
-                        format: 'png',
-                        multiplier: 2, // High quality for print
-                        quality: 1
-                    });
+                    // Re-render the source page at export resolution rather than reusing
+                    // the on-screen raster, then composite the annotations over it.
+                    const exportViewport = pages[i].getViewport({ scale: targetPx / visWidth });
+                    const flatCanvas = document.createElement('canvas');
+                    flatCanvas.width = Math.round(exportViewport.width);
+                    flatCanvas.height = Math.round(exportViewport.height);
+                    const flatContext = flatCanvas.getContext('2d');
+                    await pages[i].render({ canvasContext: flatContext, viewport: exportViewport }).promise;
 
-                    // Mark this page for replacement
-                    pagesToReplace.push({ index: i, imageDataUrl: pngDataUrl, width, height });
+                    const bg = fabricCanvas.backgroundImage;
+                    fabricCanvas.backgroundImage = null;
+                    const overlay = fabricCanvas.toCanvasElement(multiplier);
+                    fabricCanvas.backgroundImage = bg;
+                    flatContext.drawImage(overlay, 0, 0, flatCanvas.width, flatCanvas.height);
+
+                    // Mark this page for replacement. Embed now and keep only the
+                    // reference; the data URL is released before the next page.
+                    if (!newPdfDoc) newPdfDoc = await PDFDocument.create();
+                    const flatImage = await newPdfDoc.embedPng(flatCanvas.toDataURL('image/png'));
+                    flatCanvas.width = 0;
+                    flatCanvas.height = 0;
+
+                    pagesToReplace.push({
+                        index: i,
+                        image: flatImage,
+                        width: visWidth,
+                        height: visHeight
+                    });
 
                 } else {
                     // NO REDACTION - Overlay annotations only (text remains selectable)
@@ -109,18 +248,20 @@ const PdfEditorContent = () => {
                     fabricCanvas.backgroundImage = null; // Hide background
                     const pngDataUrl = fabricCanvas.toDataURL({
                         format: 'png',
-                        multiplier: 1.5,
+                        multiplier: multiplier,
                         quality: 1
                     });
                     fabricCanvas.backgroundImage = bg; // Restore
 
                     // Embed and overlay
                     const pngImage = await pdfDoc.embedPng(pngDataUrl);
+                    const anchor = overlayAnchor(rotation, box);
                     pdfPage.drawImage(pngImage, {
-                        x: 0,
-                        y: 0,
-                        width: width,
-                        height: height,
+                        x: anchor.x,
+                        y: anchor.y,
+                        width: visWidth,
+                        height: visHeight,
+                        rotate: degrees(rotation),
                         opacity: 1,
                     });
                 }
@@ -129,16 +270,15 @@ const PdfEditorContent = () => {
             // Now handle pages that need full replacement (redacted pages)
             // We need to create a new PDF and copy/replace pages
             if (pagesToReplace.length > 0) {
-                const newPdfDoc = await PDFDocument.create();
-
                 for (let i = 0; i < pdfPages.length; i++) {
                     const replacementInfo = pagesToReplace.find(p => p.index === i);
 
                     if (replacementInfo) {
-                        // Create a new flattened page
-                        const pngImage = await newPdfDoc.embedPng(replacementInfo.imageDataUrl);
+                        // Create a new flattened page. The raster already has the page
+                        // rotation baked in, so the new page is built at the visible size
+                        // with no /Rotate of its own.
                         const newPage = newPdfDoc.addPage([replacementInfo.width, replacementInfo.height]);
-                        newPage.drawImage(pngImage, {
+                        newPage.drawImage(replacementInfo.image, {
                             x: 0,
                             y: 0,
                             width: replacementInfo.width,
@@ -175,7 +315,12 @@ const PdfEditorContent = () => {
 
         } catch (err) {
             console.error("Save error:", err);
-            alert("Failed to save PDF");
+            const msg = (err && err.message ? err.message : '').toLowerCase();
+            if (msg.includes('encrypt') || msg.includes('password')) {
+                alert("This PDF is password-protected, so it can't be saved directly. Remove the password with our Unlock PDF tool first, then re-open the unlocked copy here. Your edits are still open in the editor.");
+            } else {
+                alert("Failed to save PDF. Your edits are still open in the editor - try downloading again.");
+            }
         } finally {
             setIsProcessing(false);
         }
@@ -207,7 +352,7 @@ const PdfEditorContent = () => {
                         boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)'
                     }}
                 >
-                    <input {...getInputProps()} />
+                    <input {...getInputProps()} aria-label="Choose a file for file" />
                     <div style={{
                         width: '80px', height: '80px', background: 'var(--secondary)',
                         borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center',
@@ -273,7 +418,7 @@ const PdfEditorContent = () => {
             <div style={{ display: 'flex', flex: 1, overflow: 'hidden' }}>
                 <Sidebar />
 
-                <div style={{
+                <div ref={scrollRef} style={{
                     flex: 1,
                     overflow: 'auto',
                     padding: '2rem',
@@ -282,7 +427,7 @@ const PdfEditorContent = () => {
                     alignItems: 'flex-start',
                     backgroundColor: '#cbd5e1'
                 }}>
-                    <div style={{ display: 'flex', flexDirection: 'column' }}>
+                    <div ref={contentRef} style={{ display: 'flex', flexDirection: 'column' }}>
                         {pages.map((page, index) => (
                             <PDFPage key={index} page={page} pageIndex={index} />
                         ))}

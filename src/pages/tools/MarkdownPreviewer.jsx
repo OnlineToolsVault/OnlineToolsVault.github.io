@@ -3,7 +3,7 @@ import RelatedTools from '../../components/tools/RelatedTools'
 import { Helmet } from 'react-helmet-async'
 import ReactMarkdown from 'react-markdown'
 import remarkGfm from 'remark-gfm'
-import { Copy, Trash2, Eye, Edit2, Download, FileJson, FileType, Printer, ArrowLeftRight } from 'lucide-react'
+import { Copy, Trash2, Eye, Download, FileType, Printer, ArrowLeftRight } from 'lucide-react'
 
 
 const MARKDOWN_CSS = `
@@ -218,7 +218,7 @@ This web site is using \`js\`.`)
                     flexWrap: 'wrap',
                     gap: '1rem'
                 }}>
-                    <div className="view-controls" style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
+                    <div className="view-controls" style={{ display: 'flex', flexWrap: 'wrap', gap: '0.5rem', alignItems: 'center' }}>
                         <button
                             className={`btn-secondary ${viewMode === 'split' ? 'active' : ''}`}
                             onClick={() => setViewMode('split')}
@@ -385,8 +385,9 @@ This web site is using \`js\`.`)
                     .editor-pane { display: none !important; }
                     .container { padding: 0 !important; width: 100% !important; max-width: none !important; }
                     .preview-container { display: block !important; height: auto !important; min-height: 0 !important; }
-                    .markdown-body { 
-                        border: none !important; 
+                    .markdown-body {
+                        display: block !important;
+                        border: none !important;
                         padding: 0 !important; 
                         overflow: visible !important; 
                         height: auto !important; 

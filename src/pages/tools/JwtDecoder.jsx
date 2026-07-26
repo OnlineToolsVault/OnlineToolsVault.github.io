@@ -1,7 +1,7 @@
 import React, { useState } from 'react'
 import RelatedTools from '../../components/tools/RelatedTools'
 import ToolLayout from '../../components/tools/ToolLayout'
-import { Copy, Check, AlertCircle, Lock, Pen, Bug } from 'lucide-react'
+import { AlertCircle, Lock, Pen, Bug } from 'lucide-react'
 
 
 const features = [
@@ -31,8 +31,9 @@ const JwtDecoder = () => {
     const [error, setError] = useState(false)
 
     const handleDecode = () => {
-        if (!token) {
+        if (!token.trim()) {
             setDecoded(null)
+            setError(false)
             return
         }
         try {
@@ -40,9 +41,12 @@ const JwtDecoder = () => {
             if (parts.length !== 3) throw new Error('Invalid JWT format')
 
             const decodePart = (str) => {
-                // Base64Url to Base64
+                // Base64Url to Base64, restoring the stripped padding
                 const base64 = str.replace(/-/g, '+').replace(/_/g, '/')
-                return JSON.parse(atob(base64))
+                const padded = base64 + '='.repeat((4 - (base64.length % 4)) % 4)
+                // atob yields Latin-1 bytes; JWT claims are UTF-8 JSON
+                const bytes = Uint8Array.from(atob(padded), (c) => c.charCodeAt(0))
+                return JSON.parse(new TextDecoder('utf-8').decode(bytes))
             }
 
             const header = decodePart(parts[0])

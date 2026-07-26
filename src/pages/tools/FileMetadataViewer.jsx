@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import { useState } from 'react'
 import RelatedTools from '../../components/tools/RelatedTools'
 import ToolLayout from '../../components/tools/ToolLayout'
 import FileUploader from '../../components/tools/FileUploader'
@@ -22,13 +22,15 @@ const FileMetadataViewer = () => {
     const [metadata, setMetadata] = useState(null)
 
     const handleFile = (f) => {
+        const dot = f.name.lastIndexOf('.') // > 0 so dotfiles like .gitignore stay extensionless
+        const ext = dot > 0 ? f.name.slice(dot + 1) : ''
         setFile(f)
         setMetadata({
             'Name': f.name,
             'Type (MIME)': f.type || 'Unknown/Binary',
             'Size': formatBytes(f.size),
             'Last Modified': new Date(f.lastModified).toLocaleString(),
-            'Extension': f.name.split('.').pop()
+            'Extension': ext ? `.${ext}` : 'None'
         })
     }
 

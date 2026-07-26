@@ -110,7 +110,9 @@
 
 .tools-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    /* min() keeps the 280px track from outgrowing its container on narrow phones — at 320px the
+       container is only 272px wide, and a hard 280px minimum pushed the whole page sideways. */
+    grid-template-columns: repeat(auto-fill, minmax(min(280px, 100%), 1fr));
     gap: 1.5rem;
     padding-bottom: 4rem;
 }
@@ -196,6 +198,14 @@
         opacity: 1;
         transform: translateY(0);
     }
+}
+
+.tools-empty {
+    margin: 3rem auto 1rem;
+    max-width: 32rem;
+    text-align: center;
+    color: var(--text-secondary);
+    font-size: 1.05rem;
 }
 
 /* Responsive */

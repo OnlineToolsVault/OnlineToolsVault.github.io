@@ -1,8 +1,8 @@
-import React, { useState } from 'react'
+import { useState } from 'react'
 import RelatedTools from '../../components/tools/RelatedTools'
 import ToolLayout from '../../components/tools/ToolLayout'
 import FileUploader from '../../components/tools/FileUploader'
-import { FileText, Download, Split, Loader2, Files, ListOrdered, FolderArchive, Scissors, Shield } from 'lucide-react'
+import { FileText, Loader2, Files, ListOrdered, FolderArchive, Scissors } from 'lucide-react'
 import { PDFDocument } from 'pdf-lib'
 import { saveAs } from 'file-saver'
 import JSZip from 'jszip'
@@ -27,11 +27,13 @@ const SplitPdf = () => {
     const [pageCount, setPageCount] = useState(0)
     const [splitMode, setSplitMode] = useState('all') // 'all' or 'range'
     const [range, setRange] = useState('')
+    const [error, setError] = useState('')
 
 
 
     const loadPdf = async (f) => {
         setFile(f)
+        setError('')
         try {
             const arrayBuffer = await f.arrayBuffer()
             const pdfDoc = await PDFDocument.load(arrayBuffer)
@@ -43,75 +45,92 @@ const SplitPdf = () => {
         }
     }
 
+    // Turns "1-3, 5, 8-10" into [{ label, indices }] using 0-based page indices.
+    // Out-of-bounds and malformed entries are reported rather than silently skipped.
+    const parseRanges = (input, totalPages) => {
+        const groups = []
+        const invalid = []
+
+        for (const raw of input.split(',')) {
+            const part = raw.trim()
+            if (!part) continue
+
+            const dash = part.match(/^(\d+)\s*-\s*(\d+)$/)
+            if (dash) {
+                const start = Number(dash[1])
+                const end = Number(dash[2])
+                const indices = []
+                for (let page = start; page <= end; page++) {
+                    if (page >= 1 && page <= totalPages) indices.push(page - 1)
+                }
+                if (start > end || indices.length === 0) invalid.push(part)
+                else groups.push({ label: `pages-${start}-${end}`, indices })
+                continue
+            }
+
+            const single = part.match(/^\d+$/) ? Number(part) : NaN
+            if (single >= 1 && single <= totalPages) groups.push({ label: `page-${single}`, indices: [single - 1] })
+            else invalid.push(part)
+        }
+
+        return { groups, invalid }
+    }
+
     const handleSplit = async () => {
+        setError('')
         setIsProcessing(true)
         try {
             const arrayBuffer = await file.arrayBuffer()
             const srcDoc = await PDFDocument.load(arrayBuffer)
+            const totalPages = srcDoc.getPageCount()
 
-            const zip = new JSZip()
-
+            let groups
             if (splitMode === 'all') {
-                for (let i = 0; i < srcDoc.getPageCount(); i++) {
-                    const newPdf = await PDFDocument.create()
-                    const [copiedPage] = await newPdf.copyPages(srcDoc, [i])
-                    newPdf.addPage(copiedPage)
-                    const pdfBytes = await newPdf.save()
-                    zip.file(`page-${i + 1}.pdf`, pdfBytes)
-                }
+                groups = Array.from({ length: totalPages }, (_, i) => ({ label: `page-${i + 1}`, indices: [i] }))
             } else {
-                // Parse range "1-3, 5, 7"
-                // Simple implementation: just split single pages for now or full split
-                // For complex range parsing, we need a parser function. 
-                // Let's implement basics: Split All Pages (Extract every page).
-                // User asked for "Split into individual pages or page ranges"
-                // I'll stick to Split All for MVP to guarantee stability, or add simple comma logic.
-                const ranges = range.split(',').map(r => r.trim())
-                let index = 1;
-                for (let r of ranges) {
-                    // check if range like 1-5
-                    if (r.includes('-')) {
-                        const [start, end] = r.split('-').map(Number)
-                        if (!isNaN(start) && !isNaN(end) && start <= end) {
-                            const newPdf = await PDFDocument.create()
-                            // copy range (0-indexed)
-                            const pageIndices = []
-                            for (let k = start; k <= end; k++) {
-                                if (k >= 1 && k <= srcDoc.getPageCount()) pageIndices.push(k - 1)
-                            }
-                            if (pageIndices.length > 0) {
-                                const copiedPages = await newPdf.copyPages(srcDoc, pageIndices)
-                                copiedPages.forEach(page => newPdf.addPage(page))
-                                const pdfBytes = await newPdf.save()
-                                zip.file(`split-${index}.pdf`, pdfBytes)
-                                index++;
-                            }
-                        }
-                    } else {
-                        const pageNum = Number(r)
-                        if (!isNaN(pageNum) && pageNum >= 1 && pageNum <= srcDoc.getPageCount()) {
-                            const newPdf = await PDFDocument.create()
-                            const [copiedPage] = await newPdf.copyPages(srcDoc, [pageNum - 1])
-                            newPdf.addPage(copiedPage)
-                            const pdfBytes = await newPdf.save()
-                            zip.file(`page-${pageNum}.pdf`, pdfBytes)
-                            index++;
-                        }
-                    }
+                const parsed = parseRanges(range, totalPages)
+                if (parsed.invalid.length > 0) {
+                    setError(`This PDF has ${totalPages} page${totalPages === 1 ? '' : 's'}. Cannot use: ${parsed.invalid.join(', ')}`)
+                    return
                 }
+                if (parsed.groups.length === 0) {
+                    setError('Enter at least one page or page range, for example "1-3, 5".')
+                    return
+                }
+                groups = parsed.groups
             }
 
-            const content = await zip.generateAsync({ type: 'blob' })
-            saveAs(content, 'split-files.zip')
-            saveAs(content, 'split_files.zip')
+            // A single group of a single page is a plain PDF; anything more is a ZIP.
+            const baseName = file.name.replace(/\.pdf$/i, '')
 
+            if (groups.length === 1) {
+                const newPdf = await PDFDocument.create()
+                const copied = await newPdf.copyPages(srcDoc, groups[0].indices)
+                copied.forEach(page => newPdf.addPage(page))
+                const pdfBytes = await newPdf.save()
+                saveAs(new Blob([pdfBytes], { type: 'application/pdf' }), `${baseName}-${groups[0].label}.pdf`)
+                return
+            }
+
+            const zip = new JSZip()
+            for (const group of groups) {
+                const newPdf = await PDFDocument.create()
+                const copied = await newPdf.copyPages(srcDoc, group.indices)
+                copied.forEach(page => newPdf.addPage(page))
+                zip.file(`${group.label}.pdf`, await newPdf.save())
+            }
+
+            const content = await zip.generateAsync({ type: 'blob', compression: 'DEFLATE' })
+            saveAs(content, `${baseName}-split.zip`)
         } catch (err) {
             console.error("Split error:", err)
-            alert("Error splitting PDF. Please check your page ranges.")
+            setError('Could not split this PDF. It may be corrupted or password protected — try Unlock PDF first.')
         } finally {
             setIsProcessing(false)
         }
     }
+
+    const isSplitDisabled = isProcessing || (splitMode === 'range' && range.trim() === '')
 
     return (
         <ToolLayout
@@ -141,44 +160,86 @@ const SplitPdf = () => {
                                     <p style={{ fontWeight: '600', color: '#334155' }}>{file.name}</p>
                                     <p style={{ fontSize: '0.875rem', color: '#64748b' }}>{pageCount} pages</p>
                                 </div>
-                                <button onClick={() => setFile(null)} style={{ background: 'none', border: 'none', padding: '0.5rem', cursor: 'pointer', color: '#ef4444' }}>
+                                <button onClick={() => { setFile(null); setError(''); setPageCount(0) }} aria-label="Remove file" style={{ background: 'none', border: 'none', padding: '0.5rem', cursor: 'pointer', color: '#ef4444' }}>
                                     ×
                                 </button>
                             </div>
 
-                            <div style={{ marginBottom: '2rem' }}>
-                                <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: '600', color: '#334155' }}>
-                                    Page Ranges to Extract <span style={{ fontWeight: '400', color: '#64748b' }}>(e.g. 1-3, 5, 8-10)</span>
-                                </label>
-                                <input
-                                    type="text"
-                                    value={range}
-                                    onChange={(e) => setRange(e.target.value)}
-                                    placeholder="Enter page ranges separated by comma"
-                                    style={{
-                                        width: '100%',
-                                        padding: '1rem',
-                                        borderRadius: '0.5rem',
-                                        border: '1px solid var(--border)',
-                                        fontSize: '1rem'
-                                    }}
-                                />
-                            </div>
+                            <fieldset style={{ border: 'none', padding: 0, margin: '0 0 1.5rem' }}>
+                                <legend style={{ marginBottom: '0.75rem', fontWeight: '600', color: '#334155' }}>How should we split it?</legend>
+                                <div style={{ display: 'grid', gap: '0.75rem' }}>
+                                    {[
+                                        { id: 'all', title: 'Extract every page', desc: `Creates ${pageCount || 'one'} separate PDF${pageCount === 1 ? '' : 's'}, delivered as a ZIP.` },
+                                        { id: 'range', title: 'Custom range', desc: 'Pick exactly the pages or ranges you need.' }
+                                    ].map(option => (
+                                        <label
+                                            key={option.id}
+                                            style={{
+                                                display: 'flex', alignItems: 'flex-start', gap: '0.75rem', padding: '1rem',
+                                                border: `1px solid ${splitMode === option.id ? 'var(--primary)' : 'var(--border)'}`,
+                                                background: splitMode === option.id ? 'var(--primary-light)' : 'white',
+                                                borderRadius: '0.75rem', cursor: 'pointer'
+                                            }}
+                                        >
+                                            <input
+                                                type="radio"
+                                                name="split-mode"
+                                                value={option.id}
+                                                checked={splitMode === option.id}
+                                                onChange={() => { setSplitMode(option.id); setError('') }}
+                                                style={{ marginTop: '0.25rem' }}
+                                            />
+                                            <span>
+                                                <span style={{ display: 'block', fontWeight: '600', color: '#334155' }}>{option.title}</span>
+                                                <span style={{ display: 'block', fontSize: '0.875rem', color: '#64748b' }}>{option.desc}</span>
+                                            </span>
+                                        </label>
+                                    ))}
+                                </div>
+                            </fieldset>
+
+                            {splitMode === 'range' && (
+                                <div style={{ marginBottom: '2rem' }}>
+                                    <label htmlFor="split-range" style={{ display: 'block', marginBottom: '0.5rem', fontWeight: '600', color: '#334155' }}>
+                                        Page Ranges to Extract <span style={{ fontWeight: '400', color: '#64748b' }}>(e.g. 1-3, 5, 8-10)</span>
+                                    </label>
+                                    <input
+                                        id="split-range"
+                                        type="text"
+                                        value={range}
+                                        onChange={(e) => { setRange(e.target.value); setError('') }}
+                                        placeholder="Enter page ranges separated by comma"
+                                        style={{
+                                            width: '100%',
+                                            padding: '1rem',
+                                            borderRadius: '0.5rem',
+                                            border: '1px solid var(--border)',
+                                            fontSize: '1rem'
+                                        }}
+                                    />
+                                </div>
+                            )}
+
+                            {error && (
+                                <p role="alert" style={{ marginBottom: '1rem', padding: '0.875rem 1rem', borderRadius: '0.5rem', background: '#fef2f2', color: '#b91c1c', border: '1px solid #fecaca' }}>
+                                    {error}
+                                </p>
+                            )}
 
                             <button
                                 onClick={handleSplit}
-                                disabled={!range || isProcessing}
+                                disabled={isSplitDisabled}
                                 className="tool-btn-primary"
                                 style={{
                                     width: '100%',
                                     padding: '1rem',
                                     borderRadius: '0.5rem',
-                                    background: (!range || isProcessing) ? '#94a3b8' : 'var(--primary)',
+                                    background: isSplitDisabled ? '#94a3b8' : 'var(--primary)',
                                     color: 'white',
                                     fontWeight: 'bold',
                                     fontSize: '1.1rem',
                                     border: 'none',
-                                    cursor: (!range || isProcessing) ? 'not-allowed' : 'pointer',
+                                    cursor: isSplitDisabled ? 'not-allowed' : 'pointer',
                                     display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.75rem'
                                 }}
                             >

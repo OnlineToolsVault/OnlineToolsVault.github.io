@@ -1,7 +1,7 @@
-import React, { useState, useEffect } from 'react'
+import { useState, useEffect } from 'react'
 import RelatedTools from '../../components/tools/RelatedTools'
 import ToolLayout from '../../components/tools/ToolLayout'
-import { Clock, ArrowRight, ArrowLeftRight, List } from 'lucide-react'
+import { Clock, ArrowLeftRight, List } from 'lucide-react'
 
 const faqs = [
     {
@@ -32,9 +32,10 @@ const faqs = [
 
 const TimestampConverter = () => {
     const [now, setNow] = useState(Math.floor(Date.now() / 1000))
-    const [timestamp, setTimestamp] = useState(now)
+    const [timestamp, setTimestamp] = useState(String(now))
     const [dateString, setDateString] = useState('')
     const [isoString, setIsoString] = useState('')
+    const [rfcString, setRfcString] = useState('')
 
     // Live clock
     useEffect(() => {
@@ -43,20 +44,29 @@ const TimestampConverter = () => {
     }, [])
 
     useEffect(() => {
-        try {
-            const date = new Date(timestamp * 1000)
-            setDateString(date.toLocaleString())
-            setIsoString(date.toISOString())
-        } catch (e) {
+        const secs = Number(timestamp)
+        if (timestamp.trim() === '' || !Number.isFinite(secs)) {
+            setDateString('')
+            setIsoString('')
+            setRfcString('')
+            return
+        }
+        const date = new Date(secs * 1000)
+        if (Number.isNaN(date.getTime())) {
             setDateString('Invalid Date')
             setIsoString('Invalid')
+            setRfcString('Invalid')
+            return
         }
+        setDateString(date.toLocaleString())
+        setIsoString(date.toISOString())
+        setRfcString(date.toUTCString())
     }, [timestamp])
 
     const handleDateInput = (e) => {
         const d = new Date(e.target.value)
         if (!isNaN(d.getTime())) {
-            setTimestamp(Math.floor(d.getTime() / 1000))
+            setTimestamp(String(Math.floor(d.getTime() / 1000)))
         }
     }
 
@@ -74,13 +84,14 @@ const TimestampConverter = () => {
                     <div style={{ fontSize: '2rem', fontWeight: 'bold', color: '#15803d', fontFamily: 'monospace' }}>{now}</div>
                 </div>
 
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '2rem', alignItems: 'center' }}>
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(16rem, 100%), 1fr))', gap: '2rem', alignItems: 'center' }}>
                     <div>
                         <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: 'bold' }}>Unix Timestamp (Seconds)</label>
                         <input
                             type="number"
+                            aria-label="Unix timestamp"
                             value={timestamp}
-                            onChange={(e) => setTimestamp(Number(e.target.value))}
+                            onChange={(e) => setTimestamp(e.target.value)}
                             style={{ width: '100%', padding: '1rem', borderRadius: '0.5rem', border: '1px solid var(--border)', fontSize: '1.2rem', fontFamily: 'monospace' }}
                         />
                     </div>
@@ -88,6 +99,7 @@ const TimestampConverter = () => {
                         <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: 'bold' }}>Date & Time (Local)</label>
                         <input
                             type="datetime-local"
+                            aria-label="Date and time"
                             onChange={handleDateInput}
                             style={{ width: '100%', padding: '1rem', borderRadius: '0.5rem', border: '1px solid var(--border)', fontSize: '1rem' }}
                         />
@@ -107,7 +119,7 @@ const TimestampConverter = () => {
                         </div>
                         <div>
                             <span style={{ fontWeight: 'bold', display: 'inline-block', width: '100px' }}>RFC 2822:</span>
-                            <span style={{ fontFamily: 'monospace', fontSize: '1.1rem' }}>{new Date(timestamp * 1000).toUTCString()}</span>
+                            <span style={{ fontFamily: 'monospace', fontSize: '1.1rem' }}>{rfcString}</span>
                         </div>
                     </div>
                 </div>

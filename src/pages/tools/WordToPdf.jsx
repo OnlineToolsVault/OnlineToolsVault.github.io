@@ -1,4 +1,4 @@
-import React, { useState, useRef } from 'react'
+import { useState } from 'react'
 import RelatedTools from '../../components/tools/RelatedTools'
 import ToolLayout from '../../components/tools/ToolLayout'
 import FileUploader from '../../components/tools/FileUploader'
@@ -9,72 +9,75 @@ import jsPDF from 'jspdf'
 const WordToPdf = () => {
     const [file, setFile] = useState(null)
     const [isProcessing, setIsProcessing] = useState(false)
-    const [previewHtml, setPreviewHtml] = useState('')
     const [pdfBlob, setPdfBlob] = useState(null)
-
-    // Hidden ref for rendering HTML to convert
-    const contentRef = useRef(null)
+    const [error, setError] = useState(null)
 
     const processFile = async (f) => {
         setFile(f)
+        setPdfBlob(null)
+        setError(null)
         setIsProcessing(true)
         try {
             const arrayBuffer = await f.arrayBuffer()
             const result = await mammoth.convertToHtml({ arrayBuffer })
-            setPreviewHtml(result.value)
-
-            // Allow state to update and DOM to render
-            setTimeout(async () => {
-                await generatePdf(result.value)
-            }, 500)
-
-        } catch (error) {
-            console.error(error)
-            alert('Error converting file.')
+            await generatePdf(result.value)
+        } catch (err) {
+            console.error(err)
+            setError('We could not read this document. Make sure it is a valid .docx file (older .doc files are not supported).')
             setIsProcessing(false)
         }
     }
 
-    const generatePdf = async () => {
+    const generatePdf = async (html) => {
         try {
             const doc = new jsPDF({
                 unit: 'pt',
                 format: 'a4'
             })
 
-            // Using html method of jsPDF
-            // We need a container in the DOM
+            // jsPDF.html() deep-clones the element we hand it and forces position:relative on the
+            // clone, but it does NOT reset `left`. Offsetting the element itself therefore moves the
+            // clone 9999px off the canvas and every page comes out blank. Keep the offset on an outer
+            // wrapper and pass the un-offset inner div instead.
+            const wrapper = document.createElement('div')
+            wrapper.style.position = 'absolute'
+            wrapper.style.left = '-9999px'
+            wrapper.style.top = '0'
+
             const container = document.createElement('div')
-            container.innerHTML = previewHtml
+            container.innerHTML = html
             container.style.width = '595px' // A4 width in pt (approx)
             container.style.padding = '40px'
             container.style.fontSize = '12pt'
             container.style.lineHeight = '1.5'
             container.style.fontFamily = 'Arial, sans-serif'
 
-            // Append to body temporarily and hidden
-            container.style.position = 'absolute'
-            container.style.left = '-9999px'
-            document.body.appendChild(container)
+            wrapper.appendChild(container)
+            document.body.appendChild(wrapper)
 
-            await doc.html(container, {
-                callback: (pdf) => {
-                    const blob = pdf.output('blob')
-                    setPdfBlob(blob)
-                    setIsProcessing(false)
-                    document.body.removeChild(container)
-                },
-                x: 0,
-                y: 0,
-                width: 595, // Target width in the PDF document
-                windowWidth: 595, // Window width in CSS pixels
-                margin: 20,
-                autoPaging: 'text'
-            })
+            try {
+                await doc.html(container, {
+                    callback: (pdf) => {
+                        const blob = pdf.output('blob')
+                        setPdfBlob(blob)
+                        setIsProcessing(false)
+                    },
+                    x: 0,
+                    y: 0,
+                    width: 595, // Target width in the PDF document
+                    windowWidth: 595, // Window width in CSS pixels
+                    margin: 20,
+                    autoPaging: 'text'
+                })
+            } finally {
+                // Runs on failure too, so a rejected conversion cannot leave the whole
+                // document orphaned in the DOM.
+                wrapper.remove()
+            }
 
-        } catch (error) {
-            console.error('PDF Generation failed', error)
-            alert('PDF Generation failed')
+        } catch (err) {
+            console.error('PDF Generation failed', err)
+            setError('We could not build a PDF from this document. Very complex layouts or embedded objects can fail — try simplifying the document and converting again.')
             setIsProcessing(false)
         }
     }
@@ -85,8 +88,11 @@ const WordToPdf = () => {
             const link = document.createElement('a')
             link.href = url
             link.download = file.name.replace(/\.docx?$/i, '.pdf')
+            document.body.appendChild(link)
             link.click()
-            URL.revokeObjectURL(url)
+            document.body.removeChild(link)
+            // Revoke on the next tick so the browser has started the download
+            setTimeout(() => URL.revokeObjectURL(url), 0)
         }
     }
 
@@ -123,17 +129,23 @@ const WordToPdf = () => {
                             </>
                         ) : (
                             <>
-                                <button
-                                    className="tool-btn-primary"
-                                    onClick={handleDownload}
-                                    style={{ padding: '0.75rem 1.5rem', borderRadius: '0.5rem', background: 'var(--primary)', color: 'white', border: 'none', cursor: 'pointer', fontWeight: 'bold' }}
-                                >
-                                    <Download size={20} style={{ marginRight: '0.5rem', verticalAlign: 'middle' }} /> Download PDF
-                                </button>
+                                {error ? (
+                                    <div role="alert" style={{ padding: '0.75rem 1rem', borderRadius: '0.5rem', background: '#fef2f2', border: '1px solid #fecaca', color: '#b91c1c', textAlign: 'left' }}>
+                                        {error}
+                                    </div>
+                                ) : (
+                                    <button
+                                        className="tool-btn-primary"
+                                        onClick={handleDownload}
+                                        style={{ padding: '0.75rem 1.5rem', borderRadius: '0.5rem', background: 'var(--primary)', color: 'white', border: 'none', cursor: 'pointer', fontWeight: 'bold' }}
+                                    >
+                                        <Download size={20} style={{ marginRight: '0.5rem', verticalAlign: 'middle' }} /> Download PDF
+                                    </button>
+                                )}
                                 <br /><br />
                                 <button
                                     className="tool-btn-secondary"
-                                    onClick={() => { setFile(null); setPdfBlob(null); }}
+                                    onClick={() => { setFile(null); setPdfBlob(null); setError(null); }}
                                     style={{ background: 'none', border: 'none', color: '#64748b', textDecoration: 'underline', cursor: 'pointer' }}
                                 >
                                     Convert Another

@@ -1,4 +1,3 @@
-import React from 'react'
 import { Helmet } from 'react-helmet-async'
 import './StandardPage.css'
 
@@ -8,6 +7,7 @@ const PrivacyPolicy = () => {
             <Helmet>
                 <title>Privacy Policy - FreeTools | Your Data is Safe</title>
                 <meta name="description" content="Read our privacy policy. We prioritize your privacy and do not store your files on our servers." />
+                <link rel="canonical" href="https://onlinetoolsvault.com/privacy/" />
             </Helmet>
 
             <div className="standard-page">

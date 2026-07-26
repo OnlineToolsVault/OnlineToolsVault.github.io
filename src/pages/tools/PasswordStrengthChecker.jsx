@@ -1,7 +1,7 @@
-import React, { useState } from 'react'
+import { useState } from 'react'
 import RelatedTools from '../../components/tools/RelatedTools'
 import ToolLayout from '../../components/tools/ToolLayout'
-import { Shield, ShieldAlert, ShieldCheck, Zap } from 'lucide-react'
+import { Shield, ShieldCheck, Zap } from 'lucide-react'
 
 const features = [
     { title: 'Real-time Analysis', desc: 'Get instant feedback on your password strength as you type.' },

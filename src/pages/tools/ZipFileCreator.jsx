@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import { useState } from 'react'
 import RelatedTools from '../../components/tools/RelatedTools'
 import ToolLayout from '../../components/tools/ToolLayout'
 import FileUploader from '../../components/tools/FileUploader'
@@ -18,15 +18,6 @@ const ZipFileCreator = () => {
     const [zipName, setZipName] = useState('archive')
 
     const handleFiles = (newFiles) => {
-        // Multi-file selection handling
-        // FileUploader usually returns single file or array? My FileUploader returns single file in onFileSelect usually.
-        // I need to check FileUploader or just handle single adds.
-        // Assuming FileUploader might need adjustment for 'multiple'.
-        // For now, let's treat it as "Add to list" one by one or modify FileUploader later.
-        // Actually standard <input type="file" multiple> allows multiple.
-        // Let's assume FileUploader calls onFileSelect with ONE file or check if I modified it.
-        // If I look at FileUploader.jsx earlier, it took `onFileSelect`.
-        // I'll just append to list.
         if (Array.isArray(newFiles)) {
             setFiles(prev => [...prev, ...newFiles])
         } else {
@@ -39,10 +30,27 @@ const ZipFileCreator = () => {
         setIsProcessing(true)
         try {
             const zip = new JSZip()
+            // JSZip keys entries by name, so two files called the same thing would leave only
+            // the last one in the archive with no warning.
+            const used = new Set()
             files.forEach(f => {
-                zip.file(f.name, f)
+                let name = f.name
+                if (used.has(name)) {
+                    const dot = name.lastIndexOf('.')
+                    const base = dot > 0 ? name.slice(0, dot) : name
+                    const ext = dot > 0 ? name.slice(dot) : ''
+                    let i = 1
+                    while (used.has(`${base} (${i})${ext}`)) i += 1
+                    name = `${base} (${i})${ext}`
+                }
+                used.add(name)
+                zip.file(name, f)
             })
-            const content = await zip.generateAsync({ type: 'blob' })
+            const content = await zip.generateAsync({
+                type: 'blob',
+                compression: 'DEFLATE',
+                compressionOptions: { level: 6 }
+            })
             saveAs(content, `${zipName}.zip`)
         } catch (e) {
             alert('Error creating ZIP')
@@ -68,6 +76,7 @@ const ZipFileCreator = () => {
                     <FileUploader
                         id="zip-files-upload"
                         onFileSelect={handleFiles}
+                        multiple
                         icon={Archive}
                         label="Add files to archive"
                     />

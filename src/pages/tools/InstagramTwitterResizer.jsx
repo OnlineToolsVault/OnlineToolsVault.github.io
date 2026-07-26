@@ -1,8 +1,8 @@
-import React, { useState, useCallback } from 'react'
+import { useState, useCallback } from 'react'
 import RelatedTools from '../../components/tools/RelatedTools'
 import ToolLayout from '../../components/tools/ToolLayout'
 import { useDropzone } from 'react-dropzone'
-import { Image as ImageIcon, Download, Check, RefreshCw, ZoomIn, Layout, Smartphone } from 'lucide-react'
+import { Image as ImageIcon, Download, RefreshCw, ZoomIn, Layout, Smartphone } from 'lucide-react'
 import Cropper from 'react-easy-crop'
 import { saveAs } from 'file-saver'
 
@@ -43,6 +43,9 @@ const getCroppedImgHelper = async (imageSrc, pixelCrop) => {
     const ctx = canvas.getContext('2d')
     canvas.width = pixelCrop.width
     canvas.height = pixelCrop.height
+    // Output is JPEG, which has no alpha channel, so transparent areas would otherwise turn black
+    ctx.fillStyle = '#ffffff'
+    ctx.fillRect(0, 0, canvas.width, canvas.height)
     ctx.drawImage(
         image,
         pixelCrop.x,
@@ -69,6 +72,7 @@ const InstagramTwitterResizer = () => {
     const [aspect, setAspect] = useState(1)
     const [croppedAreaPixels, setCroppedAreaPixels] = useState(null)
     const [platform, setPlatform] = useState('ig_square')
+    const [error, setError] = useState('')
 
     const presets = {
         ig_square: { name: 'Instagram Post (1:1)', aspect: 1 },
@@ -97,8 +101,22 @@ const InstagramTwitterResizer = () => {
     })
 
     const handleSelect = (f) => {
-        setFile(f)
-        setPreview(URL.createObjectURL(f))
+        // accept is image/*, so HEIC/TIFF/AVIF get through even though the browser cannot decode
+        // them. react-easy-crop never fires onCropComplete for those, which used to leave Download
+        // as a silent no-op — so probe the file first and say so.
+        const url = URL.createObjectURL(f)
+        const probe = new Image()
+        probe.onload = () => {
+            setError('')
+            setCroppedAreaPixels(null)
+            setFile(f)
+            setPreview(url)
+        }
+        probe.onerror = () => {
+            URL.revokeObjectURL(url)
+            setError(`"${f.name}" cannot be opened by your browser. Try a JPG, PNG or WebP image.`)
+        }
+        probe.src = url
     }
 
     const handlePlatformChange = (e) => {
@@ -107,10 +125,16 @@ const InstagramTwitterResizer = () => {
     }
 
     const download = async () => {
-        if (!preview || !croppedAreaPixels) return
+        if (!preview) return
+        if (!croppedAreaPixels) {
+            setError('The crop area is not ready yet. Give the preview a moment, then try again.')
+            return
+        }
+        setError('')
         try {
             const croppedBlob = await getCroppedImgHelper(preview, croppedAreaPixels)
-            saveAs(croppedBlob, `${platform}-${file.name}`)
+            const baseName = file.name.replace(/\.[^./\\]+$/, '') || 'image'
+            saveAs(croppedBlob, `${platform}-${baseName}.jpg`)
         } catch (e) {
             console.error(e)
             alert('Error creating image')
@@ -126,6 +150,11 @@ const InstagramTwitterResizer = () => {
             faqs={faqs}
         >
             <div className="tool-workspace" style={{ maxWidth: '1200px', margin: '0 auto' }}>
+                {error && (
+                    <p role="alert" style={{ maxWidth: '600px', margin: '0 auto 1.5rem', padding: '1rem', background: '#fef2f2', border: '1px solid #fee2e2', borderRadius: '0.5rem', color: '#b91c1c', textAlign: 'center' }}>
+                        {error}
+                    </p>
+                )}
                 {!file ? (
                     <div
                         id="social-media-dropzone"
@@ -143,7 +172,7 @@ const InstagramTwitterResizer = () => {
                             margin: '0 auto'
                         }}
                     >
-                        <input {...getInputProps()} />
+                        <input {...getInputProps()} aria-label="Choose a file for Social Media Resizer" />
                         <div style={{
                             width: '80px',
                             height: '80px',

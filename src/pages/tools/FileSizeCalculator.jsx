@@ -1,7 +1,7 @@
-import React, { useState } from 'react'
+import { useState } from 'react'
 import RelatedTools from '../../components/tools/RelatedTools'
 import ToolLayout from '../../components/tools/ToolLayout'
-import { ArrowRight, Zap, ArrowLeftRight, Binary } from 'lucide-react'
+import { Zap, ArrowLeftRight, Binary } from 'lucide-react'
 
 
 const features = [
@@ -55,14 +55,16 @@ const FileSizeCalculator = () => {
             faqs={faqs}
         >
             <div className="tool-workspace" style={{ maxWidth: '600px', margin: '0 auto', padding: '2rem', background: 'white', borderRadius: '1rem', border: '1px solid var(--border)' }}>
-                <div style={{ display: 'flex', gap: '1rem', alignItems: 'center', marginBottom: '2rem' }}>
+                <div style={{ display: 'flex', flexWrap: 'wrap', gap: '1rem', alignItems: 'center', marginBottom: '2rem' }}>
                     <input
                         type="number"
+                        aria-label="File size value"
                         value={bytes}
                         onChange={(e) => setBytes(e.target.value)}
-                        style={{ flex: 1, padding: '1rem', fontSize: '1.2rem', borderRadius: '0.5rem', border: '1px solid var(--border)' }}
+                        style={{ flex: '1 1 10rem', minWidth: 0, padding: '1rem', fontSize: '1.2rem', borderRadius: '0.5rem', border: '1px solid var(--border)' }}
                     />
                     <select
+                        aria-label="Unit"
                         value={unit}
                         onChange={(e) => setUnit(e.target.value)}
                         style={{ width: '100px', padding: '1rem', fontSize: '1rem', borderRadius: '0.5rem', border: '1px solid var(--border)', fontWeight: 'bold' }}

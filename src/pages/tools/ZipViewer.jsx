@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import { useState } from 'react'
 import RelatedTools from '../../components/tools/RelatedTools'
 import ToolLayout from '../../components/tools/ToolLayout'
 import FileUploader from '../../components/tools/FileUploader'
@@ -36,9 +36,12 @@ const ZipViewer = () => {
     const [file, setFile] = useState(null)
     const [entries, setEntries] = useState([])
     const [isProcessing, setIsProcessing] = useState(false)
+    const [error, setError] = useState('')
 
     const handleFile = async (f) => {
         setFile(f)
+        setEntries([])
+        setError('')
         setIsProcessing(true)
         try {
             const zip = await JSZip.loadAsync(f)
@@ -56,8 +59,8 @@ const ZipViewer = () => {
             setEntries(fileList.sort((a, b) => (a.dir === b.dir) ? 0 : a.dir ? -1 : 1)) // Dirs first
             setIsProcessing(false)
         } catch (e) {
-            alert('Invalid ZIP file')
-            setEntries([])
+            console.error(e)
+            setError(`Could not read "${f.name}". It is not a valid ZIP archive, or it is encrypted.`)
             setIsProcessing(false)
         }
     }
@@ -81,6 +84,12 @@ const ZipViewer = () => {
                 </div>
 
                 {isProcessing && <div style={{ textAlign: 'center', padding: '2rem' }}>Analyzing ZIP...</div>}
+
+                {error && (
+                    <div role="alert" style={{ padding: '1rem', background: '#fef2f2', border: '1px solid #fee2e2', borderRadius: '0.5rem', color: '#b91c1c', marginBottom: '2rem' }}>
+                        {error}
+                    </div>
+                )}
 
                 {entries.length > 0 && (
                     <div style={{ background: 'white', borderRadius: '1rem', border: '1px solid var(--border)', overflow: 'hidden' }}>

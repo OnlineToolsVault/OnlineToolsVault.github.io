@@ -1,8 +1,8 @@
-import React, { useState } from 'react'
+import { useState } from 'react'
 import RelatedTools from '../../components/tools/RelatedTools'
 import ToolLayout from '../../components/tools/ToolLayout'
 import { useDropzone } from 'react-dropzone'
-import { Image as ImageIcon, Download, Loader2, Zap, Shield, ShieldCheck } from 'lucide-react'
+import { Image as ImageIcon, Download, Loader2, Zap, ShieldCheck } from 'lucide-react'
 import { saveAs } from 'file-saver'
 const features = [
     { title: 'Convert WebP to JPG', desc: 'Transform modern WebP images into widely compatible JPG format.', icon: <ImageIcon color="var(--primary)" size={24} /> },
@@ -113,7 +113,7 @@ const WebPToJpg = () => {
                                 transition: 'all 0.2s ease'
                             }}
                         >
-                            <input {...getInputProps()} />
+                            <input {...getInputProps()} aria-label="Choose a file for WebP to JPG Converter" />
                             <div style={{ width: '64px', height: '64px', background: '#e0f2fe', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 1rem', color: '#0284c7' }}>
                                 <ImageIcon size={32} />
                             </div>

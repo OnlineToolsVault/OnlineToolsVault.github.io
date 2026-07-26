@@ -1,12 +1,15 @@
-import React, { useState } from 'react'
+import { useState } from 'react'
 import RelatedTools from '../../components/tools/RelatedTools'
 import ToolLayout from '../../components/tools/ToolLayout'
 import FileUploader from '../../components/tools/FileUploader'
 import { FileText, Download, Loader2, Table, FileSpreadsheet, ShieldCheck } from 'lucide-react'
 import * as PDFJS from 'pdfjs-dist'
+// Bundled by Vite from the installed package, so the worker is self-hosted and can never
+// drift from the pdfjs-dist version the way the old cdnjs URL could.
+import pdfWorkerUrl from 'pdfjs-dist/build/pdf.worker.min.mjs?url'
 import * as XLSX from 'xlsx'
 
-PDFJS.GlobalWorkerOptions.workerSrc = `//cdnjs.cloudflare.com/ajax/libs/pdf.js/${PDFJS.version}/pdf.worker.min.mjs`
+PDFJS.GlobalWorkerOptions.workerSrc = pdfWorkerUrl
 
 const features = [
     { title: 'Smart Table Extraction', desc: 'Automatically detects tables in your PDF and converts them into structured Excel rows and columns.', icon: <Table color="var(--primary)" size={24} /> },
@@ -28,11 +31,14 @@ const PdfToExcel = () => {
     const [isProcessing, setIsProcessing] = useState(false)
     const [progress, setProgress] = useState(0)
     const [workbook, setWorkbook] = useState(null)
+    const [error, setError] = useState(null)
 
     const processFile = async (f) => {
         setFile(f)
         setIsProcessing(true)
         setProgress(0)
+        setError(null)
+        setWorkbook(null)
         try {
             const arrayBuffer = await f.arrayBuffer()
             const pdf = await PDFJS.getDocument(arrayBuffer).promise
@@ -78,9 +84,11 @@ const PdfToExcel = () => {
             XLSX.utils.book_append_sheet(wb, ws, "Sheet1")
             setWorkbook(wb)
 
-        } catch (error) {
-            console.error(error)
-            alert('Failed to convert. The PDF might be encrypted.')
+        } catch (err) {
+            console.error(err)
+            setError(err?.name === 'PasswordException'
+                ? 'This PDF is password protected. Unlock it first, then try again.'
+                : 'Failed to convert this PDF. It may be corrupted or unsupported.')
         } finally {
             setIsProcessing(false)
         }
@@ -88,7 +96,7 @@ const PdfToExcel = () => {
 
     const handleDownload = () => {
         if (workbook) {
-            XLSX.writeFile(workbook, file.name.replace('.pdf', '.xlsx'))
+            XLSX.writeFile(workbook, `${file.name.replace(/\.pdf$/i, '')}.xlsx`)
         }
     }
 
@@ -123,6 +131,17 @@ const PdfToExcel = () => {
                                 <p>Converting... {progress}%</p>
                                 <style>{`@keyframes spin { 100% { transform: rotate(360deg); } } .spin { animation: spin 1s linear infinite; }`}</style>
                             </>
+                        ) : error ? (
+                            <>
+                                <p style={{ color: '#dc2626', fontWeight: 'bold', marginBottom: '1.5rem' }}>{error}</p>
+                                <button
+                                    id="pdf-excel-reset-btn"
+                                    onClick={() => { setFile(null); setWorkbook(null); setError(null); setProgress(0); }}
+                                    style={{ background: 'none', border: 'none', color: '#64748b', textDecoration: 'underline', cursor: 'pointer' }}
+                                >
+                                    Try another file
+                                </button>
+                            </>
                         ) : (
                             <>
                                 <p style={{ color: 'green', fontWeight: 'bold', marginBottom: '1.5rem' }}>Conversion Ready!</p>
@@ -137,7 +156,7 @@ const PdfToExcel = () => {
                                 <div style={{ marginTop: '2rem' }}>
                                     <button
                                         id="pdf-excel-reset-btn"
-                                        onClick={() => { setFile(null); setWorkbook(null); }}
+                                        onClick={() => { setFile(null); setWorkbook(null); setError(null); setProgress(0); }}
                                         style={{ background: 'none', border: 'none', color: '#64748b', textDecoration: 'underline', cursor: 'pointer' }}
                                     >
                                         Convert Another

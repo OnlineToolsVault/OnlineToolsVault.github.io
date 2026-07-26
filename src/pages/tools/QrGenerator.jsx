@@ -1,10 +1,9 @@
-import React, { useState, useEffect, useRef } from 'react'
-import { Helmet } from 'react-helmet-async'
+import { useState, useEffect } from 'react'
 import * as QRCodeLib from 'qrcode'
 const QRCode = QRCodeLib.default || QRCodeLib
 import RelatedTools from '../../components/tools/RelatedTools'
 import ToolLayout from '../../components/tools/ToolLayout'
-import { Download, RefreshCw, Smartphone, Palette, Zap } from 'lucide-react'
+import { Download, Palette, Zap } from 'lucide-react'
 const features = [
     { title: 'Instant Generation', desc: 'Create QR codes in real-time as you type. No waiting or page reloads.' },
     { title: 'Customizable Designs', desc: 'Match your brand identity by adjusting colors, size, and margins.' },
@@ -30,13 +29,20 @@ const QrGenerator = () => {
     const [error, setError] = useState(null)
 
     const generateQr = async () => {
+        // qrcode throws on an empty string, and a stale code must not stay downloadable
+        if (!text) {
+            setQrDataUrl('')
+            setError(null)
+            return
+        }
         try {
-            if (!text) return
             setError(null)
             const url = await QRCode.toDataURL(text, options)
             setQrDataUrl(url)
         } catch (err) {
             console.error(err)
+            // Drop the previous code too — otherwise Download saves a PNG encoding the old text.
+            setQrDataUrl('')
             setError(err.toString())
         }
     }
@@ -105,6 +111,7 @@ const QrGenerator = () => {
                                     <span style={{ fontSize: '0.875rem', color: '#64748b', display: 'block', marginBottom: '0.25rem' }}>Foreground</span>
                                     <input
                                         type="color"
+                                        aria-label="Foreground colour"
                                         value={options.color.dark}
                                         onChange={(e) => setOptions({ ...options, color: { ...options.color, dark: e.target.value } })}
                                         style={{ width: '100%', height: '40px', cursor: 'pointer', borderRadius: '0.5rem', border: '1px solid var(--border)', padding: '2px' }}
@@ -114,6 +121,7 @@ const QrGenerator = () => {
                                     <span style={{ fontSize: '0.875rem', color: '#64748b', display: 'block', marginBottom: '0.25rem' }}>Background</span>
                                     <input
                                         type="color"
+                                        aria-label="Background colour"
                                         value={options.color.light}
                                         onChange={(e) => setOptions({ ...options, color: { ...options.color, light: e.target.value } })}
                                         style={{ width: '100%', height: '40px', cursor: 'pointer', borderRadius: '0.5rem', border: '1px solid var(--border)', padding: '2px' }}
@@ -160,6 +168,7 @@ const QrGenerator = () => {
 
                         <button
                             onClick={handleDownload}
+                            disabled={!qrDataUrl}
                             className="tool-btn-primary"
                             style={{
                                 background: 'var(--primary)',
@@ -172,7 +181,8 @@ const QrGenerator = () => {
                                 display: 'flex',
                                 alignItems: 'center',
                                 gap: '0.5rem',
-                                cursor: 'pointer',
+                                cursor: qrDataUrl ? 'pointer' : 'not-allowed',
+                                opacity: qrDataUrl ? 1 : 0.5,
                                 transition: 'opacity 0.2s'
                             }}
                         >

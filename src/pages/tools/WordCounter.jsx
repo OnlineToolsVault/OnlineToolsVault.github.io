@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import { useState } from 'react'
 import RelatedTools from '../../components/tools/RelatedTools'
 import ToolLayout from '../../components/tools/ToolLayout'
 import { Copy, Trash2, Zap, Clock, Shield } from 'lucide-react'
@@ -36,13 +36,16 @@ const StatBox = ({ label, value }) => (
 const WordCounter = () => {
     const [text, setText] = useState('')
 
+    const trimmed = text.trim()
+    const wordCount = trimmed === '' ? 0 : trimmed.split(/\s+/).length
+
     const stats = {
-        words: text.trim() === '' ? 0 : text.trim().split(/\s+/).length,
+        words: wordCount,
         chars: text.length,
         charsNoSpace: text.replace(/\s/g, '').length,
-        sentences: text.trim() === '' ? 0 : text.split(/[.!?]+/).filter(Boolean).length,
-        paragraphs: text.trim() === '' ? 0 : text.split(/\n+/).filter(Boolean).length,
-        readingTime: Math.ceil(text.trim().split(/\s+/).length / 200) + ' min'
+        sentences: text.split(/[.!?]+/).filter(s => s.trim() !== '').length,
+        paragraphs: trimmed === '' ? 0 : text.split(/\n+/).filter(Boolean).length,
+        readingTime: Math.ceil(wordCount / 200) + ' min'
     }
 
     const handleCopy = () => {

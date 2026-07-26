@@ -1,8 +1,8 @@
-import React, { useState } from 'react'
+import { useState } from 'react'
 import RelatedTools from '../../components/tools/RelatedTools'
 import ToolLayout from '../../components/tools/ToolLayout'
 import FileUploader from '../../components/tools/FileUploader'
-import { FileText, Download, Loader2, Zap, Shield, Check } from 'lucide-react'
+import { FileText, Download, Loader2, Zap, Shield } from 'lucide-react'
 import * as XLSX from 'xlsx'
 import { saveAs } from 'file-saver'
 
@@ -35,8 +35,10 @@ const ExcelToCsv = () => {
                 const sheet = workbook.Sheets[sheetName]
                 const csv = XLSX.utils.sheet_to_csv(sheet)
 
-                const blob = new Blob([csv], { type: 'text/csv' })
-                saveAs(blob, file.name.replace(/\.xlsx?$|\.xls?$/, '.csv'))
+                // Leading BOM makes Excel decode the file as UTF-8 instead of the
+                // system code page, which otherwise turns accented characters to mojibake.
+                const blob = new Blob(['\uFEFF' + csv], { type: 'text/csv;charset=utf-8' })
+                saveAs(blob, `${file.name.replace(/\.(xlsx|xlsm|xlsb|xls)$/i, '')}.csv`)
                 setIsProcessing(false)
             } catch (err) {
                 alert('Conversion failed')
