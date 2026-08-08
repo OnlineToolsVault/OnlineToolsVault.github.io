@@ -5,27 +5,49 @@ import './MergeImages.css'
 import ToolLayout from '../../components/tools/ToolLayout'
 import RelatedTools from '../../components/tools/RelatedTools'
 const features = [
-    { title: 'Flexible Layouts', desc: 'Merge images vertically or horizontally with one click. Perfect for creating long screenshots or before-after comparisons.', icon: <Layout color="var(--primary)" size={24} /> },
-    { title: 'Custom Styling', desc: 'Adjust borders, gaps between images, and add shadows to create professional-looking collages.', icon: <Layers color="var(--primary)" size={24} /> },
-    { title: 'Smart Sizing', desc: 'Automatically magnify smaller images or reduce larger ones to ensure a uniform and clean layout.', icon: <Maximize2 color="var(--primary)" size={24} /> }
+    { title: 'Paste straight from the clipboard', desc: 'Press Cmd+V or Ctrl+V anywhere on the page and a screenshot goes in without ever becoming a file, which is the fastest way to stitch several captures together.', icon: <Layout color="var(--primary)" size={24} /> },
+    { title: 'Vertical or horizontal stacking', desc: 'Stack top to bottom for a long scrolling screenshot or a step-by-step sequence, or side by side for a before-and-after comparison.', icon: <Layout color="var(--primary)" size={24} /> },
+    { title: 'Three sizing strategies', desc: 'Magnify the smallest up to match, reduce the biggest down to match, or leave every image at its own size and centre it. Each is right for a different job.', icon: <Maximize2 color="var(--primary)" size={24} /> },
+    { title: 'Borders, gaps and shadows', desc: 'Up to 100 px of outer border, up to 200 px between images, and optional drop shadows on each panel or around the finished sheet.', icon: <Layers color="var(--primary)" size={24} /> },
+    { title: 'Live, debounced preview', desc: 'The composite regenerates as you change anything, but a slider drag is coalesced into a single render so a multi-megapixel canvas is not rebuilt on every step.', icon: <Layers color="var(--primary)" size={24} /> }
 ]
 
 const faqs = [
     {
-        question: "Is merging images free?",
-        answer: "Yes, this tool is 100% free to use for merging unlimited images."
+        question: "Which sizing strategy should I use?",
+        answer: "**Magnify the smallest** scales everything up to match the largest image, which keeps the biggest source at full quality and enlarges the rest — the usual choice. **Reduce the biggest** scales everything down to the smallest, giving a lighter file with no upscaling at all. **Do not adjust** leaves every image at its own size and centres them, which is what you want for screenshots you must not distort."
     },
     {
-        question: "Does it reduce image quality?",
-        answer: "We strive to maintain high quality. You can choose different sizing strategies, but the output is generally a high-resolution PNG."
+        question: "What are the borders and gaps filled with?",
+        answer: "Nothing — they are **transparent**. The canvas starts empty, so the border around the sheet and the gaps between images become transparent pixels in the PNG. Placed on a white page they read as white; placed on a dark background they read as dark. If you need them to be a specific colour, composite the PNG over that colour in an image editor."
     },
     {
-        question: "Can I paste images directly?",
-        answer: "Yes! You can press Cmd+V (or Ctrl+V) to paste images from your clipboard directly into the tool."
+        question: "Can I reorder the images?",
+        answer: "Not by dragging. The images are placed in the order they were added, so the practical approach is to add them in the order you want them, or remove one and add it again to move it to the end. Individual images can be removed at any time and the composite regenerates immediately."
     },
     {
-        question: "Is my data private?",
-        answer: "Absolutely. All image merging happens in your browser canvas. No images are uploaded to any server."
+        question: "Can I paste screenshots instead of saving them first?",
+        answer: "Yes, and it is the fastest way to work. Take a screenshot to the clipboard, click on this page, and press **Cmd+V** on a Mac or **Ctrl+V** on Windows. The image is added directly. Paste several in a row and they stack in the order you pasted them."
+    },
+    {
+        question: "What format do I get, and how big will it be?",
+        answer: "Always **PNG**, named with a timestamp. PNG is required because the borders and gaps are transparent and because it is lossless, so text in stitched screenshots stays crisp. The trade is size: a tall composite of several photographs can run to tens of megabytes. Run it through the Image Compressor, or convert it to JPG with the Image Converter, if the file has to be small."
+    },
+    {
+        question: "I get an error saying the merged image is too large.",
+        answer: "Browsers cap how large a canvas can be, and a tall stack of high-resolution photos with generous gaps crosses that line — at which point the export would silently produce an empty file, so the tool stops and says so instead. Remove an image, reduce the border or gap, or switch to **Reduce the biggest** so everything scales down to the smallest source."
+    },
+    {
+        question: "How do the two shadow options differ?",
+        answer: "**Individual Shadows** draws a soft shadow behind each image, so the panels look like separate cards stacked on a surface. **Final Image Shadow** draws one shadow around the finished composite as a single object, and adds padding to fit it. They can be combined, though on a tight collage the result is usually busier than it is useful."
+    },
+    {
+        question: "One of my images would not load.",
+        answer: "The tool names the file and stops rather than hanging on a spinner. The usual cause is a format the browser cannot decode — an iPhone HEIC, a TIFF, or a partially copied file. Convert HEIC with the HEIC to JPG tool, or run other formats through the Image Converter, then add the result here."
+    },
+    {
+        question: "Is anything uploaded?",
+        answer: "No. Every image is decoded and drawn onto a canvas inside this browser tab, and the finished PNG is generated there too. Nothing is transmitted, which matters when the thing you are stitching together is a set of screenshots from internal software."
     }
 ]
 
@@ -407,13 +429,22 @@ const MergeImages = () => {
                     <div className="about-section" style={{ background: 'var(--bg-card)', padding: '2rem', borderRadius: '1rem', border: '1px solid var(--border)', marginBottom: '2rem' }}>
                         <h2 style={{ fontSize: '1.8rem', marginBottom: '1.5rem' }}>About Merge Images Tool</h2>
                         <p style={{ lineHeight: '1.6', color: 'var(--text-secondary)', marginBottom: '1rem' }}>
-                            Looking to join multiple screenshots into one long image or create a quick photo collage? Our <strong>Merge Images</strong> tool makes it effortless.
+                            Join two or more pictures into a single file, stacked <strong>top to bottom</strong> or laid out <strong>side by side</strong>. It is the tool for a long scrolling screenshot assembled from several captures, a before-and-after pair, a step-by-step sequence for documentation, or a simple strip collage. Add images by dropping them, clicking to browse, or — usually fastest — taking a screenshot and pressing <strong>Cmd+V</strong> or <strong>Ctrl+V</strong> anywhere on the page.
                         </p>
+                        <h3 style={{ fontSize: '1.15rem', margin: '1.5rem 0 0.75rem' }}>Deciding how mismatched sizes are handled</h3>
                         <p style={{ lineHeight: '1.6', color: 'var(--text-secondary)', marginBottom: '1rem' }}>
-                            You can stitch photos <strong>vertically</strong> (top-to-bottom) or <strong>horizontally</strong> (side-by-side). Customization options allow you to add <strong>borders</strong>, control the <strong>gap</strong> between images, and apply <strong>shadows</strong> for a polished look.
+                            Images almost never arrive the same size, so the sizing strategy is the setting that matters most. <strong>Magnify the smallest</strong> scales everything up to match the largest, which preserves the best source at full quality but enlarges the others. <strong>Reduce the biggest</strong> scales everything down to the smallest, producing a lighter file with no upscaling anywhere — the safer choice when the images are close in size. <strong>Do not adjust</strong> leaves each image untouched and centres it on the cross axis, which is what you want for screenshots that must not be resampled at all. Whichever you pick, proportions are preserved; nothing is stretched to fit.
+                        </p>
+                        <h3 style={{ fontSize: '1.15rem', margin: '1.5rem 0 0.75rem' }}>Borders and gaps are transparent, not white</h3>
+                        <p style={{ lineHeight: '1.6', color: 'var(--text-secondary)', marginBottom: '1rem' }}>
+                            The border can go up to 100 pixels and the gap between images up to 200. Both are drawn as empty canvas, which means they end up <em>transparent</em> in the exported PNG rather than filled with a colour. On a white page they will look white and on a dark one they will look dark, so if the spacing needs to be a definite colour, place the PNG over that colour in an editor. Two optional drop shadows are available: one behind each individual image, which makes the panels read as separate cards, and one around the finished composite as a whole, which adds padding to accommodate the blur.
+                        </p>
+                        <h3 style={{ fontSize: '1.15rem', margin: '1.5rem 0 0.75rem' }}>Size limits and output</h3>
+                        <p style={{ lineHeight: '1.6', color: 'var(--text-secondary)', marginBottom: '1rem' }}>
+                            The preview regenerates whenever you change anything, with slider drags coalesced into a single render so a large canvas is not rebuilt on every step of the drag. Browsers put a hard ceiling on canvas size, and a tall stack of high-resolution photographs can exceed it — an over-large canvas quietly produces an empty file rather than raising an error, so the tool checks and tells you instead of downloading nothing. Remove an image, tighten the border and gap, or switch to Reduce the biggest.
                         </p>
                         <p style={{ lineHeight: '1.6', color: 'var(--text-secondary)' }}>
-                            It's fast, free, and secure. Features like "Paste from Clipboard" make your workflow smoother than ever.
+                            Output is always PNG, timestamped, because the transparency has to survive and because lossless encoding keeps text in stitched screenshots sharp. The cost is file size: a long composite of photographs can be very large, so pass it through the Image Compressor or convert it to JPG with the Image Converter if it needs to be light. Images are placed in the order they were added and can be removed individually; there is no drag-to-reorder, so add them in the sequence you want. Everything is decoded and composited in this browser tab, with nothing uploaded — which is the point when you are stitching together screenshots of internal software.
                         </p>
                     </div>
 

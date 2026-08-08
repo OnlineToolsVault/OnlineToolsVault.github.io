@@ -5,9 +5,9 @@ import { Palette, Copy, RefreshCw, Check } from 'lucide-react'
 
 
 const features = [
-    { title: 'Format Conversion', desc: 'Instantly convert colors between HEX, RGB, and HSL formats as you adjust.', icon: <RefreshCw color="var(--primary)" size={24} /> },
-    { title: 'Visual Selection', desc: 'Pick the perfect shade using an intuitive, real-time visual color wheel.', icon: <Palette color="var(--primary)" size={24} /> },
-    { title: 'One-Click Copy', desc: 'Quickly copy color codes to your clipboard for immediate use in your projects.', icon: <Copy color="var(--primary)" size={24} /> }
+    { title: 'Three Notations, One Source Of Truth', desc: 'HEX is the one editable field; the RGB and HSL boxes are read-only and re-derive from it on every keystroke. You set the colour by hex or by the swatch, and copy it out in whichever of the three notations your stylesheet wants.', icon: <RefreshCw color="var(--primary)" size={24} /> },
+    { title: 'Your Operating System’s Picker', desc: 'The large swatch is a native colour input, so clicking it opens the same dialog your design apps use — spectrum, sliders, recent swatches, and on platforms that provide one, a screen eyedropper for sampling any pixel.', icon: <Palette color="var(--primary)" size={24} /> },
+    { title: 'Forgiving Hex Entry', desc: 'Type with or without the leading hash, in three digits or six, upper or lower case. Half-finished input leaves the swatch on the last valid colour instead of snapping to black while you are still typing.', icon: <Copy color="var(--primary)" size={24} /> }
 ]
 
 
@@ -111,12 +111,38 @@ const ColorPicker = () => {
     }
 
     const faqs = [
-        { question: "How do I convert HEX to RGB?", answer: "Simply paste your HEX code into the HEX input field, and the RGB value will appear automatically." },
-        { question: "What is HSL?", answer: "HSL stands for Hue, Saturation, and Lightness. It's often used by designers for adjusting color tones." },
-        { question: "Is it free to use?", answer: "Yes, this color picker and converter is 100% free and runs in your browser." },
-        { question: "Can I copy the values?", answer: "Yes, click the copy button next to any value to send it straight to your clipboard. You can also select the text and press Ctrl+C or Cmd+C." },
-        { question: "What if I enter an invalid HEX?", answer: "The RGB/HSL fields will naturally update to reflect the nearest valid color or retain the last valid state." },
-        { question: "Do you support CMYK?", answer: "Currently we focus on web-safe formats (HEX, RGB, HSL), but may add print formats later." }
+        {
+            question: "What hex formats can I paste into the box?",
+            answer: "Four shapes are accepted: three digits or six, each with or without a leading hash. A three-digit value is expanded by doubling every character, so #abc becomes #aabbcc — that is the same rule CSS uses, not an approximation. Everything is normalised to lower case internally. Eight-digit hex with an alpha channel is not accepted, because there is nowhere on this page to show opacity."
+        },
+        {
+            question: "Why did nothing happen when I typed a partial value?",
+            answer: "By design. The swatch only updates once the text forms a complete three- or six-digit colour, so typing the middle of a hex code does not flash the preview to black and back. If your value never takes effect, check for a stray character — a trailing space is fine and is trimmed, but a quote or semicolon copied along from a stylesheet is not."
+        },
+        {
+            question: "The HEX copy button gave me exactly what I typed, not the normalised value.",
+            answer: "That is what it does: the hex copy hands over the literal contents of the text field, so typing abc copies abc rather than #aabbcc. If you want the canonical six-digit form, let the swatch write it back first — pick any colour from the native dialog and the field is replaced with a full lower-case #rrggbb value."
+        },
+        {
+            question: "How exact is the HSL conversion?",
+            answer: "Hue is rounded to a whole degree, and saturation and lightness to one decimal place. That is precise enough that the colour is visually identical, but converting hex to HSL and typing the HSL back into a stylesheet can land a shade or two off the original byte values. When exactness matters — brand colours, design tokens, anything that gets diffed — store the hex and treat the HSL as a reading aid."
+        },
+        {
+            question: "Why does grey come out as hue zero?",
+            answer: "Because a fully desaturated colour has no hue. When red, green and blue are equal the chroma is zero, the hue calculation has nothing to work with, and the convention is to report zero degrees. Pure white and pure black behave the same way. It is not a bug, and raising the saturation from that state will give you red unless you set the hue first."
+        },
+        {
+            question: "Do you support CMYK, LAB, OKLCH or alpha?",
+            answer: "No. This page handles sRGB only, in the three notations shown. CMYK is deliberately absent: a meaningful conversion needs an ICC profile for the specific press and paper, and any tool that produces CMYK from a hex code without one is guessing. For LAB and OKLCH you want a colour-space calculator; for transparency, append an alpha channel to the rgb or hsl value yourself."
+        },
+        {
+            question: "Does it generate a palette or check contrast?",
+            answer: "Not currently — this is a picker and a converter for one colour at a time. There is no tint and shade ladder, no complementary scheme and no WCAG contrast ratio. For accessibility work you need a dedicated contrast checker that takes both foreground and background and reports the ratio against the 4.5-to-1 and 3-to-1 thresholds."
+        },
+        {
+            question: "Is the colour I pick sent anywhere?",
+            answer: "No. Everything here is arithmetic on a string: the hex is parsed, converted and rendered inside this tab, with no network request at any point. Nothing is stored either, so reloading the page returns it to the default blue rather than your last colour."
+        }
     ]
 
     return (
@@ -183,7 +209,52 @@ const ColorPicker = () => {
                 <div className="about-section" style={{ background: 'var(--bg-card)', padding: '2rem', borderRadius: '1rem', border: '1px solid var(--border)', marginBottom: '2rem' }}>
                     <h2 style={{ fontSize: '1.8rem', marginBottom: '1.5rem' }}>About Online Color Picker</h2>
                     <p style={{ lineHeight: '1.6', color: 'var(--text-secondary)', marginBottom: '1rem' }}>
-                        Free online color picker. Get HEX, RGB, and HSL color codes. Generate color palettes instantly.
+                        One colour, shown three ways. Drag the swatch or type a hex code, and the RGB and HSL fields
+                        below it re-derive on every keystroke. All three notations describe the same point in the sRGB
+                        space, so nothing is lost moving between them — they are different ways of writing the same
+                        number, chosen to suit different jobs.
+                    </p>
+
+                    <h3 style={{ fontSize: '1.15rem', fontWeight: '600', margin: '1.75rem 0 0.75rem' }}>Which notation to reach for</h3>
+                    <p style={{ lineHeight: '1.6', color: 'var(--text-secondary)', marginBottom: '1rem' }}>
+                        <strong>HEX</strong> is the compact form for committing a fixed colour: six digits, two per
+                        channel, unambiguous in a stylesheet or a design file. <strong>RGB</strong> exposes the three
+                        channels as decimals from 0 to 255, which is what you need when a value is being computed —
+                        an animation interpolating between two colours, or a canvas drawing call.
+                        <strong> HSL</strong> is the one to use when you are designing rather than specifying. Because
+                        hue, saturation and lightness are separate axes, you can build a whole scale from one colour by
+                        holding the hue and moving lightness, something that is guesswork in hex.
+                    </p>
+
+                    <h3 style={{ fontSize: '1.15rem', fontWeight: '600', margin: '1.75rem 0 0.75rem' }}>How the conversion is done</h3>
+                    <p style={{ lineHeight: '1.6', color: 'var(--text-secondary)', marginBottom: '1rem' }}>
+                        Hex to RGB is a straight base-16 read: each pair of characters is one byte per channel.
+                        Hex to HSL is real geometry rather than a lookup. The three channels are scaled to the range 0
+                        to 1, the largest and smallest are found, and their difference gives the chroma. Lightness is
+                        the midpoint of that pair; saturation is the chroma divided by how much room is left at that
+                        lightness; and hue is the angle on the colour wheel, determined by which channel is the largest
+                        and how far the other two sit from it. The result is rounded — hue to a whole degree,
+                        saturation and lightness to one decimal — so the HSL you see is faithful to the eye but is not
+                        a bit-exact round trip back to the original hex.
+                    </p>
+
+                    <h3 style={{ fontSize: '1.15rem', fontWeight: '600', margin: '1.75rem 0 0.75rem' }}>The swatch is your system picker</h3>
+                    <p style={{ lineHeight: '1.6', color: 'var(--text-secondary)', marginBottom: '1rem' }}>
+                        The large square is a native colour input, not a custom widget, so clicking it hands off to the
+                        operating system. On macOS that is the standard colour panel with its sliders, palettes and
+                        magnifier; on Windows and Linux it is whatever the browser provides, and recent Chrome and Edge
+                        builds include an eyedropper for sampling any pixel on screen. Whatever you choose there is
+                        written straight back into the hex field as a normalised lower-case value.
+                    </p>
+
+                    <h3 style={{ fontSize: '1.15rem', fontWeight: '600', margin: '1.75rem 0 0.75rem' }}>What this page deliberately leaves out</h3>
+                    <p style={{ lineHeight: '1.6', color: 'var(--text-secondary)', marginBottom: '1rem' }}>
+                        There is no alpha channel, no CMYK, no palette builder and no contrast checker. CMYK is the
+                        significant omission and it is intentional: converting sRGB to ink requires an ICC profile for
+                        the specific press, ink set and paper stock, and a browser tool that produces four numbers
+                        without one is inventing them. If you are preparing artwork for print, do the conversion in the
+                        application that owns the output profile. Everything on this page is arithmetic performed in
+                        your browser, with no request made and nothing stored between visits.
                     </p>
                 </div>
                 <div className="features-section" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))', gap: '2rem' }}>

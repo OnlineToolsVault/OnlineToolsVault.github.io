@@ -145,7 +145,62 @@ const UnitConverter = () => {
                     <div className="about-section" style={{ background: 'var(--bg-card)', padding: '2rem', borderRadius: '1rem', border: '1px solid var(--border)', marginBottom: '2rem' }}>
                         <h2 style={{ fontSize: '1.8rem', marginBottom: '1.5rem' }}>About Online Unit Converter</h2>
                         <p style={{ lineHeight: '1.6', color: 'var(--text-secondary)', marginBottom: '1rem' }}>
-                            Free online unit converter. Convert length, weight, temperature, data size, and more.
+                            Four categories — length, weight, temperature and digital storage — with the conversion
+                            table compiled into the page rather than fetched. Pick a category, choose the two units,
+                            and the answer updates on every keystroke. No button, no round trip, no rate lookup.
+                        </p>
+
+                        <h3 style={{ fontSize: '1.15rem', fontWeight: '600', margin: '1.75rem 0 0.75rem' }}>Pivot units, and why temperature is different</h3>
+                        <p style={{ lineHeight: '1.6', color: 'var(--text-secondary)', marginBottom: '1rem' }}>
+                            Length, weight and data each have a base unit — the metre, the kilogram and the byte — and
+                            every other unit in the category is stored as a factor relative to it. Converting inches to
+                            yards multiplies by the inch factor and divides by the yard factor, with the metre acting
+                            as an invisible middleman. That structure means a category can be extended by adding one
+                            number, and it means conversions are symmetric: going one way and back returns you to
+                            where you started.
+                        </p>
+                        <p style={{ lineHeight: '1.6', color: 'var(--text-secondary)', marginBottom: '1rem' }}>
+                            Temperature cannot use that trick. Celsius, Fahrenheit and Kelvin do not share a zero
+                            point, so the relationship between them is an offset as well as a ratio and no single
+                            multiplication works. Each of the six directions therefore has its own formula written out
+                            explicitly. It is also why <strong>0&nbsp;°C is not zero of anything else</strong>, and why
+                            a temperature <em>difference</em> converts differently from a temperature <em>reading</em> —
+                            a rise of 10&nbsp;°C is a rise of 18&nbsp;°F, not 50.
+                        </p>
+
+                        <h3 style={{ fontSize: '1.15rem', fontWeight: '600', margin: '1.75rem 0 0.75rem' }}>Two conventions worth checking before you trust a number</h3>
+                        <p style={{ lineHeight: '1.6', color: 'var(--text-secondary)', marginBottom: '1rem' }}>
+                            The data category uses <strong>binary multiples</strong>: a kilobyte is 1024 bytes and each
+                            step up multiplies by 1024 again. That matches how operating systems report file sizes, and
+                            it deliberately disagrees with the decimal convention printed on hard-drive packaging,
+                            where a gigabyte is exactly one billion bytes. The gap widens as the units grow — about
+                            2.4% at the kilobyte, roughly 10% by the terabyte — which is the entire explanation for a
+                            new 1&nbsp;TB drive showing up as about 931&nbsp;GB.
+                        </p>
+                        <p style={{ lineHeight: '1.6', color: 'var(--text-secondary)', marginBottom: '1rem' }}>
+                            In the weight category, <strong>ton</strong> means the metric tonne of 1000 kilograms.
+                            Neither the US short ton nor the imperial long ton is offered, and the difference between
+                            them is around 10%, so a figure copied from an American source may need converting twice.
+                        </p>
+
+                        <h3 style={{ fontSize: '1.15rem', fontWeight: '600', margin: '1.75rem 0 0.75rem' }}>Precision, and how results are displayed</h3>
+                        <p style={{ lineHeight: '1.6', color: 'var(--text-secondary)', marginBottom: '1rem' }}>
+                            Yard, foot and inch are exact by definition and are stored exactly. The mile is stored to
+                            two decimal places, which makes it about 2.5 parts per million short — four millimetres in
+                            a mile, invisible for any practical purpose but worth knowing if you are chaining
+                            conversions. Pound and ounce are similarly truncated at roughly 0.8 parts per million.
+                            Output is grouped using your locale&apos;s own separators and capped at six decimal places;
+                            values smaller than a millionth or larger than a thousand trillion switch to exponential
+                            notation so they do not collapse to zero or lose their leading digits.
+                        </p>
+
+                        <h3 style={{ fontSize: '1.15rem', fontWeight: '600', margin: '1.75rem 0 0.75rem' }}>When you need something else</h3>
+                        <p style={{ lineHeight: '1.6', color: 'var(--text-secondary)', marginBottom: '1rem' }}>
+                            There is no currency conversion here and there never will be from a static page — an
+                            exchange rate has to be fetched, and a stale rate presented as fact is worse than no rate
+                            at all. Area, volume, speed and pressure are not covered either. If you specifically want
+                            to reason about file and transfer sizes rather than raw unit maths, the File Size
+                            Calculator is built for that job.
                         </p>
                     </div>
                 </div>
@@ -167,17 +222,43 @@ const UnitConverter = () => {
 }
 
 const faqs = [
-    { question: 'What units are supported?', answer: 'We support metric and imperial units for Length, Weight, Temperature, and Digital Storage.' },
-    { question: 'Is the conversion accurate?', answer: 'Yes, we use standard conversion factors for all calculations.' },
-    { question: 'Can I convert negative temperatures?', answer: 'Yes, temperature conversions work for negative values (e.g., -40F to C).' },
-    { question: 'How do I switch categories?', answer: 'Click on the category buttons (Length, Weight, etc.) at the top of the converter.' },
-    { question: 'Is it free?', answer: 'Yes, this tool is 100% free with no usage limits.' },
-    { question: 'Do you store my data?', answer: 'No, all calculations happen instantly in your browser.' }
+    {
+        question: 'Exactly which units are in each category?',
+        answer: 'Length covers metre, kilometre, centimetre, millimetre, mile, yard, foot and inch. Weight covers kilogram, gram, milligram, pound, ounce and ton. Temperature covers Celsius, Fahrenheit and Kelvin. Data covers byte, kilobyte, megabyte, gigabyte and terabyte. There is no area, volume, speed, pressure, time or currency category — currency in particular could not be offered honestly, because a rate has to be fetched and this page makes no network requests.'
+    },
+    {
+        question: 'Is a kilobyte here 1000 bytes or 1024?',
+        answer: 'It is 1024, and every step up the data scale is another factor of 1024, so a gigabyte means 1,073,741,824 bytes. That is the binary convention your operating system uses when it reports file and disk sizes. Storage manufacturers use the decimal convention where a gigabyte is exactly a billion bytes, which is why a drive sold as 1 TB shows up as roughly 931 GB. If you are checking a marketing figure rather than a file size, this converter will disagree with the box by about seven percent at the gigabyte scale and about ten percent at the terabyte scale.'
+    },
+    {
+        question: 'Which ton is the ton?',
+        answer: 'The metric tonne, 1000 kilograms. It is not the US short ton of about 907 kilograms, nor the imperial long ton of about 1016 kilograms. Since the same word is used for all three in different countries, check which one your source meant before trusting a result — mistaking a short ton for a tonne is a ten percent error.'
+    },
+    {
+        question: 'How accurate are the conversion factors?',
+        answer: 'Yard, foot and inch are exact by definition, and so are the temperature formulas. The mile factor is stored as 1609.34 metres where the exact value is 1609.344, an error of about 2.5 parts per million — around four millimetres in a mile. The pound and ounce factors are short by roughly 0.8 parts per million. Those margins are irrelevant for everyday work and for most engineering, but if you are doing metrology or converting a legally defined quantity, use the exact defining factors instead.'
+    },
+    {
+        question: 'Why does my answer show as 1.234568e+16 or a dash?',
+        answer: 'Results below one millionth or at or above a thousand trillion are shown in exponential notation carried to six decimal places, because the ordinary form would either round to zero or lose its leading digits. A dash means there is no number to convert — the field is empty, or holds something that is not a finite value. Everything in between is formatted with your locale’s thousands separator and up to six decimal places.'
+    },
+    {
+        question: 'Can I convert negative values?',
+        answer: 'Yes, and for temperature it is the normal case: minus forty degrees Celsius converts to minus forty Fahrenheit, which is the one point where the two scales cross. Negative lengths, weights and byte counts will also convert, since the tool does arithmetic rather than validation — a negative file size is your problem, not the converter’s.'
+    },
+    {
+        question: 'How does the arithmetic actually work?',
+        answer: 'Every non-temperature category has a pivot unit — metre, kilogram or byte — and each unit carries a factor relative to it. Converting means multiplying by the source factor and dividing by the target factor, which is why the pivot never introduces bias regardless of the direction you convert in. Temperature cannot work that way because its scales have different zero points, so each of the six pairings has its own explicit formula rather than a ratio.'
+    },
+    {
+        question: 'Does anything leave my browser?',
+        answer: 'No. The whole conversion table is a few dozen numbers compiled into the page, and the result recalculates locally as you type. There is no request, no logging and no history, so the page behaves identically offline once loaded.'
+    }
 ]
 UnitConverter.features = [
-    { title: 'All-in-One Converter', desc: 'Convert length, weight, temperature, and data units in one place.', icon: <Box color="var(--primary)" size={24} /> },
-    { title: 'Real-Time Calculation', desc: 'See results instantly as you type numbers or switch measurement units.', icon: <Zap color="var(--primary)" size={24} /> },
-    { title: 'High Precision', desc: 'Accurate calculations supporting up to 6 decimal places for precise engineering needs.', icon: <Target color="var(--primary)" size={24} /> }
+    { title: 'Four Categories, One Pivot Each', desc: 'Length, weight and data all convert through a base unit — metre, kilogram, byte — so any pairing is a single multiply and divide. Temperature uses explicit formulas instead, because its scales do not share a zero point.', icon: <Box color="var(--primary)" size={24} /> },
+    { title: 'Recalculates As You Type', desc: 'There is no convert button. The result updates on every keystroke and on every unit change, and shows a dash rather than a misleading zero while the field is empty or mid-edit.', icon: <Zap color="var(--primary)" size={24} /> },
+    { title: 'Readable From A Millionth To A Quadrillion', desc: 'Results between those bounds are grouped with your locale’s thousands separator and capped at six decimal places; anything smaller or larger falls back to exponential notation rather than rounding away to zero or losing its leading digits.', icon: <Target color="var(--primary)" size={24} /> }
 ]
 
 UnitConverter.faqs = faqs

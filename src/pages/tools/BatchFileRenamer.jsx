@@ -7,18 +7,48 @@ import JSZip from 'jszip'
 import { saveAs } from 'file-saver'
 
 const features = [
-    { title: 'Bulk Renaming', desc: 'Rename hundreds of files simultaneously with a single click.' },
-    { title: 'Smart Rules', desc: 'Add prefixes, suffixes, remove text, or replacing specific substrings across all filenames.' },
-    { title: 'Number Sequencing', desc: 'Automatically append sequential numbers (1, 2, 3...) to organize image collections or document sets.' }
+    { title: 'Live preview of every name', desc: 'The old name and the new one sit side by side and update on each keystroke, so you see the result of a rule on all your files before committing to it rather than after.' },
+    { title: 'Four rules, applied in order', desc: 'Find and replace runs first, then a prefix, then a suffix inserted before the extension, then an optional counter at the very front. Predictable ordering means you can reason about the outcome.' },
+    { title: 'Collisions handled, originals untouched', desc: 'Two files that end up with the same name get numbered rather than silently overwriting each other, and the results arrive as a new ZIP — the files on your disk are never modified.' }
 ]
 
 const faqs = [
-    { question: 'How do I rename files?', answer: 'Upload files, set your rules (prepend, append, replace), and click Download ZIP.' },
-    { question: 'Does it change file extensions?', answer: 'The tool preserves extensions unless you explicitly replace text that affects them, but it tries to be smart about it.' },
-    { question: 'Is there a limit?', answer: 'No hard limit, but browser memory applies. 100-500 files is usually fine.' },
-    { question: 'Can I undo the renaming?', answer: 'Since the processing happens in your browser and you download a new ZIP file, your original files on your computer remain untouched.' },
-    { question: 'Does it support regex?', answer: 'Currently, it supports simple text replacement. Regex support is planned for a future update.' },
-    { question: 'Is my data private?', answer: 'Yes. All file renaming happens locally in your browser. No files are ever uploaded to a server.' }
+    {
+        question: 'In what order are the rules applied?',
+        answer: 'Find and replace first, then the prefix is added to the front, then the suffix is inserted just before the final dot, and finally the counter is placed at the very start. Working through an example makes it concrete: with find "e", replace "E", prefix "trip-", suffix "_v2" and the counter enabled, holiday.jpeg becomes 1_trip-holiday_v2.jpEg. Note where the counter landed — in front of the prefix, not after it.'
+    },
+    {
+        question: 'Why did my extension change?',
+        answer: 'Find and replace operates on the whole file name, extension included, because that is often what you want — stripping "_final" from every name, for instance. But searching for "e" also hits the "e" in .jpeg, as in the example above. If a rule is touching your extensions, make the search text longer and more specific so it cannot match inside the last few characters.'
+    },
+    {
+        question: 'How does the numbering work?',
+        answer: 'It prefixes each file with its position in the list followed by an underscore, starting at 1, with no zero padding — so a set of twelve files runs 1_ through 12_. Because there is no padding, they will sort as 1, 10, 11, 12, 2 in most file managers. The order comes from the order the files were added; there is no drag-to-reorder, so add them in the sequence you want or remove and re-add the ones that are out of place.'
+    },
+    {
+        question: 'What if two files end up with the same name?',
+        answer: 'The second one gets a numbered suffix before its extension — report.pdf and report (1).pdf — so nothing is silently lost inside the archive. This matters more than it sounds, because a ZIP keyed by name would otherwise keep only the last file written under each name. It also comes up whenever you add files that came from different folders, since only the file name is used and any folder structure is flattened.'
+    },
+    {
+        question: 'Does this rename the files on my computer?',
+        answer: 'No. Your originals are never touched. The renamed copies are packed into a ZIP called renamed_files.zip which you then download and extract wherever you like. There is no undo to worry about, because there is nothing to undo — if a rule was wrong, adjust it and download again.'
+    },
+    {
+        question: 'Why is the ZIP the same size as my files?',
+        answer: 'Because the archive is written without compression. Renaming should not spend time re-compressing data that is usually already compressed — photos, video and PDFs barely shrink anyway — so entries are stored as-is and the download is roughly the sum of your files plus a small amount of overhead. Extract it as normal; a stored ZIP opens exactly like a compressed one.'
+    },
+    {
+        question: 'Can I use regular expressions or change capitalisation?',
+        answer: 'No. Find and replace is literal text, matching every occurrence, and there are no case conversion, date insertion or padding options. For anything conditional or pattern-based, a desktop utility or a shell loop will serve you better. What this handles well is the common case: strip a string, add a prefix, number a sequence.'
+    },
+    {
+        question: 'How many files can I do at once?',
+        answer: 'There is no fixed cap, but everything is held in memory: your files plus the ZIP being assembled, so peak usage is roughly twice the total size. A few hundred documents or photos is comfortable on a normal machine. Large video files are the practical limit — a handful of gigabytes will make the tab struggle long before the file count does.'
+    },
+    {
+        question: 'Are the files uploaded anywhere?',
+        answer: 'No. They are read into the tab, renamed, and packed into a ZIP by JavaScript running in your browser. Nothing is transmitted and nothing is stored, so batches containing client work or personal documents stay on your machine.'
+    }
 ]
 
 // JSZip keys entries by name, so a duplicate would silently overwrite the earlier file
@@ -188,7 +218,46 @@ const BatchFileRenamer = () => {
                 <div className="about-section" style={{ background: 'var(--bg-card)', padding: '2rem', borderRadius: '1rem', border: '1px solid var(--border)', marginBottom: '2rem' }}>
                     <h2 style={{ fontSize: '1.8rem', marginBottom: '1.5rem' }}>About Batch File Renamer</h2>
                     <p style={{ lineHeight: '1.6', color: 'var(--text-secondary)', marginBottom: '1rem' }}>
-                        Rename multiple files online. Add prefix, suffix, and counter. Batch rename images, documents, and lists.
+                        Add a batch of files, describe the change once, and watch every new name appear next to its original as
+                        you type. When the preview looks right, the renamed copies come back as a single ZIP. Your own files are
+                        never modified, so there is no risk in experimenting with a rule to see what it does.
+                    </p>
+
+                    <h3 style={{ fontSize: '1.15rem', fontWeight: '600', margin: '1.75rem 0 0.75rem' }}>The four rules and the order they run in</h3>
+                    <p style={{ lineHeight: '1.6', color: 'var(--text-secondary)', marginBottom: '1rem' }}>
+                        Find and replace goes first, swapping every occurrence of a literal string anywhere in the name. The
+                        prefix is then added to the front. The suffix is inserted immediately before the final dot, so it lands
+                        at the end of the name rather than after the extension — and if a file has no dot at all, it simply goes
+                        on the end. The counter is applied last and sits at the very front, ahead of the prefix. Chaining all
+                        four turns holiday.jpeg into 1_trip-holiday_v2.jpEg, which also shows the one behaviour that surprises
+                        people: the search ran across the whole name, so the letter e inside .jpeg was replaced too.
+                    </p>
+
+                    <h3 style={{ fontSize: '1.15rem', fontWeight: '600', margin: '1.75rem 0 0.75rem' }}>Preview first, then download</h3>
+                    <p style={{ lineHeight: '1.6', color: 'var(--text-secondary)', marginBottom: '1rem' }}>
+                        Every new name in the list is recomputed from your rules on each keystroke rather than stored, so what
+                        you see is exactly what the archive will contain — the preview cannot drift out of step with the result.
+                        Files can be added in several batches, and the small cross beside any row drops that file from the set.
+                        The numbering follows list order, so removing a row renumbers everything after it.
+                    </p>
+
+                    <h3 style={{ fontSize: '1.15rem', fontWeight: '600', margin: '1.75rem 0 0.75rem' }}>How the ZIP is built</h3>
+                    <p style={{ lineHeight: '1.6', color: 'var(--text-secondary)', marginBottom: '1rem' }}>
+                        Entries are stored without compression. Renaming should not cost the time it takes to re-compress data
+                        that is usually compressed already, so the download is about the size of your files added together and
+                        opens like any other ZIP. The archive is flat: only the file name is used, never the folder it came
+                        from. When that produces two identical names, the second gains a numbered suffix before its extension
+                        rather than overwriting the first, because a ZIP indexed by name would otherwise keep only the last one.
+                    </p>
+
+                    <h3 style={{ fontSize: '1.15rem', fontWeight: '600', margin: '1.75rem 0 0.75rem' }}>What it will not do</h3>
+                    <p style={{ lineHeight: '1.6', color: 'var(--text-secondary)' }}>
+                        There are no regular expressions, no case conversion, no zero-padded counters and no date or EXIF
+                        tokens, and the rules apply uniformly to every file rather than conditionally. If your renaming scheme
+                        needs pattern matching, reach for a desktop utility or a shell loop. Everything also runs in memory —
+                        your files plus the archive being assembled — so a few hundred documents or photos is comfortable while
+                        several gigabytes of video is not. Nothing is uploaded at any point; the renaming and the ZIP are both
+                        produced by JavaScript in this tab.
                     </p>
                 </div>
 

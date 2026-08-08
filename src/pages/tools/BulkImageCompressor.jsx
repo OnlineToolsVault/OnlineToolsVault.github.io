@@ -7,36 +7,77 @@ import imageCompression from 'browser-image-compression'
 import JSZip from 'jszip'
 import { saveAs } from 'file-saver'
 
+/**
+ * Where the compression Web Worker loads its copy of the library from.
+ *
+ * The `import` above is bundled, but it is not the copy that does the work. With
+ * `useWebWorker: true` the library spawns a Blob worker whose whole body is
+ * `self.importScripts(imageCompressionLibUrl)`, and a worker cannot import the bundled ESM module —
+ * so it fetches a classic build, defaulting to
+ * `https://cdn.jsdelivr.net/npm/browser-image-compression@2.0.2/dist/browser-image-compression.js`.
+ * That is why this page hit a CDN on a normal visit despite the package being an npm dependency.
+ *
+ * `libURL` overrides it. scripts/copy-runtime-assets.js stages the UMD build into
+ * public/vendor/browser-image-compression.js; change one and change the other, and keep this in
+ * step with the identical constant in ImageCompressor.jsx.
+ *
+ * It has to be an *absolute* URL. The worker's base URL is its `blob:` URL, and a root-relative
+ * path cannot be resolved against a blob: base (it has an opaque path), so "/vendor/..." would
+ * either fail outright or resolve somewhere unintended. BASE_URL keeps a subpath deploy working,
+ * exactly as in src/utils/monacoLoader.js.
+ *
+ * Resolved on use rather than at module load so this page can still be imported outside a browser.
+ */
+const compressionLibUrl = () =>
+    new URL(
+        `${import.meta.env.BASE_URL || '/'}vendor/browser-image-compression.js`,
+        window.location.href,
+    ).href
+
 const features = [
-    { title: 'Parallel Processing', desc: 'Compress dozens of images simultaneously using your browser\'s multi-threading capabilities for maximum speed.', icon: <Zap color="var(--primary)" size={24} /> },
-    { title: 'Smart Optimization', desc: 'Automatically finds the best balance between file size and visual quality using advanced compression algorithms.', icon: <Settings color="var(--primary)" size={24} /> },
-    { title: 'Local Privacy', desc: 'Your photos never leave your device. All compression happens locally in your browser, ensuring 100% privacy.', icon: <Archive color="var(--primary)" size={24} /> }
+    { title: 'Resolution is left alone', desc: 'Every image keeps its original pixel dimensions. Only the encoder quality is lowered, which is what you want for product shots, print sources and anything that will be cropped later.', icon: <Settings color="var(--primary)" size={24} /> },
+    { title: 'One shared quality setting', desc: 'Pick a single quality target and it is applied to the whole batch, so a set of gallery images ends up visually consistent rather than each one tuned by hand.', icon: <Zap color="var(--primary)" size={24} /> },
+    { title: 'Per-file before and after', desc: 'Each row shows the original size next to the compressed size, so a file that barely shrank is obvious and you can drop it from the batch instead of shipping it.', icon: <Zap color="var(--primary)" size={24} /> },
+    { title: 'ZIP with collision-safe names', desc: 'Everything downloads as one archive. Two photos called IMG_0001.jpg from different folders become separate entries rather than one silently overwriting the other.', icon: <Archive color="var(--primary)" size={24} /> },
+    { title: 'Nothing about the batch is uploaded', desc: 'Every file is decoded and re-encoded by your own CPU in a Web Worker. No image, filename or size is ever sent anywhere, which matters when the batch is client work. Even the worker’s own script is served from this site, not a third-party CDN.', icon: <Archive color="var(--primary)" size={24} /> }
 ]
 
 const faqs = [
     {
-        question: "How many images can I compress at once?",
-        answer: "There is no hard limit. You can upload 50+ images, and our tool will process them in batches to ensure your browser stays responsive."
+        question: "How is this different from the single Image Compressor?",
+        answer: "Two things. This tool takes a whole selection and returns a ZIP, and — more importantly — it keeps every image at its **original pixel dimensions**. The single-file compressor deliberately caps the longest side at 1920 px, which is right for the web but wrong if you are compressing masters, print sources or images that still have to be cropped."
     },
     {
-        question: "Does it reduce quality?",
-        answer: "We use smart lossy compression which significantly reduces file size (often by 70-80%) with negligible difference in visual quality."
+        question: "How many images can I add?",
+        answer: "There is no built-in cap. The real limit is your device memory, because every file is held in memory along with a preview and its compressed copy. A few hundred phone photos is comfortable on a laptop; on an older phone, work in batches of twenty or thirty."
     },
     {
-        question: "Is it faster than server-based tools?",
-        answer: "Yes, because there is no upload or download time. Everything happens instantly on your own computer."
+        question: "Are the images processed in parallel?",
+        answer: "No — they are compressed one after another, so the browser tab stays responsive and memory use stays flat instead of spiking. The encoding itself runs in a Web Worker off the main thread. Expect a large batch to take a while, and leave the tab open while it works."
     },
     {
-        question: "Can I download all images at once?",
-        answer: "Yes! Once compression is complete, a 'Download All (ZIP)' button will appear to let you save everything in a single archive."
+        question: "I pressed Compress twice. Why did nothing happen the second time?",
+        answer: "Files that are already done at the current quality setting are skipped, so pressing the button again is harmless and instant. Change the quality slider and press it again and the whole batch is redone at the new setting. Files you added mid-run are picked up on the next press."
     },
     {
-        question: "What formats are supported?",
-        answer: "We support JPG, PNG, and WebP formats. You can mix and match different formats in the same batch."
+        question: "One image failed. Did the batch stop?",
+        answer: "No. A file that cannot be decoded is marked with an error on its own row and the run continues through the rest. You do not have to clear it before downloading: the ZIP is built only from rows that finished, so a failed file is simply left out of the archive."
     },
     {
-        question: "Is this tool free?",
-        answer: "Yes, it is completely free with no daily limits or watermarks."
+        question: "Which formats can I mix in one batch?",
+        answer: "JPEG, PNG and WebP, in any combination. Each file keeps its own format through the process, so a batch of mixed screenshots and photos comes back as the same mixture. HEIC photos from an iPhone cannot be decoded by the browser and should go through the HEIC to JPG converter first."
+    },
+    {
+        question: "How does the quality slider affect PNGs in the batch?",
+        answer: "Differently from JPEG. PNG has no quality parameter, so the encoder converts the slider into a **colour count** and quantises each PNG to that many colours — roughly 4,000 at 100% and around 400 at 10%. That makes PNG output here lossy. Screenshots, logos and flat graphics take it well and can shrink a lot; a photograph saved as PNG will start to band at low settings, and is better converted to JPEG or WebP with the Image Converter first."
+    },
+    {
+        question: "Do the filenames change?",
+        answer: "Each entry in the ZIP is your original filename with a compressed- prefix. If two files in the batch share a name, the second gets a numbered suffix so nothing is lost. Extensions are unchanged because the format is unchanged."
+    },
+    {
+        question: "Is anything uploaded, even filenames?",
+        answer: "No. The files are read locally, compressed locally and zipped locally by JSZip in the same tab. No image, filename or byte count is transmitted. The one request you will see in the Network tab is the compression library loading its Web Worker script on the first run — that is code, not your batch, and it comes from this site rather than the public CDN it used to. Go offline and it falls back to compressing on the main thread, so the whole job still completes."
     }
 ]
 
@@ -85,6 +126,7 @@ const BulkImageCompressor = () => {
                 const options = {
                     maxSizeMB: 2,
                     useWebWorker: true,
+                    libURL: compressionLibUrl(),
                     initialQuality: quality,
                     alwaysKeepResolution: true
                 }
@@ -206,7 +248,7 @@ const BulkImageCompressor = () => {
                             {isDragActive ? 'Drop images here...' : 'Drag & Drop Images'}
                         </h3>
                         <p style={{ color: 'var(--text-secondary)' }}>
-                            or click to browse checks
+                            or click to browse files
                         </p>
                     </div>
                 </div>
@@ -266,10 +308,21 @@ const BulkImageCompressor = () => {
                     <div className="about-section" style={{ background: 'var(--bg-card)', padding: '2rem', borderRadius: '1rem', border: '1px solid var(--border)', marginBottom: '2rem' }}>
                         <h2 style={{ fontSize: '1.8rem', marginBottom: '1.5rem' }}>About Bulk Image Compressor</h2>
                         <p style={{ lineHeight: '1.6', color: 'var(--text-secondary)', marginBottom: '1rem' }}>
-                            Need to optimize a whole folder of photos? Our Bulk Image Compressor processes unlimited JPG, PNG, and WebP files directly in your browser.
+                            Drop in a whole selection of JPEG, PNG and WebP files, choose one quality setting, and get every image back re-encoded at that setting in a single ZIP. The batch is worked through one file at a time, and each row updates with its own before and after size as it finishes, so you can watch which images are actually paying for themselves.
+                        </p>
+                        <h3 style={{ fontSize: '1.15rem', margin: '1.5rem 0 0.75rem' }}>Resolution is deliberately preserved</h3>
+                        <p style={{ lineHeight: '1.6', color: 'var(--text-secondary)', marginBottom: '1rem' }}>
+                            This is the one behaviour that separates this tool from the single-file Image Compressor. That tool caps the longest side at 1920 pixels, which is the right default for something headed straight to a web page. This one changes nothing about the pixel grid — a 6000 x 4000 raw export comes back at 6000 x 4000, just lighter. That matters when the images are masters you will crop later, product photography that needs to survive a zoom control, or anything destined for print. If you want a batch resized as well, run it through the Bulk Image Resizer first and compress the output.
+                        </p>
+                        <h3 style={{ fontSize: '1.15rem', margin: '1.5rem 0 0.75rem' }}>Working through a large batch</h3>
+                        <p style={{ lineHeight: '1.6', color: 'var(--text-secondary)', marginBottom: '1rem' }}>
+                            Files are queued and compressed sequentially rather than all at once. That is a deliberate trade: a parallel run would spike memory and could stall the tab on a laptop, while a serial run keeps the interface usable and the progress honest. You can keep adding files while a run is in progress, and you can delete a row you no longer want — neither will disturb the images already finished. Pressing the compress button again only picks up what is new or what the quality change invalidated.
+                        </p>
+                        <p style={{ lineHeight: '1.6', color: 'var(--text-secondary)', marginBottom: '1rem' }}>
+                            A file the browser cannot decode is marked as an error on its own row and skipped; the rest of the batch carries on. Those rows are simply left out of the ZIP, so a single bad file never costs you the run. Inside the archive each entry is the original filename with a compressed- prefix, and duplicate names are given a numbered suffix instead of overwriting one another, which is easy to hit when several camera folders all contain an IMG_0001.jpg.
                         </p>
                         <p style={{ lineHeight: '1.6', color: 'var(--text-secondary)' }}>
-                            Because we don't upload your files to a server, it's incredibly fast and completely private. Perfect for photographers, web developers, and designers who need to save space without sacrificing quality.
+                            Everything runs on your own hardware. Decoding, encoding and zipping all happen inside this tab, using a Web Worker for the heavy encoding so the page does not freeze. No file, filename, or byte count is sent anywhere. The compression library does load its worker script on the first run — a single request for JavaScript, with none of your data in it — but that script is served from this site, so a batch run makes no cross-origin request whatsoever; and if it cannot be loaded the encoding falls back to the main thread, so the batch still completes offline. For a folder of client photographs or internal screenshots, that is a materially different privacy position from uploading it to someone else&rsquo;s server.
                         </p>
                     </div>
                     <div className="features-section" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))', gap: '2rem' }}>

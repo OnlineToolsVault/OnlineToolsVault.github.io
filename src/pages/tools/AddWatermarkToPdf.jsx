@@ -9,35 +9,43 @@ import { saveAs } from 'file-saver'
 const ANGLE = 45 // watermark rotation, in degrees
 
 const features = [
-    { title: 'Professional Protection', desc: 'Secure your documents by adding "Confidential", "Draft", or copyright text stamps to every page instantly.', icon: <Shield color="var(--primary)" size={24} /> },
-    { title: 'Full Customization', desc: 'Precise control over your watermark. Adjust rotation, opacity, font size, and color to perfectly match your branding.', icon: <Sliders color="var(--primary)" size={24} /> },
-    { title: 'Private Processing', desc: 'Your sensitive contracts and documents never leave your computer. Watermarking happens entirely in your browser.', icon: <Stamp color="var(--primary)" size={24} /> }
+    { title: 'Your text, diagonally across every page', desc: 'Type anything — CONFIDENTIAL, DRAFT, a client name, a case number — and it is drawn once per page at 45 degrees, centred, in grey. The default text is CONFIDENTIAL; the Add button stays disabled if you clear the field entirely.', icon: <Shield color="var(--primary)" size={24} /> },
+    { title: 'Size and opacity you set', desc: 'A size slider from 10 to 150 points and an opacity slider from 10% to 100% in ten steps. Around 30% keeps the underlying text comfortably readable; push it higher when the point is to discourage reuse of the page.', icon: <Sliders color="var(--primary)" size={24} /> },
+    { title: 'Auto-fits long text to the page', desc: 'The rotated bounding box is measured against each page and the font size is scaled down if it would overflow, so a long line still fits inside 90% of the page rather than running off the edge — including on mixed page sizes.', icon: <Stamp color="var(--primary)" size={24} /> }
 ]
 
 const faqs = [
     {
-        question: "Is this watermarking tool free?",
-        answer: "Yes, it is 100% free with no limits on the number of files you can process."
+        question: "What can I change, and what is fixed?",
+        answer: "You choose the text, the font size (10 to 150 points) and the opacity (10% to 100%). Fixed are the angle at 45 degrees, the colour at mid grey, the position at the centre of the page, and the count at one mark per page. That covers the standard DRAFT or CONFIDENTIAL diagonal; for a logo, a tiled pattern or a custom colour, place your own artwork with **PDF Editor**."
     },
     {
-        question: "Can I remove the watermark later?",
-        answer: "Our tool embeds the watermark permanently into the PDF layers. It is designed to be difficult to remove to protect your content."
+        question: "How does it handle a long watermark on a small page?",
+        answer: "Rotated text needs a wider box than its own length, so the bounding box of the 45-degree line is computed and compared against the page. If it will not fit inside 90% of the width or height, the font size is scaled down until it does, per page. Drop a long phrase onto a mixed-size document and each page gets the largest size that still fits it."
     },
     {
-        question: "Does it support image watermarks?",
-        answer: "Currently, we specialize in high-quality text watermarks. Image support is coming soon."
+        question: "Will it cover up my content?",
+        answer: "It is drawn on top, so at full opacity it will obscure whatever is underneath at the centre of the page. That is why the opacity control exists. For a mark that is unmistakable but leaves the document readable, 30% at a large size works better than 100% at a small one — a faint mark spanning the page is harder to crop out than a dark one in a corner."
     },
     {
-        question: "Can I batch watermark files?",
-        answer: "To ensure maximum privacy and browser performance, we currently process one file at a time."
+        question: "Does it work on scanned documents?",
+        answer: "Yes. The mark is appended to the page content stream after everything else on the page, so it lands above a full-page scanned image just as it would above text. Because it is drawn as text rather than as a picture, it stays sharp when the page is zoomed or printed at high resolution."
     },
     {
-        question: "Does it work on scanned PDFs?",
-        answer: "Yes. The watermark is added as a new vector layer on top of your existing pages, so it will appear over scanned images."
+        question: "My text was rejected as containing characters the font cannot display.",
+        answer: "The mark is set in Helvetica, one of the base fonts every reader provides, which covers the Latin-1 range only. Accented Western European letters are fine; Cyrillic, Greek, Chinese, Japanese, Arabic and emoji are not, and no font program is embedded to cover them. Use unaccented Latin text, or add a graphical mark with **PDF Editor** instead."
     },
     {
-        question: "Can I customize the font?",
-        answer: "We use standard Helvetica/Arial fonts to ensure your watermark looks consistent on all devices (Windows, Mac, Mobile) without compatibility issues."
+        question: "Can the watermark be removed later?",
+        answer: "Not by you, and not reliably by anyone else either — but do not mistake it for protection. Once drawn, the text is ordinary page content, so there is no annotation to delete and no layer to hide. Someone determined can still edit it out with a full PDF editor, or crop the page. A watermark deters casual reuse and marks provenance; if the requirement is that the document cannot be copied or altered, encrypt it with **Protect PDF**."
+    },
+    {
+        question: "Can I watermark several files at once?",
+        answer: "No — one file per run, since everything is processed in this browser tab and a batch would multiply peak memory with no way to show progress per file. Run them one after another; the settings persist while the page is open, so only the file changes between runs."
+    },
+    {
+        question: "It failed to add the watermark.",
+        answer: "If the message mentions password protection, the file is encrypted and must go through **Unlock PDF** first. If it mentions characters Helvetica cannot display, simplify the text. Anything else usually means a damaged file. Nothing is uploaded in any case — the document is read, modified and saved back as watermarked-yourfile.pdf entirely on your machine."
     }
 ]
 
@@ -234,10 +242,34 @@ const AddWatermarkToPdf = () => {
                     <div className="about-section" style={{ background: 'var(--bg-card)', padding: '2rem', borderRadius: '1rem', border: '1px solid var(--border)', marginBottom: '2rem' }}>
                         <h2 style={{ fontSize: '1.8rem', marginBottom: '1.5rem' }}>About Add Watermark to PDF</h2>
                         <p style={{ lineHeight: '1.6', color: 'var(--text-secondary)', marginBottom: '1rem' }}>
-                            Protect your intellectual property and confidential documents with ease. Our free online tool allows you to add custom text watermarks to your PDF files instantly. Whether you need to stamp "Confidential", mark a "Draft", or add your company name, we provide the tools to do it professionally and securely.
+                            Type a word or a phrase, set how large and how faint you want it, and it is drawn diagonally across the centre of every page in the document. The file is read, modified and saved back inside this browser tab as watermarked-yourfile.pdf; nothing is uploaded.
+                        </p>
+
+                        <h3 style={{ fontSize: '1.15rem', marginTop: '1.75rem', marginBottom: '0.75rem' }}>Text drawn into the page, not a stamp laid over it</h3>
+                        <p style={{ lineHeight: '1.6', color: 'var(--text-secondary)', marginBottom: '1rem' }}>
+                            There are two ways to watermark a PDF. One is to attach an annotation — quick, but a reader can select it and press delete. The other is to append drawing instructions to the page content stream itself, which is what happens here: a text-showing operator with a rotation, a grey fill and an opacity value, added after everything else the page draws. The consequences are worth understanding. The mark is always on top, because it is drawn last. It is real vector text, so it stays sharp at 400% zoom and on a 2400 DPI imagesetter. And there is no object to delete, because from the file&apos;s point of view your word is simply part of the page now.
+                        </p>
+
+                        <h3 style={{ fontSize: '1.15rem', marginTop: '1.75rem', marginBottom: '0.75rem' }}>Choosing size and opacity</h3>
+                        <p style={{ lineHeight: '1.6', color: 'var(--text-secondary)', marginBottom: '1rem' }}>
+                            The two sliders trade visibility against legibility. Opacity runs from 10% to 100% in ten steps and size from 10 to 150 points. A useful default for review copies is a large size at around 30%: the word spans the page, so it cannot be cropped away without destroying the content, while the text underneath stays comfortably readable. Reserve high opacity for documents that are meant to be looked at rather than worked from — specimen copies, expired versions, samples sent to prospects.
                         </p>
                         <p style={{ lineHeight: '1.6', color: 'var(--text-secondary)', marginBottom: '1rem' }}>
-                            Security is our top priority. Unlike server-side tools, our watermarking process runs entirely in your browser using WebAssembly. This means your private files are never uploaded, storing, or shared with anyone else.
+                            Whatever you choose, the text is measured before it is drawn. The bounding box of the line rotated to 45 degrees is compared against each page, and the font size is reduced if it would overrun 90% of the width or height. A long phrase on an A5 page therefore comes out smaller than the same phrase on A3, and every page in a mixed-size document is fitted individually rather than all being scaled to the smallest.
+                        </p>
+
+                        <h3 style={{ fontSize: '1.15rem', marginTop: '1.75rem', marginBottom: '0.75rem' }}>Limits worth knowing before you start</h3>
+                        <ul style={{ lineHeight: '1.7', color: 'var(--text-secondary)', marginBottom: '1rem', paddingLeft: '1.25rem' }}>
+                            <li><strong>One mark per page, centred, at 45 degrees.</strong> No tiling, no corner placement, no custom angle.</li>
+                            <li><strong>Grey only.</strong> The colour is fixed at mid grey, which reads clearly on white and prints acceptably in monochrome.</li>
+                            <li><strong>Latin-1 text only.</strong> Helvetica is used and no font is embedded, so Cyrillic, Greek, CJK and emoji are rejected with an explanation rather than drawn as blanks.</li>
+                            <li><strong>Text, not images.</strong> A logo watermark is not supported here; place one with <strong>PDF Editor</strong>.</li>
+                            <li><strong>One document at a time.</strong> Settings persist between runs, so batching by hand is quick.</li>
+                        </ul>
+
+                        <h3 style={{ fontSize: '1.15rem', marginTop: '1.75rem', marginBottom: '0.75rem' }}>What a watermark is actually for</h3>
+                        <p style={{ lineHeight: '1.6', color: 'var(--text-secondary)' }}>
+                            It marks provenance and status. A reader can see at a glance that a contract is a draft, that a valuation is a specimen, or that a set of drawings was issued to a particular contractor. What it does not do is prevent anything: a competent editor can remove drawn content, and screenshots ignore the question entirely. If the requirement is enforcement rather than labelling, encrypt the document with <strong>Protect PDF</strong>, which sets a password and permission flags, and consider flattening any interactive fields with <strong>Flatten PDF</strong> first so the file that leaves you is final.
                         </p>
                     </div>
                     <div className="features-section" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))', gap: '2rem' }}>

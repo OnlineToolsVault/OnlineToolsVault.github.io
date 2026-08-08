@@ -241,10 +241,22 @@ const ImageResizer = () => {
           <div className="about-section" style={{ background: 'var(--bg-card)', padding: '2rem', borderRadius: '1rem', border: '1px solid var(--border)', marginBottom: '2rem' }}>
             <h2 style={{ fontSize: '1.8rem', marginBottom: '1.5rem' }}>About Image Resizer</h2>
             <p style={{ lineHeight: '1.6', color: 'var(--text-secondary)', marginBottom: '1rem' }}>
-              Need a specific image size for a website banner, profile picture, or email signature? Our Image Resizer makes it easy to scale your photos to exact pixel dimensions.
+              This tool does one thing precisely: it changes how many pixels an image is made of. Type a width, type a height, and the picture is redrawn at exactly those numbers. Nothing is cropped and nothing is added at the edges, so every part of the original frame is still there — just at a different scale.
+            </p>
+            <h3 style={{ fontSize: '1.15rem', margin: '1.5rem 0 0.75rem' }}>The aspect ratio lock</h3>
+            <p style={{ lineHeight: '1.6', color: 'var(--text-secondary)', marginBottom: '1rem' }}>
+              With the lock on, the ratio of the image you loaded is remembered and the second dimension is calculated for you: type 800 in the width box and the height follows so the picture keeps its proportions. Turn the lock off and the two boxes become independent, which lets you stretch or squash on purpose — useful for correcting an anamorphic capture, and a mistake in almost every other situation. The preview updates about a tenth of a second after you stop typing, so you can hold a key down without the browser re-rendering on every keystroke.
+            </p>
+            <h3 style={{ fontSize: '1.15rem', margin: '1.5rem 0 0.75rem' }}>Quality, and which direction you are going</h3>
+            <p style={{ lineHeight: '1.6', color: 'var(--text-secondary)', marginBottom: '1rem' }}>
+              Scaling down is the well-behaved direction. The browser is asked for its highest-quality smoothing, which averages the source pixels rather than dropping them, so a 4000 px photo reduced to 800 px stays clean. Scaling up cannot invent detail that was never captured: the same smoothing spreads the pixels you have across a bigger grid, which reads as soft rather than blocky, but it is still a bigger version of the same information. If you need a genuinely larger image, go back to the original file rather than enlarging an export.
+            </p>
+            <h3 style={{ fontSize: '1.15rem', margin: '1.5rem 0 0.75rem' }}>What comes out, and what stays behind</h3>
+            <p style={{ lineHeight: '1.6', color: 'var(--text-secondary)', marginBottom: '1rem' }}>
+              JPEG, PNG and WebP files keep their own format. Anything else — GIF, BMP, SVG, or a file with no type at all — is exported as PNG, because those are the only three formats a browser canvas can write, and the tool tells you when that substitution happens instead of handing you PNG bytes under a misleading extension. An animated GIF is flattened to its first frame. PNG and WebP transparency is preserved; a transparent area exported as JPEG would go black, which is one reason the format is not switched silently.
             </p>
             <p style={{ lineHeight: '1.6', color: 'var(--text-secondary)' }}>
-              It includes smart aspect-ratio locking to prevent distortion and works entirely offline in your browser for maximum privacy.
+              Redrawing an image through a canvas also drops EXIF, so the resized copy has no camera model, timestamp or GPS coordinates attached. Treat that as a side effect rather than a privacy feature — Remove Image Metadata is the tool to reach for if stripping location data is the actual goal. The resizing itself never leaves your device: the file is decoded, redrawn and re-encoded entirely inside this tab, with no upload and no server round trip.
             </p>
           </div>
           <div className="features-section" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))', gap: '2rem' }}>
@@ -265,35 +277,48 @@ const ImageResizer = () => {
 }
 
 const features = [
-  { title: 'Pixel-Perfect Scaling', desc: 'Enter precise width and height values to resize your image exactly how you need it.', icon: <Maximize color="var(--primary)" size={24} /> },
-  { title: 'Aspect Ratio Lock', desc: 'Automatically calculates the correct proportions to ensure your image never looks stretched or squashed.', icon: <Lock color="var(--primary)" size={24} /> },
-  { title: 'Private & Secure', desc: 'Your images are processed directly in your browser and never sent to a remote server.', icon: <ShieldCheck color="var(--primary)" size={24} /> }
+  { title: 'Exact pixel targets', desc: 'Width and height are typed in, not dragged. When a spec says 1200 x 630 for a link preview or 400 x 400 for an avatar, you enter those numbers and get exactly that grid back.', icon: <Maximize color="var(--primary)" size={24} /> },
+  { title: 'Aspect ratio lock, both ways', desc: 'With the lock on, changing either box recalculates the other from the original proportions. Turn it off when you deliberately need to stretch one axis.', icon: <Lock color="var(--primary)" size={24} /> },
+  { title: 'High-quality downscaling', desc: 'The canvas is asked for its best smoothing, so reducing a large photo averages neighbouring pixels instead of throwing them away and leaving jagged edges.', icon: <Maximize color="var(--primary)" size={24} /> },
+  { title: 'Honest about format changes', desc: 'JPEG, PNG and WebP keep their format. Anything a browser cannot re-encode is exported as PNG and the tool says so on screen rather than mislabelling the download.', icon: <ShieldCheck color="var(--primary)" size={24} /> }
 ]
 
 const faqs = [
   {
-    question: "How do I keep the image shape?",
-    answer: "Keep the 'Aspect Ratio Locked' button active. This ensures that when you change width, the height adjusts automatically (and vice versa)."
+    question: "How do I stop the image being stretched?",
+    answer: "Leave the button reading **Aspect Ratio Locked**. In that state, typing a width recalculates the height from the proportions of the image you loaded, and typing a height recalculates the width. Unlocking is only useful when distortion is what you want — squeezing a 16:9 frame into a 4:3 slot, for example."
   },
   {
-    question: "Does resizing affect quality?",
-    answer: "Making an image smaller usually retains quality. Making it larger than the original may cause pixelation, but our tool uses smoothing to minimize this."
+    question: "Can I enlarge an image without it going soft?",
+    answer: "Not really, and no browser tool can. Enlarging spreads the pixels you already have across a larger grid; the smoothing keeps it from looking blocky but the detail was never captured in the first place. If you need a bigger image, re-export from the original file or the raw photo rather than scaling up a small copy."
   },
   {
-    question: "is it free?",
-    answer: "Yes, 100% free with no limits on how many images you can resize."
+    question: "What format will my download be?",
+    answer: "JPEG, PNG and WebP files come back in the same format they went in. Everything else — GIF, BMP, SVG, or a file the browser reports no type for — is exported as PNG, because those three are the only formats a canvas can encode. A note appears above the download button whenever that substitution applies."
   },
   {
-    question: "Can I resize by percentage?",
-    answer: "Currently we support pixel-based resizing for maximum precision, but you can calculate the percentage manually easily."
+    question: "Does it keep transparency?",
+    answer: "Yes, for PNG and WebP. Transparent pixels stay transparent through the resize. This is also why the tool never quietly converts a transparent PNG to JPEG: JPEG has no alpha channel, so every transparent area would turn solid black."
   },
   {
-    question: "What output format do I ge?",
-    answer: "JPG, PNG and WebP images keep their original format. Other formats such as GIF or SVG are exported as PNG, and animated GIFs are flattened to their first frame."
+    question: "What happens to my animated GIF?",
+    answer: "Only the first frame survives. A canvas holds one still image, so the resized download is a single-frame PNG. If you need to resize an animation while keeping the motion, this is the wrong tool — you need something that can decode and re-assemble every frame."
   },
   {
-    question: "Does it work on mobile?",
-    answer: "Yes, the interface is touch-friendly and works great on smartphones and tablets."
+    question: "Can I resize by percentage instead of pixels?",
+    answer: "Not directly here — the boxes are absolute pixel values. The Image Converter has a scale slider that runs from 20% to 700% if you would rather work in proportions, and it can change the output format at the same time."
+  },
+  {
+    question: "How do I resize a folder of images to the same width?",
+    answer: "Use the Bulk Image Resizer. It takes a multi-file selection, applies one rule to all of them — match this width, match this height, or force exact dimensions — and returns everything as a ZIP."
+  },
+  {
+    question: "Is resizing the same as cropping?",
+    answer: "No, and it is worth being clear about it. Resizing keeps the whole frame and changes how many pixels it is drawn with. Cropping keeps the pixel density and throws away the parts of the frame you do not want. For the second, use the Image Cropper; for a specific social platform shape, the Social Media Resizer has the aspect ratios built in."
+  },
+  {
+    question: "Is my image uploaded to a server?",
+    answer: "No. The file is decoded, redrawn and re-encoded inside this browser tab. There is no upload, no temporary copy on a server and nothing to delete afterwards — closing the tab is enough. The tool continues to work if you disconnect from the network after the page loads."
   }
 ]
 

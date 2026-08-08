@@ -13,35 +13,43 @@ import pdfWorkerUrl from 'pdfjs-dist/build/pdf.worker.min.mjs?url'
 PDFJS.GlobalWorkerOptions.workerSrc = pdfWorkerUrl
 
 const features = [
-    { title: 'Visual Reordering', desc: 'See thumbnails of every page. Drag and drop to sort your PDF pages exactly how you want them.', icon: <LayoutGrid color="var(--primary)" size={24} /> },
-    { title: 'Remove & Clean', desc: 'Instantly delete unwanted pages, blank sheets, or errors from your document with a single click.', icon: <Trash2 color="var(--primary)" size={24} /> },
-    { title: 'Secure & Private', desc: 'All organizing happens in your browser. We never see your files, ensuring total document privacy.', icon: <ShieldCheck color="var(--primary)" size={24} /> }
+    { title: 'Every page as a thumbnail', desc: 'The document is rendered page by page into a grid so you can see what you are moving. Previews are drawn small and fast for the interface only — they have no bearing on the quality of the file you save.', icon: <LayoutGrid color="var(--primary)" size={24} /> },
+    { title: 'Move and delete by button', desc: 'Left and right arrows on each card shift a page one position; the bin icon drops it. Buttons rather than drag gestures, so the grid works with a keyboard, a screen reader and a touchscreen alike.', icon: <Trash2 color="var(--primary)" size={24} /> },
+    { title: 'Rebuilt from the original bytes', desc: 'Saving does not re-render anything you saw on screen. The pages you kept are copied out of the source document in your chosen order, so the output is exactly as sharp as the file you started with.', icon: <ShieldCheck color="var(--primary)" size={24} /> }
 ]
 
 const faqs = [
     {
-        question: "Can I organize large files?",
-        answer: "Yes, our client-side tool handles large PDFs efficiently without needing to upload them to a server."
+        question: "How do I move a page?",
+        answer: "Use the left and right arrows on the page card; each press swaps it with its neighbour. There is no drag gesture — arrows keep the grid usable with a keyboard and on a phone, where dragging inside a scrolling page is unreliable. Moving a page a long way means several presses, so for a big reshuffle it is often quicker to delete and rebuild with **Merge PDF**."
     },
     {
-        question: "Can I rotate pages?",
-        answer: "Currently this tool focuses on reordering and deleting. Use our 'Rotate PDF' tool for orientation changes."
+        question: "Are the thumbnails the quality I will get?",
+        answer: "No. Previews are rendered at a fraction of full size purely so a hundred-page document loads quickly, which is why small text looks fuzzy in the grid. The saved file contains the original page objects untouched — same resolution, same embedded fonts, same everything."
     },
     {
-        question: "Is it really free?",
-        answer: "Yes, 100% free with no page limits or watermarks."
+        question: "Can I rotate a page here?",
+        answer: "No. This tool only reorders and removes. **Rotate PDF** turns every page in a document by the same angle; to fix one sideways page, extract it with **Split PDF**, rotate that single page, and reassemble with **Merge PDF**."
     },
     {
-        question: "How do I save the changes?",
-        answer: "After reordering or deleting pages, simply click the 'Save PDF' button to download your new organized document."
+        question: "Can I duplicate a page, or pull in pages from another PDF?",
+        answer: "Neither — each card corresponds to one page of the file you loaded, and the grid can only shrink. To insert material from elsewhere, prepare the pieces with **Split PDF** and combine them with **Merge PDF**, which appends whole documents in the order you set."
     },
     {
-        question: "Does it work on Mac and Windows?",
-        answer: "Yes! Since it runs in your browser (Chrome, Safari, Edge, Firefox), it works on all operating systems."
+        question: "What happens if I delete every page?",
+        answer: "Saving is refused with a message. A PDF must contain at least one page, so rather than writing an invalid file the tool asks you to keep something. If you deleted more than you meant to, start over — deletions are not undoable within the session."
     },
     {
-        question: "Will I lose quality?",
-        answer: "No. We simply rearrange the existing pages. The content and quality of each page remain exactly the same."
+        question: "Do bookmarks and form fields survive?",
+        answer: "Page content does; document-level structures do not. Bookmarks hang off the document catalogue rather than off pages, so the reorganised file has none — which is arguably correct, since a reordered document would have bookmarks pointing at the wrong places. Form fields keep their appearance but lose their registration, so they stop being fillable; use **Flatten PDF** first if the filled values matter."
+    },
+    {
+        question: "How large a document can it handle?",
+        answer: "Reordering itself is cheap, but the preview grid is not: every page is rendered to a canvas and held as an image, so a 500-page file can take a while to load and will use a lot of memory on a phone. If you only need to drop a handful of pages from a very long document, extracting the ranges you want with **Split PDF** is lighter."
+    },
+    {
+        question: "Is the file uploaded anywhere?",
+        answer: "No. Rendering and rebuilding both happen in this tab; the PDF is read with the browser File API and the result is written straight to your downloads folder as organized-yourfile.pdf. A password-protected file cannot be read at all and will send you back to the upload panel — unlock it with **Unlock PDF** first."
     }
 ]
 
@@ -178,7 +186,7 @@ const OrganizePdf = () => {
                                     <FileText size={32} />
                                 </div>
                                 <p style={{ fontWeight: 'bold', fontSize: '1.2rem' }}>{file.name}</p>
-                                <p style={{ color: '#64748b' }}>Drag pages to reorder (simulated with buttons for accessibility)</p>
+                                <p style={{ color: '#64748b' }}>Use the arrows on each card to move a page; the bin icon removes it</p>
                             </div>
 
                             {isProcessing && pages.length === 0 ? (
@@ -271,10 +279,33 @@ const OrganizePdf = () => {
                     <div className="about-section" style={{ background: 'var(--bg-card)', padding: '2rem', borderRadius: '1rem', border: '1px solid var(--border)', marginBottom: '2rem' }}>
                         <h2 style={{ fontSize: '1.8rem', marginBottom: '1.5rem' }}>About Organize PDF</h2>
                         <p style={{ lineHeight: '1.6', color: 'var(--text-secondary)', marginBottom: '1rem' }}>
-                            Take full control of your PDF documents. Whether you need to remove a sensitive page, reorder chapters, or clean up a scanned document, our Organize PDF tool makes it intuitive and fast.
+                            Load a PDF and every page appears as a thumbnail in a grid. Shuffle pages with the arrows, drop the ones you do not want with the bin icon, and save a rebuilt document containing exactly what is left, in the order shown. It downloads as organized-yourfile.pdf; the file on your disk is not modified.
                         </p>
+
+                        <h3 style={{ fontSize: '1.15rem', marginTop: '1.75rem', marginBottom: '0.75rem' }}>Two engines, doing two different jobs</h3>
+                        <p style={{ lineHeight: '1.6', color: 'var(--text-secondary)', marginBottom: '1rem' }}>
+                            It is worth knowing that the pictures you are shuffling around are not the document. When you load a file, a rendering engine rasterises each page to a small canvas so you have something to look at — deliberately low resolution, because a preview grid needs to appear in seconds, not minutes. Each thumbnail remembers only which page of the original it came from.
+                        </p>
+                        <p style={{ lineHeight: '1.6', color: 'var(--text-secondary)', marginBottom: '1rem' }}>
+                            When you save, those previews are thrown away. The tool reads the original bytes again, creates an empty document, and deep-copies the page objects you kept — in the order your grid now shows — along with every font, image and annotation they reference. Nothing is re-rendered, so the output is bit-for-bit as sharp as the input and a 600 DPI scan stays a 600 DPI scan. This split is why blurry thumbnails are nothing to worry about, and why a reorganised 200 MB file saves almost instantly even though it took a while to display.
+                        </p>
+
+                        <h3 style={{ fontSize: '1.15rem', marginTop: '1.75rem', marginBottom: '0.75rem' }}>What survives the rebuild</h3>
+                        <ul style={{ lineHeight: '1.7', color: 'var(--text-secondary)', marginBottom: '1rem', paddingLeft: '1.25rem' }}>
+                            <li><strong>Kept:</strong> page content, page size and rotation, embedded fonts, image resolution, links and comment annotations.</li>
+                            <li><strong>Lost:</strong> bookmarks, since the outline belongs to the document rather than to any page — and after a reorder it would point at the wrong pages anyway.</li>
+                            <li><strong>Lost:</strong> interactive form fields. The widget still draws, but it is no longer registered, so it cannot be filled in. Flatten the form first if the values matter.</li>
+                            <li><strong>Reset:</strong> document metadata; the rebuilt file starts with an empty Info dictionary.</li>
+                        </ul>
+
+                        <h3 style={{ fontSize: '1.15rem', marginTop: '1.75rem', marginBottom: '0.75rem' }}>Deleting a page is not redaction</h3>
+                        <p style={{ lineHeight: '1.6', color: 'var(--text-secondary)', marginBottom: '1rem' }}>
+                            Removing a page here genuinely removes it: the page object is never copied into the new document, so its text and images are not hiding somewhere in the output. That makes this a sound way to drop a confidential appendix before circulating a report. It is not, however, a way to remove sensitive content from a page you are keeping — drawing a black box over a paragraph leaves the text underneath perfectly extractable, whatever it looks like on screen. If a page contains something that must not survive, delete the whole page.
+                        </p>
+
+                        <h3 style={{ fontSize: '1.15rem', marginTop: '1.75rem', marginBottom: '0.75rem' }}>Where the neighbouring tools take over</h3>
                         <p style={{ lineHeight: '1.6', color: 'var(--text-secondary)' }}>
-                            We prioritize your privacy. Unlike other tools that require uploads, our organizer runs entirely in your browser. This means your sensitive contracts, reports, and personal documents never leave your computer.
+                            Reach for <strong>Split PDF</strong> when the goal is several separate files rather than one tidier one, or when a document is too long to be worth previewing page by page. Reach for <strong>Merge PDF</strong> to bring in material from elsewhere, since nothing can be added to the grid. Use <strong>Rotate PDF</strong> for orientation and <strong>Compress PDF</strong> if the finished file needs to be smaller. And if the document will not load at all, it is almost certainly encrypted — <strong>Unlock PDF</strong> first, then come back.
                         </p>
                     </div>
                     <div className="features-section" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))', gap: '2rem' }}>

@@ -7,35 +7,49 @@ import JSZip from 'jszip'
 import { saveAs } from 'file-saver'
 
 const features = [
-    { title: 'Batch Dimension Control', desc: 'Resize hundreds of images to a unified width or height instantly.', icon: <Layout color="var(--primary)" size={24} /> },
-    { title: 'Adaptive Scaling', desc: 'Intelligently scales images while maintaining their original aspect ratio to prevent distortion.', icon: <Settings color="var(--primary)" size={24} /> },
-    { title: 'Secure Bulk Processing', desc: 'Process sensitive photos locally. Your images are never sent to the cloud.', icon: <Archive color="var(--primary)" size={24} /> }
+    { title: 'One rule, whole selection', desc: 'Match a width, match a height, or force exact dimensions. The rule is applied to every file in the batch, so mixed landscape and portrait shots come out consistent on the axis you care about.', icon: <Layout color="var(--primary)" size={24} /> },
+    { title: 'Proportions kept by default', desc: 'In the two scale modes the second dimension is derived from each image on its own, so nothing is squashed. Stretching is only possible in the mode explicitly labelled as such.', icon: <Settings color="var(--primary)" size={24} /> },
+    { title: 'Failures do not stop the run', desc: 'An image that cannot be decoded is flagged on its own row and counted at the end. The rest of the batch finishes and the ZIP is built from whatever succeeded.', icon: <Settings color="var(--primary)" size={24} /> },
+    { title: 'Correctly named ZIP entries', desc: 'Each file is saved under its own name with a resized- prefix and the extension of the format actually written, with numbered suffixes so duplicate filenames never overwrite each other.', icon: <Archive color="var(--primary)" size={24} /> },
+    { title: 'Local from start to finish', desc: 'Decoding, scaling and archiving all happen in this tab. Nothing is uploaded, which is the difference between using a tool on confidential photos and not being allowed to.', icon: <Archive color="var(--primary)" size={24} /> }
 ]
 
 const faqs = [
     {
-        question: "Can I mix landscape and portrait photos?",
-        answer: "Yes! If you choose 'Scale by Width', all images will match exactly that width, and their heights will adjust automatically to keep them proportional."
+        question: "Which mode should I pick?",
+        answer: "**Scale by Width** when the images go into a single-column layout or a fixed-width content area — every image lands on the same width and keeps its own height. **Scale by Height** when they sit side by side in a row and need a common baseline. **Exact Dimensions** only when every source already shares the target shape, because it forces both numbers and will stretch anything that does not fit."
     },
     {
-        question: "What formats are supported?",
-        answer: "We support bulk resizing for JPG, PNG, and WebP files."
+        question: "Can I mix landscape and portrait shots in one batch?",
+        answer: "Yes, and the two scale modes are designed for exactly that. In Scale by Width, a landscape photo and a portrait photo both come out at your chosen width; the portrait one is simply taller. Avoid Exact Dimensions with a mixed batch — that is the combination that produces stretched faces."
     },
     {
-        question: "Is there a limit?",
-        answer: "Since it runs in your browser, the only limit is your device's memory. Most modern computers can handle hundreds of images easily."
+        question: "Is there a maximum size or file count?",
+        answer: "Dimensions are capped at 20,000 pixels per side, and there is no file count limit in the code. The practical ceiling is your device memory, since each file is held along with a preview and its resized copy. Hundreds of ordinary photos are fine on a laptop; on a phone, split the job into smaller batches."
     },
     {
-        question: "Will my images be distorted?",
-        answer: "No, as long as you resize by one dimension (width OR height), the aspect ratio is preserved automatically."
+        question: "Why did some files come back as PNG?",
+        answer: "A browser canvas can only write JPEG, PNG and WebP. Anything else in your selection — a GIF, a BMP, or a file whose type the browser could not identify — is encoded as PNG, and the ZIP entry is renamed with a .png extension so the contents match the filename. Files already in one of the three supported formats keep it."
     },
     {
-        question: "Is it faster than uploading?",
-        answer: "Absolutely. No upload time is required because all processing happens instantly on your own device."
+        question: "What happens to animated GIFs?",
+        answer: "They come out as a single still frame. Resizing runs through a canvas, and a canvas holds one image at a time, so the animation cannot survive. If the animation matters, resize it with a tool that decodes every frame instead."
     },
     {
-        question: "Can I download all resized images at once?",
-        answer: "Yes, you can download all your processed images in a single ZIP file."
+        question: "Will resizing also make the files smaller?",
+        answer: "Usually, because fewer pixels means fewer bytes — but that is a side effect, not a compression setting. If you want to control file size directly, run the output through the Bulk Image Compressor, which lowers encoder quality while keeping the dimensions you just set."
+    },
+    {
+        question: "I changed the width and pressed the button again. Does it redo everything?",
+        answer: "Yes. Results are tagged with the settings that produced them, so changing the mode, width or height invalidates the batch and every file is redone. Pressing the button again without changing anything reprocesses nothing, and files added mid-run are picked up on the next press."
+    },
+    {
+        question: "Nothing downloads and I get an error about no resized images.",
+        answer: "That means no file finished successfully — usually because the batch is entirely files the browser cannot decode, such as HEIC photos from an iPhone or a RAW camera format. Convert HEIC files first with the HEIC to JPG tool, then bring the JPEGs back here."
+    },
+    {
+        question: "Are the images uploaded while they are processed?",
+        answer: "No. Every step — reading the files, drawing them at the new size, encoding them and building the ZIP — happens inside this browser tab. Disconnect from the network after the page loads and the batch still runs to completion."
     }
 ]
 
@@ -320,7 +334,7 @@ const BulkImageResizer = () => {
                             {isDragActive ? 'Drop images here...' : 'Drag & Drop Images'}
                         </h3>
                         <p style={{ color: 'var(--text-secondary)' }}>
-                            or click to browse checks
+                            or click to browse files
                         </p>
                     </div>
                 </div>
@@ -380,10 +394,21 @@ const BulkImageResizer = () => {
                     <div className="about-section" style={{ background: 'var(--bg-card)', padding: '2rem', borderRadius: '1rem', border: '1px solid var(--border)', marginBottom: '2rem' }}>
                         <h2 style={{ fontSize: '1.8rem', marginBottom: '1.5rem' }}>About Bulk Image Resizer</h2>
                         <p style={{ lineHeight: '1.6', color: 'var(--text-secondary)', marginBottom: '1rem' }}>
-                            Standardize your image collection in seconds. Whether you're preparing product photos for an e-commerce site or shrinking vacation pics for easy sharing, our Bulk Image Resizer handles it all.
+                            Give a mixed pile of photos one consistent dimension. You choose a single rule, it is applied to every file in the selection, and the results come back as one ZIP. The point is uniformity: a product grid where every thumbnail is the same width, a documentation folder where no screenshot is twice the size of its neighbour, an email attachment set that fits inside a size limit.
+                        </p>
+                        <h3 style={{ fontSize: '1.15rem', margin: '1.5rem 0 0.75rem' }}>The three resize modes</h3>
+                        <p style={{ lineHeight: '1.6', color: 'var(--text-secondary)', marginBottom: '1rem' }}>
+                            <strong>Scale by Width</strong> sets every image to the width you type and works the height out from each file&rsquo;s own proportions. Landscape and portrait shots end up the same width and different heights, which is what a single-column layout or a fixed-width blog body wants. <strong>Scale by Height</strong> is the mirror image and is the right choice for a horizontal filmstrip or a row of logos that must sit on a common baseline. <strong>Exact Dimensions</strong> forces both numbers on every file and will visibly stretch anything whose shape does not already match — it is labelled as a stretch for that reason. If you need a common shape without distortion, crop first with the Image Cropper or the Social Media Resizer, then batch-resize.
+                        </p>
+                        <h3 style={{ fontSize: '1.15rem', margin: '1.5rem 0 0.75rem' }}>Limits and formats</h3>
+                        <p style={{ lineHeight: '1.6', color: 'var(--text-secondary)', marginBottom: '1rem' }}>
+                            Dimensions must be whole numbers above zero and are clamped at 20,000 pixels a side, which is well past anything a browser canvas will reliably allocate anyway. JPEG, PNG and WebP files keep their own format through the batch; anything else a canvas cannot encode is written as PNG, and the ZIP entry is renamed to match what was actually produced rather than keeping a now-wrong extension. Transparency survives in PNG and WebP. Animated GIFs do not survive as animations — a canvas only ever holds one frame.
+                        </p>
+                        <p style={{ lineHeight: '1.6', color: 'var(--text-secondary)', marginBottom: '1rem' }}>
+                            Files are processed one after another rather than all at once, so a long run does not lock up the tab or spike memory. If an image cannot be decoded it is marked with an error, counted in the summary at the end, and skipped; the rest of the batch finishes normally and the ZIP simply does not contain it. Re-running after changing the width or height redoes everything, while re-running with the same settings does nothing, so the button is safe to press twice.
                         </p>
                         <p style={{ lineHeight: '1.6', color: 'var(--text-secondary)' }}>
-                            Simply drag and drop your files, set a target width or height, and let your browser do the heavy lifting. No uploads, no waiting.
+                            Resizing changes pixel dimensions, not compression settings. If the goal is smaller files rather than smaller images, the Bulk Image Compressor lowers encoder quality while leaving the pixel grid alone — and the two chain together neatly: resize first, compress second. Both run entirely inside this tab, with no upload, so a folder of unreleased product shots never touches anyone else&rsquo;s hardware.
                         </p>
                     </div>
                     <div className="features-section" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))', gap: '2rem' }}>

@@ -7,35 +7,43 @@ import { PDFDocument, degrees } from 'pdf-lib'
 import { saveAs } from 'file-saver'
 
 const features = [
-    { title: 'Instant Orientation Fix', desc: 'Correct upside-down or sideways pages by rotating them 90, 180, or 270 degrees clockwise.', icon: <RotateCw color="var(--primary)" size={24} /> },
-    { title: 'Whole Document Rotation', desc: 'Rotate every single page in your PDF file at once with a simple click.', icon: <RefreshCw color="var(--primary)" size={24} /> },
-    { title: 'Secure & Browser-Based', desc: 'No uploads needed. The rotation happens instantly in your browser, keeping your documents private.', icon: <ShieldCheck color="var(--primary)" size={24} /> }
+    { title: 'Three clockwise steps', desc: 'Pick 90, 180 or 270 degrees. Ninety fixes a page scanned sideways, one hundred and eighty flips a batch fed into the scanner upside down, and two hundred and seventy is the anticlockwise quarter turn under another name.', icon: <RotateCw color="var(--primary)" size={24} /> },
+    { title: 'Applied to every page', desc: 'The chosen angle is added to whatever rotation each page already carries, across the whole document in one pass. Run it twice at 90 and you have turned the file 180 — the steps accumulate rather than replace.', icon: <RefreshCw color="var(--primary)" size={24} /> },
+    { title: 'A flag, not a re-render', desc: 'Only the /Rotate entry on each page changes. No pixels move, no image is re-encoded and text stays selectable, so even a 500-page scan turns instantly and the size barely shifts.', icon: <ShieldCheck color="var(--primary)" size={24} /> }
 ]
 
 const faqs = [
     {
-        question: "Can I rotate individual pages?",
-        answer: "This tool rotates the *entire* document to a new orientation. If you need to mix and match (e.g. Page 1 Portrait, Page 2 Landscape), please use our 'Organize PDF' tool."
+        question: "Can I rotate just one page instead of all of them?",
+        answer: "Not here — the angle is applied to every page in the document. To fix a single sideways page in an otherwise correct file, pull that page out with **Split PDF**, rotate the one-page file, then put the document back together with **Merge PDF**. It is three steps, but each one is lossless."
     },
     {
-        question: "Is the rotation permanent?",
-        answer: "Yes, once you download the file, the pages will be saved in the new orientation. It will open this way in all PDF readers."
+        question: "Is the rotation stored in the file or only in the viewer?",
+        answer: "In the file. Each page dictionary gets a /Rotate value, which is part of the PDF standard, so every reader — Acrobat, Preview, Chrome, a phone, a printing RIP — honours it. That is different from the temporary rotate button inside a viewer, which usually only affects your screen and is forgotten when you close the document."
     },
     {
-        question: "Is it free?",
-        answer: "Yes, our PDF rotator is 100% free with no limits on file size or usage."
+        question: "The rotations seem to add up. Is that intentional?",
+        answer: "Yes. The tool reads the angle a page already has and adds your choice to it, rather than overwriting. So a page already at 90 that you rotate by 90 ends up at 180. If you overshoot, keep going: three more quarter turns bring you back where you started, and nothing degrades because no page content is being touched."
     },
     {
-        question: "Does it rotate images inside?",
-        answer: "It rotates the entire page 'canvas'. So text, images, and vectors all rotate together. Nothing gets scrambled."
+        question: "Why does the page look sideways in the thumbnail but not when printed, or the other way round?",
+        answer: "There are two ways a page can be sideways. Either the content is drawn upright and /Rotate says to turn it, or the content itself was drawn rotated with /Rotate at zero. This tool changes the flag, which fixes the first case cleanly. In the second case the flag turns the page too, so the visible result is still correct; what changes is the page box orientation, which occasionally matters to imposition and pre-press software."
     },
     {
-        question: "What happens to the file size?",
-        answer: "The file size usually stays very similar, as we are just updating a 'Rotation' flag in the PDF structure rather than re-encoding the whole file."
+        question: "Does anything get lost or degraded?",
+        answer: "No. Text remains text, vector graphics remain vector, and images keep their original resolution and encoding — the page content stream is not rewritten at all. Annotations, links and form fields survive, though a few older tools draw stamp annotations without accounting for /Rotate, so it is worth a quick look at a heavily annotated file."
     },
     {
-        question: "Can I rotate 180 degrees?",
-        answer: "Yes. 180-degree rotation is perfect for fixing scanned documents that were scanned upside down."
+        question: "Why does the file size change slightly?",
+        answer: "The document is parsed and written back out, so the object layout and cross-reference table are regenerated. That usually moves the size by a fraction of a percent in either direction. If you want a deliberate reduction instead of an accident, use **Compress PDF**."
+    },
+    {
+        question: "It failed on my file. What now?",
+        answer: "The most common cause is encryption — a password-protected PDF cannot be parsed, so unlock it with **Unlock PDF** first. Otherwise the file is likely damaged: try opening it in a reader and re-exporting, or re-download it if it came from the web, since a truncated download often looks fine until something tries to parse it properly."
+    },
+    {
+        question: "Is my document uploaded anywhere?",
+        answer: "No. The file is read in the browser with the File API, modified in memory and saved straight back to your downloads folder as rotated-yourfile.pdf. Nothing is transmitted, which matters when the thing you are straightening out is a signed agreement or a medical scan."
     }
 ]
 
@@ -181,7 +189,32 @@ const RotatePdf = () => {
                     <div className="about-section" style={{ background: 'var(--bg-card)', padding: '2rem', borderRadius: '1rem', border: '1px solid var(--border)', marginBottom: '2rem' }}>
                         <h2 style={{ fontSize: '1.8rem', marginBottom: '1.5rem' }}>About Rotate PDF Pages Online</h2>
                         <p style={{ lineHeight: '1.6', color: 'var(--text-secondary)', marginBottom: '1rem' }}>
-                            Rotate PDF pages 90, 180, or 270 degrees clockwise. Correct PDF orientation instantly.
+                            Drop in a PDF, choose 90, 180 or 270 degrees clockwise, and download a copy in which every page is permanently turned. The new file is saved as rotated-yourfile.pdf and the original on your disk is left alone.
+                        </p>
+
+                        <h3 style={{ fontSize: '1.15rem', marginTop: '1.75rem', marginBottom: '0.75rem' }}>What a rotation is, inside the file</h3>
+                        <p style={{ lineHeight: '1.6', color: 'var(--text-secondary)', marginBottom: '1rem' }}>
+                            Every page in a PDF carries an optional /Rotate entry: a multiple of 90 that tells the reader how far to turn the page clockwise before displaying it. Rotating here reads that number, adds your choice, and writes the sum back. Nothing else in the page is touched — the text operators, the vector paths and the embedded images stay exactly where they were in the page coordinate system. That is why the operation is instant even on a 500-page scan, why nothing blurs, and why the output file is within a rounding error of the input size.
+                        </p>
+                        <p style={{ lineHeight: '1.6', color: 'var(--text-secondary)', marginBottom: '1rem' }}>
+                            Because the tool adds rather than overwrites, the steps compose. A page already sitting at 90 that you rotate by 180 ends up at 270. If a document is a mix of orientations, one pass will not straighten it: the same offset is applied to everything, so pages that were already correct become wrong by the same amount.
+                        </p>
+
+                        <h3 style={{ fontSize: '1.15rem', marginTop: '1.75rem', marginBottom: '0.75rem' }}>Choosing the angle</h3>
+                        <ul style={{ lineHeight: '1.7', color: 'var(--text-secondary)', marginBottom: '1rem', paddingLeft: '1.25rem' }}>
+                            <li><strong>90 degrees</strong> — the page reads bottom-to-top on screen. Typical of a landscape original scanned in portrait, or a spreadsheet printed sideways.</li>
+                            <li><strong>180 degrees</strong> — the page is upside down. Almost always a stack loaded the wrong way into a sheet feeder, and almost always affects the whole batch, which is exactly what this tool handles well.</li>
+                            <li><strong>270 degrees</strong> — the page reads top-to-bottom; the quarter turn the other way. Choose this rather than applying 90 three times.</li>
+                        </ul>
+
+                        <h3 style={{ fontSize: '1.15rem', marginTop: '1.75rem', marginBottom: '0.75rem' }}>Rotating one page in a mixed document</h3>
+                        <p style={{ lineHeight: '1.6', color: 'var(--text-secondary)', marginBottom: '1rem' }}>
+                            This tool is all-or-nothing by design, which suits the common case of a whole batch scanned the wrong way. When only page 7 is sideways, split it out with <strong>Split PDF</strong> using the range <strong>7</strong>, rotate that one-page file here, then rebuild the document with <strong>Merge PDF</strong>, ordering the three pieces 1-6, the rotated page, and 8 onwards. Every step copies pages rather than re-rendering them, so the round trip costs nothing in quality.
+                        </p>
+
+                        <h3 style={{ fontSize: '1.15rem', marginTop: '1.75rem', marginBottom: '0.75rem' }}>If nothing downloads</h3>
+                        <p style={{ lineHeight: '1.6', color: 'var(--text-secondary)' }}>
+                            A failure message with no file almost always means the PDF is encrypted; the parser will not open a password-protected document, so run <strong>Unlock PDF</strong> first. The other cause is a damaged or partially downloaded file, which some viewers will display from cache while a strict parser refuses it. Everything runs locally in this browser tab, so nothing about your document reaches a server either way — there is no upload, no queue, and no copy left behind to delete.
                         </p>
                     </div>
                     <div className="features-section" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))', gap: '2rem' }}>

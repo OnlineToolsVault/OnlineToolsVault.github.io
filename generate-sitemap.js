@@ -1,5 +1,6 @@
 import fs from 'fs';
 import path from 'path';
+import { execFileSync } from 'child_process';
 import { fileURLToPath } from 'url';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
@@ -145,8 +146,14 @@ for (const [route, m] of Object.entries(STATIC_META)) {
 try {
   const { tools } = await import(new URL('./src/data/tools.js', import.meta.url));
   for (const tool of tools) {
+    // `seoTitle` — not `${tool.name} | OnlineToolsVault` — because src/components/tools/ToolLayout.jsx
+    // reads that same field out of the catalogue and hands it to Helmet on mount. Deriving the
+    // static title from `name` instead is what used to make the tab title change a moment after
+    // load on all 80 tool pages: the prerendered tag and the React-set tag were different strings.
+    // The fallback keeps a catalogue entry that has not been given a seoTitle yet from shipping an
+    // empty <title>, and ToolLayout falls back in the same order.
     metaByPath[tool.path] = {
-      title: `${tool.name} | OnlineToolsVault`,
+      title: tool.seoTitle || `${tool.name} | OnlineToolsVault`,
       description: tool.seoDescription || tool.description || '',
       url: canonicalUrlFor(tool.path),
       image: `${baseUrl}/og/${tool.id}.png`,
@@ -191,20 +198,198 @@ function injectMeta(html, m) {
 // =============================================================================
 // STEP 1: Generate Sitemap.xml
 // =============================================================================
+// Each <url> carries only <loc> and <lastmod>. <changefreq> and <priority> are deliberately
+// absent: Google documents that it ignores both, and shipping them invites a stale sitemap to
+// contradict reality for no benefit.
+//
+// <lastmod> is only useful if it is true. A build-time "now" stamped on all 89 URLs is the exact
+// pattern that makes crawlers stop trusting the field, so the date published for a route is the
+// commit date of the component that renders it. Uncommitted edits are ignored on purpose — CI
+// builds from a clean checkout, and this keeps rebuilds of the same commit byte-identical.
+
+/** W3C Datetime in UTC at second precision — the format <lastmod> is specified in. */
+const toW3CDate = (date) => date.toISOString().replace(/\.\d{3}Z$/, 'Z');
+
+const buildDate = toW3CDate(new Date());
+
+/** Run git, returning trimmed stdout, or '' if git is missing / this is not a repository. */
+function git(...args) {
+  try {
+    return execFileSync('git', args, {
+      cwd: __dirname,
+      encoding: 'utf8',
+      stdio: ['ignore', 'pipe', 'ignore'],
+    }).trim();
+  } catch {
+    return '';
+  }
+}
+
+/**
+ * Map every route to the source file that renders it, by reading the lazy() imports and <Route>
+ * elements out of src/App.jsx. That is the same file scripts/validate-routes.js parses, so the
+ * mapping cannot silently drift the way a second hand-maintained list would.
+ * Returns { '/word-counter': '/abs/path/src/pages/tools/WordCounter.jsx', ... }
+ */
+function buildRouteSourceMap() {
+  const map = {};
+
+  let appSource;
+  try {
+    appSource = fs.readFileSync(path.resolve(__dirname, 'src', 'App.jsx'), 'utf8');
+  } catch (error) {
+    console.warn(`   ⚠️  Could not read src/App.jsx for lastmod dates (${error.message})`);
+    return map;
+  }
+
+  // const WordCounter = lazy(() => import('./pages/tools/WordCounter'))
+  const componentToSpecifier = {};
+  const lazyPattern = /const\s+([A-Za-z0-9_$]+)\s*=\s*lazy\(\s*\(\)\s*=>\s*import\(\s*['"]([^'"]+)['"]\s*\)\s*\)/g;
+  for (const [, component, specifier] of appSource.matchAll(lazyPattern)) {
+    componentToSpecifier[component] = specifier;
+  }
+
+  // <Route path="/word-counter" element={<WordCounter />} />
+  const routePattern = /<Route\s+path="([^"]+)"\s+element=\{\s*<\s*([A-Za-z0-9_$]+)/g;
+  for (const [, route, component] of appSource.matchAll(routePattern)) {
+    const specifier = componentToSpecifier[component];
+    if (route === '*' || !specifier) continue;
+
+    // Extensionless imports resolve through Vite; replay that here.
+    const base = path.resolve(__dirname, 'src', specifier.replace(/^\.\//, ''));
+    const candidate = ['.jsx', '.js', '.tsx', '.ts', '/index.jsx', '/index.js', '']
+      .map((ext) => base + ext)
+      .find((file) => fs.existsSync(file) && fs.statSync(file).isFile());
+
+    if (candidate) map[route] = candidate;
+  }
+
+  return map;
+}
+
+/** Route -> W3C lastmod, falling back to the build date where no commit date can be derived. */
+function buildLastmodMap() {
+  const sources = buildRouteSourceMap();
+  const cache = new Map();
+  const lastmod = {};
+  let derived = 0;
+
+  for (const route of routes) {
+    const file = sources[route];
+    if (!file) {
+      lastmod[route] = buildDate;
+      continue;
+    }
+
+    if (!cache.has(file)) {
+      const committed = git('log', '-1', '--format=%cI', '--', file);
+      const parsed = committed ? new Date(committed) : null;
+      cache.set(file, parsed && !Number.isNaN(parsed.getTime()) ? toW3CDate(parsed) : null);
+    }
+
+    const date = cache.get(file);
+    lastmod[route] = date || buildDate;
+    if (date) derived++;
+  }
+
+  console.log(`   ↳ lastmod: ${derived}/${routes.length} from git history, ${routes.length - derived} from build date`);
+
+  // A depth-1 checkout (actions/checkout's default) has one grafted commit that looks like it
+  // added every file, so every date above collapses to the tip commit. Still a real date, but the
+  // per-page signal is gone until the workflow's checkout step sets fetch-depth: 0.
+  if (derived > 0 && git('rev-parse', '--is-shallow-repository') === 'true') {
+    console.warn('   ⚠️  Shallow git clone: every lastmod collapses to the tip commit date.');
+    console.warn('      Set fetch-depth: 0 on the checkout step for true per-page dates.');
+  }
+
+  return lastmod;
+}
+
+// =============================================================================
+// STEP 0: Warn when a page's own <Helmet> disagrees with the catalogue
+// =============================================================================
+// Almost every tool route renders through src/components/tools/ToolLayout.jsx, which reads its
+// <title> and description straight out of src/data/tools.js — the same place the tags injected
+// below come from — so those two can never disagree.
+//
+// A handful of pages (PdfEditor, JsonFormatter, MarkdownPreviewer) declare their own <Helmet>
+// with the strings hard-coded in the JSX. For those the catalogue has to be kept in step by hand,
+// and when it is not, the head silently changes a moment after the page loads: the crawler and the
+// visitor see different titles. This finds that by hand-checking the only pattern those pages use —
+// a literal <title> immediately followed by the description meta.
+//
+// It is deliberately a warning, not a failure. A false positive from a regex over JSX must never be
+// able to block a deploy, and a genuine hit is loud enough to act on.
+function checkHelmetDrift() {
+  console.log('\n🔎 Checking pages that declare their own <Helmet>...');
+
+  // `[^<]*` on the title keeps this from spanning a <title> that lives inside a page's HTML-export
+  // template string all the way to a later description meta.
+  const pattern = /<title>([^<]*)<\/title>\s*<meta name="description" content="([^"]*)"/;
+
+  // JSX text is HTML, so a page writing `Image &amp; Utility` renders an ampersand. Compare what
+  // the browser will show, or every title containing "&" reads as a mismatch that is not one.
+  const decode = (s) =>
+    s
+      .replace(/&lt;/g, '<')
+      .replace(/&gt;/g, '>')
+      .replace(/&quot;/g, '"')
+      .replace(/&#39;/g, "'")
+      .replace(/&amp;/g, '&')
+      .trim();
+
+  const sources = buildRouteSourceMap();
+  const drifted = [];
+  let checked = 0;
+
+  for (const [route, file] of Object.entries(sources)) {
+    const meta = metaByPath[route];
+    if (!meta) continue;
+
+    let source;
+    try {
+      source = fs.readFileSync(file, 'utf8');
+    } catch {
+      continue;
+    }
+
+    const match = source.match(pattern);
+    if (!match) continue; // goes through ToolLayout; identical by construction
+
+    checked++;
+    const title = decode(match[1]);
+    const description = decode(match[2]);
+    if (title !== decode(meta.title)) drifted.push(`${route} <title>: page "${title}" vs static "${meta.title}"`);
+    if (description !== decode(meta.description)) drifted.push(`${route} description: page "${description}" vs static "${meta.description}"`);
+  }
+
+  if (drifted.length === 0) {
+    console.log(`   ✓ ${checked} self-declaring page(s) agree with src/data/tools.js`);
+  } else {
+    console.warn(`   ⚠️  ${drifted.length} mismatch(es) across ${checked} self-declaring page(s).`);
+    console.warn('      These tags will change after hydration. Update src/data/tools.js or the page.');
+    for (const line of drifted) console.warn(`      • ${line}`);
+  }
+
+  return true;
+}
+
 function generateSitemap() {
   console.log('\n📝 Generating sitemap.xml...');
 
   try {
+    const lastmodByRoute = buildLastmodMap();
+
+    const urls = routes.map(route => `  <url>
+    <loc>${canonicalUrlFor(route)}</loc>
+    <lastmod>${lastmodByRoute[route]}</lastmod>
+  </url>`).join('\n');
+
     const sitemap = `<?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
-  ${routes.map(route => `
-  <url>
-    <loc>${canonicalUrlFor(route)}</loc>
-    <changefreq>weekly</changefreq>
-    <priority>${route === '/' ? '1.0' : '0.8'}</priority>
-  </url>
-  `).join('')}
-</urlset>`;
+${urls}
+</urlset>
+`;
 
     const sitemapPath = path.resolve(publicPath, 'sitemap.xml');
     fs.writeFileSync(sitemapPath, sitemap);
@@ -422,6 +607,7 @@ function main() {
   console.log('╚════════════════════════════════════════════════════════════╝');
 
   const steps = [
+    { name: 'Check Self-Declared Helmet Meta', fn: checkHelmetDrift },
     { name: 'Generate Sitemap', fn: generateSitemap },
     { name: 'Prepare Multi-Entry SPA', fn: prepareMultiEntrySPA },
     { name: 'Create .nojekyll', fn: createNojekyll },

@@ -13,35 +13,43 @@ import { saveAs } from 'file-saver'
 PDFJS.GlobalWorkerOptions.workerSrc = pdfWorkerUrl
 
 const features = [
-    { title: 'Generates Thumbnails', desc: 'Creates a thumbnail image for every page in your PDF document.', icon: <ImageIcon color="var(--primary)" size={24} /> },
-    { title: 'Download All', desc: 'Download a ZIP file containing all thumbnails in high quality JPEG format.', icon: <Download color="var(--primary)" size={24} /> },
-    { title: 'Client-Side Processing', desc: 'Process your files locally. No PDF is ever uploaded to a server.', icon: <Shield color="var(--primary)" size={24} /> }
+    { title: 'One preview per page, half size', desc: 'Every page is rendered at 0.5x — half its point dimensions, so an A4 page becomes roughly 298 by 421 pixels. Small enough to generate a hundred of them quickly, large enough to recognise a page at a glance.', icon: <ImageIcon color="var(--primary)" size={24} /> },
+    { title: 'JPEG at 80%, zipped', desc: 'Each preview is encoded as JPEG at 80% quality — a few dozen kilobytes apiece — and the whole set downloads as thumbnails.zip containing thumbnail-page-1.jpg onwards, ready to drop into a folder or a build script.', icon: <Download color="var(--primary)" size={24} /> },
+    { title: 'No upload, no queue', desc: 'The document is rendered by JavaScript in this tab. A confidential deck you need cover images for is never transmitted, and there is no server-side rate limit to work around.', icon: <Shield color="var(--primary)" size={24} /> }
 ]
 
 const faqs = [
     {
-        question: "Is this tool free?",
-        answer: "Yes, it is completely free to use. You can generate thumbnails for as many PDFs as you like."
+        question: "What size are the thumbnails exactly?",
+        answer: "Half the page size in points. Because a point is one seventy-second of an inch, that works out at 36 DPI: an A4 page (595 by 842 points) produces a 298 by 421 pixel image, and US Letter produces 306 by 396. Pages of different sizes in the same document produce differently sized thumbnails, since the scale is relative rather than a fixed pixel target."
     },
     {
-        question: "Are my files safe?",
-        answer: "Absolutely. All processing is done in your browser. We never upload your PDF to any server."
+        question: "Can I choose a different size or format?",
+        answer: "Not here — the scale and the JPEG quality are fixed, which is what makes this a one-click tool. When you need control, **PDF to JPG** offers five resolutions from 72 to 432 DPI plus an adjustable quality slider, and **PDF to PNG** gives lossless output. This tool is for the common case where you want a set of previews and do not want to think about it."
     },
     {
-        question: "What is the thumbnail resolution?",
-        answer: "We generate high-quality JPEG thumbnails suitable for previews, archives, or galleries."
+        question: "Can I download a single page rather than the whole set?",
+        answer: "No, the download is the ZIP. All the previews are shown in the grid so you can see what you are getting, but the only download button produces thumbnails.zip. If you want one image, either take the ZIP and keep the file you need, or use **PDF to JPG**, which has a download button on every page."
     },
     {
-        question: "Can I download individual images?",
-        answer: "Currently, we provide a 'Download All' button that gives you a ZIP file containing every page thumbnail for convenience."
+        question: "Why JPEG rather than PNG for previews?",
+        answer: "At this size the trade favours JPEG heavily. A 300-pixel-wide preview is being viewed far below the resolution where compression artefacts are visible, and JPEG at 80% cuts each file to a fraction of the lossless equivalent. For a 200-page document that is the difference between a ZIP of a few megabytes and one of several dozen."
     },
     {
-        question: "Does it work with large PDFs?",
-        answer: "Yes, though very large PDFs (100+ pages) might take a few moments to process depending on your device."
+        question: "Are annotations and form values shown?",
+        answer: "Yes. Annotations carrying an appearance stream — highlights, stamps, sticky-note icons — and the values typed into form fields are painted by the renderer just as a reader shows them. Pages are drawn on a white background, so a preview always looks like the printed page rather than a transparent cut-out."
     },
     {
-        question: "What image format is used?",
-        answer: "Thumbnails are generated in JPEG format, which offers a good balance between quality and file size."
+        question: "How long does a big document take?",
+        answer: "Each page has to be rendered, so time scales with the page count, but at half size the per-page cost is small — a few tens of milliseconds on a desktop. A hundred pages is a matter of seconds and a progress percentage tracks it. Memory stays modest for the same reason: these canvases are a fraction of the size a full-resolution conversion would need."
+    },
+    {
+        question: "What are these actually useful for?",
+        answer: "Contact sheets for a long report, cover images for a document library or CMS, quick visual indexes of a scanned archive, checking that a merge or a reorder produced the page order you intended, and finding the page you want before extracting it with **Split PDF**."
+    },
+    {
+        question: "The document would not load.",
+        answer: "A password-protected PDF cannot be parsed, so run it through **Unlock PDF** first. Otherwise the file is likely damaged — try re-exporting it from its source, or re-downloading it if it came from the web. Nothing is uploaded in either case; the whole process happens on your machine."
     }
 ]
 
@@ -168,7 +176,34 @@ const PdfThumbnailGenerator = () => {
                     <div className="about-section" style={{ background: 'var(--bg-card)', padding: '2rem', borderRadius: '1rem', border: '1px solid var(--border)', marginBottom: '2rem' }}>
                         <h2 style={{ fontSize: '1.8rem', marginBottom: '1.5rem' }}>About PDF Thumbnail Generator</h2>
                         <p style={{ lineHeight: '1.6', color: 'var(--text-secondary)', marginBottom: '1rem' }}>
-                            Generate high-quality thumbnails from PDF pages. Create previews for documents instantly.
+                            Drop in a PDF and every page comes back as a small JPEG preview. The grid shows them as they are produced; the download button hands you thumbnails.zip containing thumbnail-page-1.jpg, thumbnail-page-2.jpg and so on. Rendering happens in this browser tab and the document is never uploaded.
+                        </p>
+
+                        <h3 style={{ fontSize: '1.15rem', marginTop: '1.75rem', marginBottom: '0.75rem' }}>Fixed settings, on purpose</h3>
+                        <p style={{ lineHeight: '1.6', color: 'var(--text-secondary)', marginBottom: '1rem' }}>
+                            Pages are rendered at half their point dimensions and encoded as JPEG at 80% quality. There is nothing to configure, which is the entire point of a separate tool: when you want a contact sheet or a set of cover images, the last thing you want is a resolution dialogue. In practice that means about 36 DPI — an A4 page becomes roughly 298 by 421 pixels and lands somewhere in the tens of kilobytes.
+                        </p>
+                        <p style={{ lineHeight: '1.6', color: 'var(--text-secondary)', marginBottom: '1rem' }}>
+                            Because the scale is relative rather than an absolute pixel target, a document with mixed page sizes produces mixed thumbnail sizes, and the aspect ratio of every page is preserved exactly. Pages are drawn on white, and annotations and filled form values are painted in, so a preview looks like the page a reader would show rather than a stripped-down version of it.
+                        </p>
+
+                        <h3 style={{ fontSize: '1.15rem', marginTop: '1.75rem', marginBottom: '0.75rem' }}>Why half size and JPEG are the right defaults</h3>
+                        <p style={{ lineHeight: '1.6', color: 'var(--text-secondary)', marginBottom: '1rem' }}>
+                            Rendering cost grows with the square of the scale, so a preview at half size costs a fraction of a full-resolution page and a two-hundred-page document finishes in seconds rather than minutes. It also keeps memory low, which is what lets this run on a phone where a high-resolution conversion of the same file would exhaust the tab. As for the format: at 300 pixels wide you are viewing the image far below the resolution at which lossy artefacts become visible, so lossless coding would buy you nothing but a ZIP many times larger.
+                        </p>
+
+                        <h3 style={{ fontSize: '1.15rem', marginTop: '1.75rem', marginBottom: '0.75rem' }}>What people use these for</h3>
+                        <ul style={{ lineHeight: '1.7', color: 'var(--text-secondary)', marginBottom: '1rem', paddingLeft: '1.25rem' }}>
+                            <li><strong>Document libraries and CMS entries</strong> that want a cover image next to each PDF in a list.</li>
+                            <li><strong>Contact sheets</strong> for a long report, so a reviewer can see the shape of it before opening it.</li>
+                            <li><strong>Visual indexes of scanned archives</strong>, where filenames tell you nothing and the picture tells you everything.</li>
+                            <li><strong>Verification after editing</strong> — a quick way to confirm that a merge, a reorder or a rotation produced the page sequence you meant.</li>
+                            <li><strong>Finding a page number</strong> before pulling it out with <strong>Split PDF</strong> or removing it in <strong>Organize PDF</strong>.</li>
+                        </ul>
+
+                        <h3 style={{ fontSize: '1.15rem', marginTop: '1.75rem', marginBottom: '0.75rem' }}>When you need something else</h3>
+                        <p style={{ lineHeight: '1.6', color: 'var(--text-secondary)' }}>
+                            If the images are the output rather than a navigation aid, use <strong>PDF to JPG</strong>, which offers five resolutions up to 432 DPI, an adjustable quality slider and a download button on every page. If they will be read by an OCR engine or edited afterwards, use <strong>PDF to PNG</strong> so nothing is lost to compression. If you want the photographs stored inside the document rather than pictures of its pages, <strong>Extract Images from PDF</strong> pulls those out at native resolution. And if you want to resize the finished previews to a uniform pixel size for a grid layout, <strong>Bulk Image Resizer</strong> handles the set in one pass.
                         </p>
                     </div>
                     <div className="features-section" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))', gap: '2rem' }}>

@@ -12,18 +12,44 @@ import * as XLSX from 'xlsx'
 PDFJS.GlobalWorkerOptions.workerSrc = pdfWorkerUrl
 
 const features = [
-    { title: 'Smart Table Extraction', desc: 'Automatically detects tables in your PDF and converts them into structured Excel rows and columns.', icon: <Table color="var(--primary)" size={24} /> },
-    { title: 'Native XLSX Output', desc: 'Download fully formatted Excel files compatible with Microsoft Excel, Google Sheets, and LibreOffice.', icon: <FileSpreadsheet color="var(--primary)" size={24} /> },
-    { title: 'Secure Data Privacy', desc: 'Your financial data and reports are processed 100% in your browser. No files are ever uploaded to a server.', icon: <ShieldCheck color="var(--primary)" size={24} /> }
+    { title: 'Rows recovered from baselines', desc: 'Text fragments sharing a rounded vertical position are treated as one row and sorted left to right. That is how a printed table gets its structure back: the rows were never stored, only the coordinates that imply them.', icon: <Table color="var(--primary)" size={24} /> },
+    { title: 'A real .xlsx workbook', desc: 'Output is a genuine Office Open XML spreadsheet on a single sheet named Sheet1, opening directly in Excel, Google Sheets, LibreOffice Calc and Numbers with no import dialogue.', icon: <FileSpreadsheet color="var(--primary)" size={24} /> },
+    { title: 'Financials stay on your machine', desc: 'Bank statements, invoices and management accounts are parsed and written entirely in this browser tab. Nothing is transmitted, so there is no third-party copy of your numbers anywhere.', icon: <ShieldCheck color="var(--primary)" size={24} /> }
 ]
 
 const faqs = [
-    { question: "Can it handle scanned PDFs?", answer: "Currently, we support digital PDFs. For scanned images, you would need an OCR tool first." },
-    { question: "Is my data secure?", answer: "Yes, absolutely. We use client-side processing, so your sensitive data never leaves your computer." },
-    { question: "Is it really free?", answer: "Yes, our tool is free to use with no hidden limits or watermarks." },
-    { question: "Do tables need to be perfectly aligned?", answer: "Our algorithm tries to group text by rows and columns based on visual alignment, so it works best with clear table structures." },
-    { question: "Can I convert multiple files?", answer: "To ensure accuracy and browser stability, we process one PDF at a time." },
-    { question: "Does it preserve formatting?", answer: "It focuses on extracting the *data* into cells. Styling (colors, fonts) is usually not preserved to keep the Excel file clean." }
+    {
+        question: "How does it decide what a row is?",
+        answer: "By vertical position. Every text fragment on a page reports the coordinate it was drawn at; fragments whose vertical coordinate rounds to the same whole number are collected into one row, the rows are ordered from the top of the page down, and the fragments within each row are ordered left to right. That is the whole algorithm, and knowing it tells you exactly when it will work."
+    },
+    {
+        question: "Why did one row split into two?",
+        answer: "Because the baselines were not identical. Grouping is on the rounded coordinate, so two cells drawn a single unit apart land in separate rows. This shows up with superscripts and footnote markers, with mixed font sizes in the same row, and with slightly skewed output from some generators. The fix in the spreadsheet is quick — sort or merge the stray rows — but it is worth checking the top of a long extract before trusting the rest."
+    },
+    {
+        question: "My columns do not line up.",
+        answer: "Each fragment becomes the next cell in its row, so alignment depends on every row containing the same number of fragments. A blank cell in the original produces no fragment at all, and everything after it shifts one column left. Empty-looking columns and rows with a stray extra value are the same symptom. For a table with gaps, expect to spend a minute repairing the grid — the data will all be there, in order, just not always in the column you expected."
+    },
+    {
+        question: "Where do multiple pages go?",
+        answer: "Into one sheet, stacked in page order. There is no per-page tab and no attempt to detect a repeated header row, so a fifty-page statement produces one long sheet with the column headings recurring wherever they were printed. That is usually what you want for filtering and pivoting; a quick filter removes the repeats."
+    },
+    {
+        question: "Can it read a scanned statement?",
+        answer: "No. Extraction reads the text layer the PDF already declares, and a scan has none — you would get an empty workbook. There is no character recognition here. For scanned tables, render the pages with **PDF to PNG** at 3x and run them through **Image to Text**, then paste and split the recognised text; accuracy on columns of figures is mixed, so check the totals."
+    },
+    {
+        question: "Are numbers imported as numbers?",
+        answer: "They arrive as the text the page contained, so currency symbols, thousands separators and trailing minus signs come through as written and Excel may treat the cell as text. Use Text to Columns or a VALUE formula to convert once, on the whole column. Formatting, colours, borders, merged cells and formulas from the original are not preserved — this extracts data, not appearance."
+    },
+    {
+        question: "What if the document is mostly prose with one table in it?",
+        answer: "Every line of text on every page becomes a row, so you will get the surrounding paragraphs as long single-cell rows around the table. That is easy to delete but tedious on a long document. Extract just the pages you need with **Split PDF** first, then convert — it is faster and the output is far cleaner."
+    },
+    {
+        question: "Is there a better tool for this document?",
+        answer: "If the content is prose rather than data, **PDF to Word** rebuilds line breaks into an editable document. If you only need the raw words, **PDF to Text** is quicker. If the PDF is password-protected, nothing here can parse it until you run **Unlock PDF**. And if you finish in Excel and need to hand the result on as a CSV, **Excel to CSV** does the last step."
+    }
 ]
 
 const PdfToExcel = () => {
@@ -173,10 +199,34 @@ const PdfToExcel = () => {
                     <div className="about-section" style={{ background: 'var(--bg-card)', padding: '2rem', borderRadius: '1rem', border: '1px solid var(--border)', marginBottom: '2rem' }}>
                         <h2 style={{ fontSize: '1.8rem', marginBottom: '1.5rem' }}>About PDF to Excel</h2>
                         <p style={{ lineHeight: '1.6', color: 'var(--text-secondary)', marginBottom: '1rem' }}>
-                            Stop manually typing data from PDFs into spreadsheets. Our PDF to Excel converter automates the process, intelligently extracting tables and data points into editable Excel files.
+                            This turns the text on each page into spreadsheet rows and writes a real .xlsx workbook. It exists to save you retyping a printed table — a bank statement, an invoice line list, a price schedule — and it gets you most of the way there, provided you know how it decides what a row is. Parsing and workbook generation both happen in this browser tab; nothing is uploaded.
                         </p>
+
+                        <h3 style={{ fontSize: '1.15rem', marginTop: '1.75rem', marginBottom: '0.75rem' }}>A PDF table is not a table</h3>
+                        <p style={{ lineHeight: '1.6', color: 'var(--text-secondary)', marginBottom: '1rem' }}>
+                            When a spreadsheet is printed to PDF, the grid is destroyed. What remains is a set of text fragments at coordinates, plus possibly some lines drawn where the borders were. There is no cell, no row, no column and no relationship between the number and its heading — those exist only in your eye, which reconstructs them from alignment. Any converter has to do the same reconstruction, and the quality of the result depends entirely on how regular the original was.
+                        </p>
+                        <p style={{ lineHeight: '1.6', color: 'var(--text-secondary)', marginBottom: '1rem' }}>
+                            The rule used here is deliberately simple and predictable: fragments whose vertical coordinate rounds to the same integer belong to the same row; rows are emitted from the top of the page downwards; within a row, fragments are ordered by horizontal position and written into consecutive cells. All pages are appended to a single sheet. No lines are read, no column boundaries are inferred, and no cell is ever merged or split.
+                        </p>
+
+                        <h3 style={{ fontSize: '1.15rem', marginTop: '1.75rem', marginBottom: '0.75rem' }}>What that means in practice</h3>
+                        <ul style={{ lineHeight: '1.7', color: 'var(--text-secondary)', marginBottom: '1rem', paddingLeft: '1.25rem' }}>
+                            <li><strong>Works well:</strong> machine-generated tables with one line per record and every cell populated — statements, ledgers, exported reports.</li>
+                            <li><strong>Needs tidying:</strong> tables with blank cells, because a missing fragment shifts every later value one column to the left in that row.</li>
+                            <li><strong>Needs tidying:</strong> rows with superscripts, footnote markers or mixed type sizes, which sit on slightly different baselines and split into two rows.</li>
+                            <li><strong>Struggles:</strong> cells whose text wraps onto a second line, which becomes a separate row underneath.</li>
+                            <li><strong>Not attempted:</strong> repeated header detection, number parsing, merged cells, formatting, formulas.</li>
+                        </ul>
+
+                        <h3 style={{ fontSize: '1.15rem', marginTop: '1.75rem', marginBottom: '0.75rem' }}>Getting a clean result</h3>
+                        <p style={{ lineHeight: '1.6', color: 'var(--text-secondary)', marginBottom: '1rem' }}>
+                            Two habits make the difference. First, narrow the input: if the table occupies four pages of a sixty-page report, pull those pages out with <strong>Split PDF</strong> before converting, and you will not have to delete hundreds of prose rows afterwards. Second, verify before you rely on it — check the first and last rows against the PDF, and cross-foot a column of figures against the printed total. Values arrive as text exactly as printed, symbols and separators included, so a single Text to Columns pass over each numeric column is usually all the cleanup that is needed.
+                        </p>
+
+                        <h3 style={{ fontSize: '1.15rem', marginTop: '1.75rem', marginBottom: '0.75rem' }}>When to use something else</h3>
                         <p style={{ lineHeight: '1.6', color: 'var(--text-secondary)' }}>
-                            Perfect for accountants, researchers, and data analysts. Because it runs entirely in your browser, it's the safest way to convert sensitive financial statements and reports.
+                            A scanned document has no text layer at all and will produce an empty workbook; there is no character recognition here, so go via <strong>PDF to PNG</strong> and <strong>Image to Text</strong> and expect to check the figures carefully. Prose belongs in <strong>PDF to Word</strong>, which rebuilds line breaks rather than rows. Raw words for a script belong in <strong>PDF to Text</strong>. An encrypted file has to go through <strong>Unlock PDF</strong> first, because a parser cannot read a document it has no key for. And if the destination is a data pipeline rather than a spreadsheet, <strong>Excel to CSV</strong> converts the finished workbook in one more step.
                         </p>
                     </div>
                     <div className="features-section" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))', gap: '2rem' }}>

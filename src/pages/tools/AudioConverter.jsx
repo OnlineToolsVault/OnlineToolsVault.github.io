@@ -10,23 +10,47 @@ import RelatedTools from '../../components/tools/RelatedTools'
 import { Download, FileAudio, Loader2, RefreshCw, AlertCircle, Music } from 'lucide-react'
 
 const features = [
-    { title: 'Universal Support', desc: 'Convert between MP3, WAV, M4A, OGG, and FLAC.' },
-    { title: 'Privacy Focused', desc: 'No server uploads. Conversion happens locally on your device.' },
-    { title: 'High Quality', desc: 'Maintain audio fidelity with professional-grade transcoding.' }
+    { title: 'Five targets, honest defaults', desc: 'MP3 via LAME, 16-bit WAV, Ogg Vorbis, lossless FLAC, or AAC in an M4A container. No encoder flags are passed, so every format lands on the default settings FFmpeg itself uses.' },
+    { title: 'Sample rate and channels survive', desc: 'A 48 kHz stereo file stays 48 kHz stereo and a mono recording stays mono. Nothing is resampled or downmixed behind your back, and title and artist tags are carried across where the target container supports them.' },
+    { title: 'The converter is the page', desc: 'The same FFmpeg that powers desktop converters runs here as WebAssembly. Your file is read into the tab, converted on your own CPU, and handed back as a download. There is no upload and no queue.' }
 ]
 
 const faqs = [
     {
-        question: "Is it free?",
-        answer: "Yes, 100% free and unlimited. No caps on the number of files."
+        question: "Which formats can I convert from?",
+        answer: "Anything the bundled FFmpeg build can decode, which covers essentially every common audio file — MP3, WAV, AIFF, FLAC, M4A/AAC and Opus all have decoders compiled into the core that ships with this page. The content is probed from the file header rather than trusted from the name, so a mislabelled file still converts. The picker is the stricter half: it filters to audio types, so a file your system does not recognise as audio — one with no extension, for instance — may not be selectable until you rename it."
     },
     {
-        question: "Supported formats?",
-        answer: "We support converting to MP3, WAV, OGG, FLAC, and M4A/AAC."
+        question: "What bitrate and quality do I actually get?",
+        answer: "No bitrate is requested, so each encoder uses its own default. MP3 and AAC both land on roughly 64 kbit/s per channel — 128 kbit/s for a stereo file, 64 kbit/s for mono. Ogg comes out as variable-bitrate Vorbis. FLAC is lossless, and WAV is uncompressed 16-bit PCM. There are no quality controls in the interface, so if you need a specific bitrate this is not the right tool."
     },
     {
-        question: "Is it secure?",
-        answer: "Absolutely. The file never leaves your computer. The 'server' is effectively your own web browser."
+        question: "Does converting to FLAC or WAV improve quality?",
+        answer: "No. Lossless formats preserve exactly what they are given, and what they are given is the already-degraded output of your MP3 or AAC decoder. Converting a 128 kbit/s MP3 to FLAC produces a much larger file that sounds identical to the MP3. Lossless targets are worth it when the source is lossless too, or when a device or editor refuses to read compressed audio."
+    },
+    {
+        question: "What happens to 24-bit audio?",
+        answer: "It depends on the target. FLAC keeps 24-bit samples, so a 24-bit/96 kHz master converts without losing depth or rate. WAV output is written as 16-bit PCM, which quietly reduces a 24-bit source. If you are archiving high-resolution recordings, choose FLAC rather than WAV."
+    },
+    {
+        question: "Are song titles and artist tags kept?",
+        answer: "Yes, where the target container has somewhere to put them. Converting a tagged MP3 to M4A carries the title and artist across. Cover art and less common fields are not guaranteed to survive, so check anything you rely on for library organisation before deleting the original."
+    },
+    {
+        question: "Can I convert a whole folder at once?",
+        answer: "No, it is one file per run. Choose the next file with the Change button or Convert Another, and repeat. Note that every download is named converted plus the new extension rather than being based on the original file name, so rename each one as you save it or later files will overwrite earlier ones."
+    },
+    {
+        question: "How large a file can I convert?",
+        answer: "The WebAssembly heap can grow to 2 GB, and both the source and the output live inside it during the conversion. Ordinary music files and podcast episodes are nowhere near that. Hour-long uncompressed WAV or 24-bit sessions are the ones to watch, since an hour of 48 kHz stereo PCM is already over half a gigabyte."
+    },
+    {
+        question: "Which format should I choose?",
+        answer: "MP3 for maximum compatibility with car stereos and older hardware. M4A/AAC sounds better than MP3 at the same bitrate and is the safer pick for Apple devices. FLAC for archiving, since it is lossless and typically halves the size of WAV. WAV when a piece of software insists on raw PCM. Ogg gives you Vorbis, which is well supported in browsers but has largely been superseded by Opus for new work — and Opus is not one of the output options here."
+    },
+    {
+        question: "Can I pull the audio out of a video file here?",
+        answer: "No, the picker only accepts audio. Use the Video to Audio tool for that; it takes MP4, MOV, MKV, WEBM and AVI and gives you a 192 kbit/s MP3, which you can then bring back here if you want it in a different format."
     }
 ]
 
@@ -360,8 +384,35 @@ const AudioConverter = () => {
                 <div className="about-section" style={{ background: 'var(--card)', padding: '2rem', borderRadius: '1rem', border: '1px solid var(--border)', marginTop: '2rem' }}>
                     <h2 style={{ fontSize: '1.8rem', marginBottom: '1.5rem', fontWeight: '700' }}>About Audio Converter</h2>
                     <p style={{ lineHeight: '1.6', color: '#64748b', marginBottom: '1rem' }}>
-                        Seamlessly convert your audio files between all popular formats including MP3, WAV, OGG, and FLAC.
-                        Our client-side technology ensures your files remain private and secure on your own device.
+                        This is a front end for FFmpeg compiled to WebAssembly. You pick a file, pick one of five output
+                        formats, and the decoding and re-encoding happen on your own processor inside this tab. Nothing is
+                        uploaded, so there is no waiting for a transfer and no copy of your recording sitting on someone
+                        else&apos;s disk afterwards.
+                    </p>
+
+                    <h3 style={{ fontSize: '1.15rem', fontWeight: '600', margin: '1.75rem 0 0.75rem' }}>What each output format gives you</h3>
+                    <p style={{ lineHeight: '1.6', color: '#64748b', marginBottom: '1rem' }}>
+                        The converter deliberately passes no encoder options, so each target uses the default FFmpeg would use
+                        on the command line. MP3 goes through LAME at roughly 64 kbit/s per channel, which means 128 kbit/s for
+                        a stereo track. M4A uses the AAC encoder at a similar rate and generally sounds better than MP3 at the
+                        same size. Ogg produces variable-bitrate Vorbis. FLAC is lossless and usually lands near half the size
+                        of the equivalent WAV. WAV is written as uncompressed 16-bit PCM.
+                    </p>
+                    <p style={{ lineHeight: '1.6', color: '#64748b', marginBottom: '1rem' }}>
+                        Sample rate and channel count pass through untouched, so a 96 kHz mono file stays 96 kHz mono. Bit depth
+                        does not always survive: FLAC keeps 24-bit samples, but WAV output is reduced to 16 bits, which matters
+                        if you are archiving high-resolution masters.
+                    </p>
+
+                    <h3 style={{ fontSize: '1.15rem', fontWeight: '600', margin: '1.75rem 0 0.75rem' }}>Where the limits are</h3>
+                    <p style={{ lineHeight: '1.6', color: '#64748b' }}>
+                        The input side is far wider than the output side — MP3, WAV, AIFF, FLAC, M4A and Opus all decode — but
+                        conversions run one file at a time, and every download is named after the target format rather than the
+                        source, so save each result before starting the next. There are no bitrate, sample-rate or normalisation
+                        controls; if you need a specific 320 kbit/s MP3 or a loudness target, use a desktop encoder. The
+                        WebAssembly heap can grow to 2 GB and holds both the input and the output, which only becomes a concern
+                        for hour-long uncompressed sessions. And if what you actually have is a video file, the Video to Audio
+                        tool handles the containers this picker will not accept.
                     </p>
                 </div>
 

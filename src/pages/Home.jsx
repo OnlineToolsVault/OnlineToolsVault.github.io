@@ -107,8 +107,9 @@ const Home = () => {
                         )}
 
                         <div className="tools-grid">
+                            {/* tool.href, never tool.path: the slash-less form 301s on GitHub Pages. */}
                             {filteredTools.map(tool => (
-                                <Link to={tool.path} key={tool.id} className="tool-card">
+                                <Link to={tool.href} key={tool.id} className="tool-card">
                                     <div className="tool-card-header">
                                         <div className="tool-icon-wrapper">
                                             <tool.icon size={24} />

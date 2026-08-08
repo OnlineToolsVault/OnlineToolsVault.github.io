@@ -6,8 +6,8 @@ const Contact = () => {
     return (
         <>
             <Helmet>
-                <title>Contact Us - FreeTools | Get in Touch</title>
-                <meta name="description" content="Have questions or suggestions? Get in touch with the FreeTools team." />
+                <title>Contact | OnlineToolsVault</title>
+                <meta name="description" content="Get in touch with the OnlineToolsVault team." />
                 <link rel="canonical" href="https://onlinetoolsvault.com/contact/" />
             </Helmet>
 
@@ -21,7 +21,7 @@ const Contact = () => {
                     <div className="standard-content">
                         <p>
                             Whether you have a suggestion for a new tool, found a bug, or just want to say hi,
-                            we're always listening. FreeTools is community-driven, and your feedback helps us improve.
+                            we're always listening. OnlineToolsVault is community-driven, and your feedback helps us improve.
                         </p>
 
                         <div className="contact-grid">

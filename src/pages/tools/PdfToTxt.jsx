@@ -12,23 +12,43 @@ import { saveAs } from 'file-saver'
 PDFJS.GlobalWorkerOptions.workerSrc = pdfWorkerUrl
 
 const features = [
-    { title: 'Pure Text Extraction', desc: 'Strips away images and formatting to give you the raw text content of your PDF document.', icon: <FileText color="var(--primary)" size={24} /> },
-    { title: 'Batch Ready', desc: 'Lightweight and fast. Perfect for extracting content from large documents for reuse or analysis.', icon: <Loader2 color="var(--primary)" size={24} /> },
-    { title: '100% Private', desc: 'No uploads required. Securely process your confidential contracts and papers directly on your device.', icon: <Download color="var(--primary)" size={24} /> }
+    { title: 'The text layer, verbatim', desc: 'Every text-showing operation on every page is read out of the content stream and written to a UTF-8 .txt file. No re-typing, no recognition, no interpretation — the characters the document declares are the characters you get.', icon: <FileText color="var(--primary)" size={24} /> },
+    { title: 'Page markers you can split on', desc: 'Each page is introduced by a line reading --- Page 3 --- with blank lines around it, so a script can chunk the output per page and a human can find where something came from.', icon: <Loader2 color="var(--primary)" size={24} /> },
+    { title: 'Nothing leaves the tab', desc: 'The PDF is parsed by JavaScript on your own machine and the .txt is created as a local Blob. For contracts, medical notes or anything under an NDA, that removes the upload from the equation entirely.', icon: <Download color="var(--primary)" size={24} /> }
 ]
 
 const faqs = [
     {
-        question: "Does it extract images?",
-        answer: "No, this tool focuses solely on text. Use our 'Extract Images' tool if you need visuals."
+        question: "What does the output file look like?",
+        answer: "Plain UTF-8 text, one section per page. Each section begins with --- Page N --- followed by a blank line, then the text of that page, then another blank line. Nothing is escaped or wrapped, so it opens cleanly in any editor and pipes straight into a script."
     },
     {
-        question: "Will it keep the layout?",
-        answer: "No, the goal is to provide plain text. Layouts, tables, and fonts are removed to give you clean, copyable text."
+        question: "Why is a whole page on one long line?",
+        answer: "Because line breaks in a PDF are not characters. The file positions each fragment of text at a coordinate; where a line ends is a matter of geometry, not of anything stored in the stream. This tool joins the fragments in the order the page draws them, separated by spaces, which gives you the words reliably but not the line structure. If line breaks matter to you, **PDF to Word** reconstructs them by comparing vertical positions."
     },
     {
-        question: "Is it secure?",
-        answer: "Yes, absolutely. We use client-side technology, so your files never leave your computer."
+        question: "I got an empty file, or almost nothing.",
+        answer: "The document has no text layer — it is a scan, a photograph of a page, or an export that converted type to outlines. There is nothing to read out, and no amount of retrying will change that. Run the pages through recognition instead: convert with **PDF to PNG** at 3x and feed the images to **Image to Text**, which performs OCR in the browser."
+    },
+    {
+        question: "The words came out jumbled or interleaved.",
+        answer: "Extraction follows the order in which the page draws its text, which for a straightforward document is reading order and for a complicated one is whatever the generating software decided. Two-column layouts, sidebars, headers repeated mid-page and tables are the usual culprits — you may get the left column and the right column woven together. Nothing can fix that from the text layer alone; for tabular data, **PDF to Excel** groups by vertical position instead, which handles rows far better."
+    },
+    {
+        question: "Are hyphens at line ends joined back up?",
+        answer: "No. A word split across two lines as inter- and pretation stays split, with the hyphen intact, because the file genuinely contains two fragments. Likewise ligatures may come through as the single characters the font uses, and some fonts with unusual encodings produce the wrong characters entirely. A quick find-and-replace pass in your editor deals with the common cases."
+    },
+    {
+        question: "Does it extract images, tables or formatting?",
+        answer: "None of them — this is a text-only extractor by design. Bold, italic, font sizes, colours and positions are all discarded. For the pictures inside the document use **Extract Images from PDF**; for tabular data use **PDF to Excel**; for something you can edit with its line structure intact use **PDF to Word**."
+    },
+    {
+        question: "How large a document can it handle?",
+        answer: "Very large ones, comfortably. Text extraction is far cheaper than rendering because no page is ever drawn — only the text operators are parsed — so a thousand-page report processes in seconds and uses a fraction of the memory an image conversion would. A progress percentage tracks the pass so you can see it working."
+    },
+    {
+        question: "Can it read a password-protected PDF?",
+        answer: "No. Encrypted documents cannot be parsed, so extraction fails. Remove the protection with **Unlock PDF** first, using the password, and then extract from the unlocked copy."
     }
 ]
 
@@ -155,10 +175,33 @@ const PdfToTxt = () => {
                     <div className="about-section" style={{ background: 'var(--bg-card)', padding: '2rem', borderRadius: '1rem', border: '1px solid var(--border)', marginBottom: '2rem' }}>
                         <h2 style={{ fontSize: '1.8rem', marginBottom: '1.5rem' }}>About PDF to Text</h2>
                         <p style={{ lineHeight: '1.6', color: 'var(--text-secondary)', marginBottom: '1rem' }}>
-                            Need the text from a PDF without the formatting? Our PDF to Text converter extracts all readable text from your documents into a clean .txt file.
+                            This reads the text layer out of a PDF and writes it to a UTF-8 .txt file named after the source document, with each page introduced by a <strong>--- Page N ---</strong> marker. No styling, no images, no layout — just the characters. Everything is parsed in this browser tab and nothing is uploaded.
                         </p>
+
+                        <h3 style={{ fontSize: '1.15rem', marginTop: '1.75rem', marginBottom: '0.75rem' }}>Where the text in a PDF actually is</h3>
+                        <p style={{ lineHeight: '1.6', color: 'var(--text-secondary)', marginBottom: '1rem' }}>
+                            A PDF page does not contain a paragraph. It contains a sequence of instructions along the lines of: select this font at this size, move to this coordinate, show these character codes. Those codes are mapped back to Unicode through the font&apos;s encoding, and the result is what gets written to your .txt. Two consequences follow, and understanding them explains almost every surprise people have with text extraction.
+                        </p>
+                        <p style={{ lineHeight: '1.6', color: 'var(--text-secondary)', marginBottom: '1rem' }}>
+                            First, there are no line breaks and no paragraphs to recover. A line ends because the next fragment was placed lower down, not because a newline was stored. Fragments here are joined with spaces, so each page arrives as one continuous run of text — reliable for the words, useless for the shape. Second, the order is the order the page draws in. Most documents draw top-to-bottom, left-to-right and extract perfectly; a two-column journal article or a page with pull quotes may draw in an order that reads as nonsense once flattened.
+                        </p>
+
+                        <h3 style={{ fontSize: '1.15rem', marginTop: '1.75rem', marginBottom: '0.75rem' }}>Extraction is not recognition</h3>
+                        <p style={{ lineHeight: '1.6', color: 'var(--text-secondary)', marginBottom: '1rem' }}>
+                            This distinction decides whether the tool will work on your file at all. Extraction reads text the document already declares and is exact and instant. Recognition looks at a picture of a page and guesses at the letters, which is slow and fallible. A scanned document contains images, not text — the characters exist only as ink in a bitmap — so extraction returns nothing at all. That empty output is not a failure of the tool; it is a correct report that there is no text layer. Convert the pages with <strong>PDF to PNG</strong> and run them through <strong>Image to Text</strong> if you need recognition.
+                        </p>
+
+                        <h3 style={{ fontSize: '1.15rem', marginTop: '1.75rem', marginBottom: '0.75rem' }}>Rough edges you should expect</h3>
+                        <ul style={{ lineHeight: '1.7', color: 'var(--text-secondary)', marginBottom: '1rem', paddingLeft: '1.25rem' }}>
+                            <li><strong>Hyphenation survives.</strong> Words broken across lines keep their hyphen, because the file really does contain two pieces.</li>
+                            <li><strong>Tables collapse.</strong> Cells become a stream of words with no delimiters. Use <strong>PDF to Excel</strong> for anything grid-shaped.</li>
+                            <li><strong>Running heads and page numbers appear</strong> in the middle of the flow, once per page, exactly where the page drew them.</li>
+                            <li><strong>Odd characters</strong> can appear where a font uses a non-standard encoding or a subset without a proper Unicode mapping — most often with mathematical symbols and older typesetting output.</li>
+                        </ul>
+
+                        <h3 style={{ fontSize: '1.15rem', marginTop: '1.75rem', marginBottom: '0.75rem' }}>Good uses for a plain text dump</h3>
                         <p style={{ lineHeight: '1.6', color: 'var(--text-secondary)' }}>
-                            This tool is essential for developers, writers, and data analysts who need to process content from PDFs. Since it works locally in your browser, it's the fastest and most secure way to get your data.
+                            Searching a stack of reports with grep, counting words, feeding a document to a language model, checking whether a PDF has a text layer at all, pulling quotes for citation, or diffing two revisions of a contract with <strong>Diff Viewer</strong> once you have both as text. Because no page is ever rendered, this is by far the cheapest operation of the PDF converters — a thousand pages costs seconds and very little memory, where an image conversion of the same document would run into gigabytes. When you need structure rather than raw words, <strong>PDF to Word</strong> reconstructs line breaks from vertical positions and <strong>PDF to Excel</strong> reconstructs rows.
                         </p>
                     </div>
                     <div className="features-section" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))', gap: '2rem' }}>

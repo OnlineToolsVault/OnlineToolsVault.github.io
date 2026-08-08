@@ -5,8 +5,8 @@ const Terms = () => {
     return (
         <>
             <Helmet>
-                <title>Terms of Service - Proprietary License | FreeTools</title>
-                <meta name="description" content="Read our terms of service and proprietary license details." />
+                <title>Terms of Service | OnlineToolsVault</title>
+                <meta name="description" content="Terms of service for OnlineToolsVault." />
                 <link rel="canonical" href="https://onlinetoolsvault.com/terms/" />
             </Helmet>
 
@@ -47,7 +47,7 @@ const Terms = () => {
                         <section className="legal-section">
                             <h2>3. Intellectual Property</h2>
                             <p>
-                                The Service and its original content (excluding user-generated output), features, and functionality are and will remain the exclusive property of FreeTools and its licensors.
+                                The Service and its original content (excluding user-generated output), features, and functionality are and will remain the exclusive property of OnlineToolsVault and its licensors.
                                 The Service is protected by copyright, trademark, and other laws of both the United States and foreign countries.
                             </p>
                             <p>
@@ -73,8 +73,8 @@ const Terms = () => {
                         <section className="legal-section">
                             <h2>6. Third-Party Links & Services</h2>
                             <p>
-                                Our Service may contain links to third-party web sites or services (e.g. Google AdSense) that are not owned or controlled by FreeTools.
-                                FreeTools has no control over, and assumes no responsibility for, the content, privacy policies, or practices of any third-party web sites or services.
+                                Our Service may contain links to third-party web sites or services (e.g. Google AdSense) that are not owned or controlled by OnlineToolsVault.
+                                OnlineToolsVault has no control over, and assumes no responsibility for, the content, privacy policies, or practices of any third-party web sites or services.
                             </p>
                         </section>
 

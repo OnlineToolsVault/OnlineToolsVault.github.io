@@ -14,23 +14,43 @@ import { saveAs } from 'file-saver'
 PDFJS.GlobalWorkerOptions.workerSrc = pdfWorkerUrl
 
 const features = [
-    { title: 'Editable DOCX', desc: 'Convert static PDFs into fully editable Microsoft Word documents.', icon: <FileText color="var(--primary)" size={24} /> },
-    { title: 'Paragraph Preservation', desc: 'Intelligently detects paragraphs and text blocks to maintain the reading flow of your document.', icon: <AlignLeft color="var(--primary)" size={24} /> },
-    { title: 'Secure Conversion', desc: 'No uploads needed. Your sensitive legal and business documents are converted privately on your device.', icon: <Shield color="var(--primary)" size={24} /> }
+    { title: 'A real .docx, not a rename', desc: 'The output is a genuine Office Open XML document built paragraph by paragraph, so it opens natively in Word, LibreOffice Writer, Pages and Google Docs with no import warnings and no compatibility mode.', icon: <FileText color="var(--primary)" size={24} /> },
+    { title: 'Line breaks rebuilt from geometry', desc: 'Text fragments are sorted top-to-bottom then left-to-right and grouped into lines wherever the baseline shifts by more than five units, which recovers the line structure a plain text dump throws away.', icon: <AlignLeft color="var(--primary)" size={24} /> },
+    { title: 'Converted where the file lives', desc: 'Parsing and document generation both run in this tab. A merger agreement or an appraisal never reaches a server, which is the difference that matters when the alternative is emailing it to a conversion service.', icon: <Shield color="var(--primary)" size={24} /> }
 ]
 
 const faqs = [
     {
-        question: "Is this tool free?",
-        answer: "Yes, completely free. Convert as many files as you like without any limits."
+        question: "How faithful is the result?",
+        answer: "It recovers the words and the line breaks, and nothing else. Every line of the original becomes its own Word paragraph in the reading order the geometry implies. Fonts, sizes, bold and italic, colours, indentation, headings, columns, tables, headers, footers and images are all dropped — the .docx contains plain default-styled text. Think of it as a clean starting point for rewriting rather than a replica you can hand straight on."
     },
     {
-        question: "Does it support images?",
-        answer: "Currently we focus on text extraction. Images might not be preserved in this version, but we are working on it."
+        question: "Why is every line its own paragraph?",
+        answer: "Because a PDF does not record where paragraphs begin. It records where each fragment of text sits on the page, and lines are inferred by watching the vertical position drop. Knowing whether a new line starts a new paragraph or continues the previous one requires guessing at indentation and spacing, and guessing wrong is worse than not guessing. In Word you can select a block and remove the breaks in seconds; recovering breaks that were never emitted is much harder."
     },
     {
-        question: "Can it convert scanned PDFs?",
-        answer: "No, this tool requires a standard digital PDF with selectable text. It does not perform OCR."
+        question: "Can it convert a scanned document?",
+        answer: "No. Conversion reads the text layer the PDF already contains; a scan has none, only page images, so you would get an empty .docx. That is a hard limit rather than a missing feature — there is no recognition step here. For a scanned original, render the pages with **PDF to PNG** at 3x and run them through **Image to Text**, then paste the recognised text into a document."
+    },
+    {
+        question: "What happens to tables?",
+        answer: "They come out as lines of loose text, cell after cell, with no table structure at all. That is usually unusable. If the document is mainly tabular, **PDF to Excel** groups fragments by vertical position into spreadsheet rows, which is a much better fit for anything grid-shaped, and you can paste the result back into Word as a table afterwards."
+    },
+    {
+        question: "Are images carried across?",
+        answer: "No. Only text is read; photographs, logos, charts and vector artwork are ignored. If you need the pictures, **Extract Images from PDF** pulls the embedded image objects out at their original resolution and you can place them into the document yourself."
+    },
+    {
+        question: "The lines came out in the wrong order.",
+        answer: "Sorting is by vertical position first and horizontal position second, which is exactly right for a single-column page and wrong for a two-column one — a line from the left column and a line from the right at the same height will be merged into one. Multi-column journal articles, newsletters and anything with sidebars will need manual repair. There is no layout analysis, deliberately: a simple rule that fails predictably is easier to work with than a clever one that fails mysteriously."
+    },
+    {
+        question: "How are pages separated?",
+        answer: "By an empty paragraph, not a page break. The text flows continuously so it reflows naturally when you edit, and you can insert real page breaks wherever they belong in the new document. Page numbers and running heads from the original will appear inline at the boundaries, since to the extractor they are just more text on the page."
+    },
+    {
+        question: "It refused my file.",
+        answer: "If the message mentions a password, the PDF is encrypted and must go through **Unlock PDF** first, since an encrypted document cannot be parsed. Otherwise the file is likely damaged. Note also that conversion happens in two steps here: the document is processed first, then a Download button appears — nothing is written to disk until you press it, and the file is named after the original with a .docx extension."
     }
 ]
 
@@ -219,10 +239,33 @@ const PdfToWord = () => {
                     <div className="about-section" style={{ background: 'var(--bg-card)', padding: '2rem', borderRadius: '1rem', border: '1px solid var(--border)', marginBottom: '2rem' }}>
                         <h2 style={{ fontSize: '1.8rem', marginBottom: '1.5rem' }}>About PDF to Word</h2>
                         <p style={{ lineHeight: '1.6', color: 'var(--text-secondary)', marginBottom: '1rem' }}>
-                            Unlock the content of your PDF files. Our PDF to Word converter transforms your documents into editable DOCX files that you can modify in Microsoft Word or Google Docs.
+                            This pulls the text out of a PDF, works out where the lines were, and writes a .docx you can edit in Word, LibreOffice, Pages or Google Docs. Processing runs in this browser tab; the document is never uploaded, and the .docx is only written to disk when you press Download.
                         </p>
+
+                        <h3 style={{ fontSize: '1.15rem', marginTop: '1.75rem', marginBottom: '0.75rem' }}>Why PDF to Word is genuinely hard</h3>
+                        <p style={{ lineHeight: '1.6', color: 'var(--text-secondary)', marginBottom: '1rem' }}>
+                            The two formats describe documents in opposite directions. A .docx is a logical structure — headings, paragraphs, lists, tables — that a word processor lays out to fit whatever page it is given. A PDF is the finished layout with the structure thrown away: a set of instructions that put character codes at coordinates. Converting one to the other means inferring intent from geometry, and every converter in existence is guessing. The only question is how honestly it tells you where the guesses stop.
+                        </p>
+                        <p style={{ lineHeight: '1.6', color: 'var(--text-secondary)', marginBottom: '1rem' }}>
+                            Here the guessing is deliberately shallow. Text fragments are collected page by page and sorted by vertical position, then by horizontal position within a band of five units. Whenever the vertical position drops by more than that, the accumulated fragments are closed off as a line and written as a Word paragraph. Pages are separated by an empty paragraph. Nothing else is attempted: no heading detection, no list reconstruction, no column analysis, no styling.
+                        </p>
+
+                        <h3 style={{ fontSize: '1.15rem', marginTop: '1.75rem', marginBottom: '0.75rem' }}>What you get and what you lose</h3>
+                        <ul style={{ lineHeight: '1.7', color: 'var(--text-secondary)', marginBottom: '1rem', paddingLeft: '1.25rem' }}>
+                            <li><strong>Recovered:</strong> all the words, in reading order for single-column layouts, with the original line breaks preserved as separate paragraphs.</li>
+                            <li><strong>Lost:</strong> fonts, sizes, bold and italic, colour, alignment and indentation — every paragraph uses the default Word style.</li>
+                            <li><strong>Lost:</strong> tables, images, headers, footers, footnote linkage, hyperlinks and bookmarks.</li>
+                            <li><strong>Carried through as plain text:</strong> page numbers and running heads, appearing inline at each page boundary.</li>
+                        </ul>
+
+                        <h3 style={{ fontSize: '1.15rem', marginTop: '1.75rem', marginBottom: '0.75rem' }}>When this is the right tool</h3>
+                        <p style={{ lineHeight: '1.6', color: 'var(--text-secondary)', marginBottom: '1rem' }}>
+                            When you want the content in order to rewrite it — quoting a report, reworking a proposal you no longer have the source for, updating last year&apos;s document. It is a good starting point, not a finished replica, and the honest workflow is to convert, then restyle in Word rather than expecting to find your original formatting waiting. When appearance matters more than editability, do not convert at all: keep the PDF, or turn the pages into images with <strong>PDF to JPG</strong>. When the content is a grid, <strong>PDF to Excel</strong> reconstructs rows properly and beats fighting a wall of loose cells in Word. When you only need the raw words for a script or a search, <strong>PDF to Text</strong> is faster and simpler.
+                        </p>
+
+                        <h3 style={{ fontSize: '1.15rem', marginTop: '1.75rem', marginBottom: '0.75rem' }}>The scanned-document wall</h3>
                         <p style={{ lineHeight: '1.6', color: 'var(--text-secondary)' }}>
-                            We prioritize speed and privacy. By processing your files directly in the browser, we ensure your documents remain confidential and are never stored on our servers.
+                            If the PDF came from a scanner or a phone camera, it holds page images and no text at all, and conversion produces an empty document. Nothing in this tool performs character recognition. The route for scans is <strong>PDF to PNG</strong> at 3x, then <strong>Image to Text</strong>, which runs OCR in the browser and gives you something to paste into a document. It is slower and less accurate than reading a real text layer, which is precisely why documents worth keeping are worth keeping in a searchable form.
                         </p>
                     </div>
                     <div className="features-section" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))', gap: '2rem' }}>

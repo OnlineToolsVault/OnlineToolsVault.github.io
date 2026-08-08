@@ -6,35 +6,43 @@ import { jsPDF } from 'jspdf'
 import { Upload, Download, FileText, X, ArrowUp, ArrowDown, LayoutTemplate, ShieldCheck } from 'lucide-react'
 
 const features = [
-    { title: 'Universal Conversion', desc: 'Convert all common image formats (JPG, PNG, GIF, BMP, TIFF) into professional PDF documents.', icon: <FileText color="var(--primary)" size={24} /> },
-    { title: 'Custom Formatting', desc: 'Control every detail including page size (A4, Letter), orientation, and margins for the perfect layout.', icon: <LayoutTemplate color="var(--primary)" size={24} /> },
-    { title: 'Secure Client-Side', desc: 'Your photos are processed entirely in your browser. No images are ever uploaded to a server.', icon: <ShieldCheck color="var(--primary)" size={24} /> }
+    { title: 'Mixed formats in one document', desc: 'JPG, PNG, WebP, GIF and BMP can all go into the same PDF, in any order. Each becomes one page, scaled to fit and centred, whatever combination of sizes and aspect ratios you throw at it.', icon: <FileText color="var(--primary)" size={24} /> },
+    { title: 'Page geometry you set', desc: 'A4, Letter or Legal, portrait or landscape, with a margin in millimetres. The margin is clamped so an over-large value can never collapse the printable area to nothing.', icon: <LayoutTemplate color="var(--primary)" size={24} /> },
+    { title: 'PNG transparency carried through', desc: 'The alpha channel of an 8-bit PNG is extracted into a soft mask, so a logo with a transparent background sits on the white page rather than arriving inside a grey box.', icon: <ShieldCheck color="var(--primary)" size={24} /> }
 ]
 
 const faqs = [
     {
-        question: "Can I convert multiple images at once?",
-        answer: "Yes! Upload as many images as you like and we'll merge them all into a single, organized PDF file."
+        question: "Which formats can I actually use?",
+        answer: "JPEG, PNG, WebP, GIF and BMP are the formats the converter can actually embed. The file picker filters on image/* rather than on that list, so a TIFF, HEIC or SVG can still be selected or dropped in — it will simply fail when you press Convert, with a message naming the file. Convert those first with **HEIC to JPG** for iPhone photos or **Image Converter** for everything else, then come back."
     },
     {
-        question: "Does it support high-quality images?",
-        answer: "Absolutely. We preserve the original resolution of your photos to ensure the final PDF looks crisp and professional."
+        question: "How is each image placed on the page?",
+        answer: "The available area is the page minus your margin on all four sides. The picture is scaled to the largest size that fits inside it without distorting the aspect ratio, then centred both ways. Nothing is ever cropped or stretched, so a square photograph on a portrait A4 page leaves white space above and below — that is the fit working correctly, not a bug."
     },
     {
-        question: "Is it really free?",
-        answer: "Yes, our tool is 100% free forever. No hidden fees, no watermarks, and no registration required."
+        question: "What resolution will the images be in the PDF?",
+        answer: "Whatever they already are. Pixels are not resampled; the picture is simply placed at a physical size on the page. Effective print resolution is the pixel width divided by the printed width in inches — a 3000-pixel photograph across the 190 mm of an A4 page with 10 mm margins works out at about 400 DPI, comfortably beyond what any printer needs. A 640-pixel screenshot across the same width is about 85 DPI and will look soft in print."
     },
     {
-        question: "Can I reorder the images?",
-        answer: "Yes, you can easily drag and drop or use the arrow buttons to rearrange the order of your images before converting."
+        question: "Does converting reduce the quality?",
+        answer: "It depends on the format. JPEG data is carried into the PDF as it stands, so a photograph is not put through a second round of lossy compression — no generation loss. PNG is stored losslessly, alpha channel included. WebP, GIF and BMP are decoded and re-encoded as JPEG at maximum quality, which is a lossy step, though at that setting it is not something you will see. Either way the PDF ends up roughly the sum of your images, and a folder of 40 phone photographs makes a large document; shrink the pictures first with **Bulk Image Compressor** rather than reaching for **Compress PDF** afterwards, which does not touch image data."
     },
     {
-        question: "What page sizes are supported?",
-        answer: "We support standard A4, Letter, and Legal paper sizes, with options for Portrait or Landscape orientation."
+        question: "How do I control the page order?",
+        answer: "Images are placed in the order the list shows them, one per page. Use the up and down arrows on each row to move a picture and the remove button to drop one. Dropping a folder in at once adds files in whatever order the operating system hands them over, which is often not alphabetical, so check the sequence before converting — this is the most common reason people redo a conversion."
     },
     {
-        question: "Does it work on Mac and Windows?",
-        answer: "Yes, it works on any device with a modern web browser, including Mac, Windows, Linux, Android, and iOS."
+        question: "Can I fit several images on one page?",
+        answer: "No — the layout is strictly one image per page. To make a contact sheet or a two-up layout, combine the pictures into a single image first with **Merge Images**, then convert that. For a photo album where each shot deserves a page, the default behaviour is already what you want."
+    },
+    {
+        question: "What happens with animated GIFs?",
+        answer: "Only the first frame is placed; a PDF page cannot animate. If you need a particular frame, extract it before converting. The same one-frame rule applies to any multi-image format."
+    },
+    {
+        question: "One of my files was rejected as undecodable.",
+        answer: "The message names the file. It usually means the extension does not match the actual contents — a TIFF renamed to .jpg, an HEIC copied off a phone, or a partially downloaded file. Open it in an image viewer to confirm it is intact, re-save it as JPEG or PNG, and try again. Everything happens in this browser tab, so a failure costs you nothing but the time and no image was ever uploaded."
     }
 ]
 
@@ -266,10 +274,33 @@ const ImageToPdf = () => {
                     <div className="about-section" style={{ background: 'var(--bg-card)', padding: '2rem', borderRadius: '1rem', border: '1px solid var(--border)', marginBottom: '2rem' }}>
                         <h2 style={{ fontSize: '1.8rem', marginBottom: '1.5rem' }}>About Image to PDF Converter</h2>
                         <p style={{ lineHeight: '1.6', color: 'var(--text-secondary)', marginBottom: '1rem' }}>
-                            Turn your collection of photos into a shareable document with our Image to PDF converter. Whether you're scanning receipts, organizing a portfolio, or sending documents, our tool makes it easy to create a professional PDF from any image file.
+                            Drop in a mixture of JPG, PNG, WebP, GIF and BMP files, arrange them, choose a paper size, orientation and margin, and get back a single PDF with one image per page. The document is built by JavaScript in this tab and downloads as converted-images.pdf; no picture is uploaded anywhere.
                         </p>
+
+                        <h3 style={{ fontSize: '1.15rem', marginTop: '1.75rem', marginBottom: '0.75rem' }}>How an image becomes a page</h3>
+                        <p style={{ lineHeight: '1.6', color: 'var(--text-secondary)', marginBottom: '1rem' }}>
+                            A PDF page has physical dimensions; an image has pixels. Bridging the two means deciding how large the picture should print, and the rule here is simple and predictable. The margin you set is subtracted from all four edges, the image is scaled to the largest size that fits inside what remains without changing its proportions, and it is centred. Nothing is cropped and nothing is stretched, which is why a landscape photograph on a portrait page leaves bands of white above and below.
+                        </p>
+                        <p style={{ lineHeight: '1.6', color: 'var(--text-secondary)', marginBottom: '1rem' }}>
+                            Pixels are never resampled, so print quality is decided entirely by what you feed in. Divide the pixel width by the printed width in inches to get the effective resolution: a 3000-pixel image across the 190 mm printable width of A4 gives roughly 400 DPI, while a 640-pixel screenshot across the same width gives about 85 and will look visibly soft. When the pictures are small, a larger margin always shrinks the printed width and raises the effective DPI. Orientation only helps when the page shape is the opposite of the picture&apos;s — a tall image on a landscape page is limited by the page height and comes out narrower, whereas a wide image on a landscape page gets wider, not narrower.
+                        </p>
+
+                        <h3 style={{ fontSize: '1.15rem', marginTop: '1.75rem', marginBottom: '0.75rem' }}>Formats, and what happens to each</h3>
+                        <ul style={{ lineHeight: '1.7', color: 'var(--text-secondary)', marginBottom: '1rem', paddingLeft: '1.25rem' }}>
+                            <li><strong>JPEG</strong> — embedded as it stands, with no second round of lossy compression. The best choice for photographs.</li>
+                            <li><strong>PNG</strong> — stored losslessly, with an 8-bit alpha channel converted into a soft mask so transparency shows the white page through rather than a grey block.</li>
+                            <li><strong>WebP, GIF, BMP</strong> — decoded to pixels and re-encoded as JPEG at maximum quality before being embedded, since PDF has no native filter for any of the three. Visually that is indistinguishable, but any transparency they carried is lost, and animated GIFs contribute their first frame only. Save as PNG instead if the alpha channel matters.</li>
+                            <li><strong>Not convertible:</strong> TIFF, HEIC and SVG. The picker filters on image/* so it will let them in, but conversion then fails with a message naming the file. Route iPhone photos through <strong>HEIC to JPG</strong> and anything else through <strong>Image Converter</strong> first.</li>
+                        </ul>
+
+                        <h3 style={{ fontSize: '1.15rem', marginTop: '1.75rem', marginBottom: '0.75rem' }}>Practical notes on size and order</h3>
+                        <p style={{ lineHeight: '1.6', color: 'var(--text-secondary)', marginBottom: '1rem' }}>
+                            The finished PDF is roughly the sum of the images that went into it, so twenty photographs from a modern phone will produce a document of tens of megabytes. If it has to go by email, compress the pictures first with <strong>Bulk Image Compressor</strong> — that is far more effective than compressing the PDF afterwards, because the images are the file. Order is taken from the list, and a folder dropped in at once arrives in whatever order the operating system supplies, which is frequently not the order the filenames suggest; the arrow buttons exist for exactly that reason.
+                        </p>
+
+                        <h3 style={{ fontSize: '1.15rem', marginTop: '1.75rem', marginBottom: '0.75rem' }}>What this produces, and what it does not</h3>
                         <p style={{ lineHeight: '1.6', color: 'var(--text-secondary)' }}>
-                            We support all major formats including JPG, PNG, and GIF. With zero upload time and instant processing in your browser, it's the fastest and most secure way to handle your documents.
+                            You get a document whose pages are pictures. That is exactly right for receipts, ID copies, a portfolio, photographs of a whiteboard, or anything a recipient needs to see and print as a single file. It is not a searchable document: there is no text layer, so nothing can be selected, searched or read by a screen reader. If the images are photographs of text and you need the words, run them through <strong>Image to Text</strong> for recognition. If every file is a JPEG, <strong>JPG to PDF</strong> does the same job with a picker that will not let a stray PNG in. And going the other way, <strong>PDF to JPG</strong> turns a document back into pictures.
                         </p>
                     </div>
                     <div className="features-section" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))', gap: '2rem' }}>

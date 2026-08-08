@@ -1,9 +1,21 @@
 import { useState, useEffect, useRef } from 'react'
+import { useLocation } from 'react-router-dom'
 import RelatedTools from '../../components/tools/RelatedTools'
 import { Helmet } from 'react-helmet-async'
 import Editor from '@monaco-editor/react'
+// Side-effect import: repoints Monaco at the copy this site hosts instead of cdn.jsdelivr.net.
+import '../../utils/monacoLoader'
 import { Copy, Trash2, Check, AlertCircle, FileJson, Search, Minimize2, Maximize2 } from 'lucide-react'
 const JsonFormatter = () => {
+    // This page renders its own <Helmet> instead of going through ToolLayout, so it has to declare
+    // the canonical itself. Helmet owns every head tag marked data-rh="true" (generate-sitemap.js
+    // stamps that on the prerendered canonical) and deletes the ones the mounted page does not
+    // re-declare — omit this and the built-in canonical disappears the moment React hydrates.
+    // Derivation is copied verbatim from ToolLayout so both emit the same trailing-slash URL, which
+    // is the only form GitHub Pages answers 200 on.
+    const location = useLocation()
+    const canonicalUrl = `https://onlinetoolsvault.com${location.pathname.replace(/\/+$/, '')}/`
+
     const [input, setInput] = useState('{"example": "paste your json here"}')
     const [output, setOutput] = useState('')
     const [error, setError] = useState(null)
@@ -205,6 +217,7 @@ const JsonFormatter = () => {
                 <title>Advanced JSON Formatter - Validate, Pretty Print & Minify JSON</title>
                 <meta name="description" content="Free online advanced JSON formatter. Validate, pretty print, minify, and explore JSON data with collapsible trees and path finding. Secure and client-side." />
                 <meta name="keywords" content="json formatter, json validator, json pretty print, json minify, json viewer, online json tool" />
+                <link rel="canonical" href={canonicalUrl} />
             </Helmet>
 
             <div className="tool-workspace" style={{ maxWidth: '1200px', margin: '0 auto', padding: '2rem', minHeight: '100vh', display: 'flex', flexDirection: 'column' }}>

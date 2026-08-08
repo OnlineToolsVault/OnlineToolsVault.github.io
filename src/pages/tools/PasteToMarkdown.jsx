@@ -84,26 +84,68 @@ const PasteToMarkdown = () => {
 
 
     const features = [
-        { title: 'Instant Conversion', desc: 'No uploads, no waiting. Paste rich text and get Markdown instantly.', icon: <Zap color="var(--primary)" size={24} /> },
-        { title: 'Format Preservation', desc: 'Preserves headers, lists, code blocks, and links from your source text.', icon: <FileText color="var(--primary)" size={24} /> },
-        { title: 'Client-Side Secure', desc: 'Your content is converted locally in your browser and never sent to any server.', icon: <Shield color="var(--primary)" size={24} /> }
+        {
+            title: 'The paste is the whole interface',
+            desc: 'There is no Convert button. The paste event is intercepted, the HTML flavour is read off your clipboard, and Markdown is what lands in the box. If the clipboard carries no HTML, the plain text is inserted untouched.',
+            icon: <Zap color="var(--primary)" size={24} />
+        },
+        {
+            title: 'GitHub-flavoured output',
+            desc: 'Hash-style headings, asterisk bullets with four-space nesting, fenced code blocks that keep their language tag, inline links, three-dash rules, and real pipe tables built by a dedicated rule.',
+            icon: <FileText color="var(--primary)" size={24} />
+        },
+        {
+            title: 'Converted in the tab',
+            desc: 'The HTML from your clipboard is parsed and walked by your own browser. Nothing is uploaded, nothing is stored, and the result is editable text you can fix up before copying.',
+            icon: <Shield color="var(--primary)" size={24} />
+        }
     ]
 
     const faqs = [
-        { question: "Does it handle images?", answer: "Yes. If the images are linked (HTML <img> tags), they will be converted to Markdown image syntax. Directly pasted image data cannot be converted to text." },
-        { question: "Can I paste tables?", answer: "Yes! Turndown (our engine) supports converting HTML tables into standard Markdown tables." },
-        { question: "Is my data sent to cloud?", answer: "No. The conversion happens 100% in your browser using JavaScript." },
-        { question: "What Markdown flavor is used?", answer: "We use Github Flavored Markdown (GFM) compatibility for things like tables and code blocks." },
-        { question: "Can I convert Markdown back to HTML?", answer: "For that, please use our **Markdown Previewer** tool which works in the opposite direction." },
-        { question: "Does it support nested lists?", answer: "Yes, nested bullet points and ordered lists are preserved with correct indentation." }
+        {
+            question: 'Why is there a stray ** at the top and bottom after pasting from Google Docs?',
+            answer: 'Google Docs wraps its entire clipboard fragment in a bold element that it then cancels with inline CSS. The converter reads tags, not styles, so it sees a bold wrapper around the whole document and faithfully emits **, your content, and ** again. Delete the two markers after pasting. The same mismatch explains the next question.'
+        },
+        {
+            question: 'Why is my bold and italic text coming through as plain text?',
+            answer: 'Because the styling is CSS rather than markup. Google Docs exports emphasis as a span carrying a font-weight declaration instead of a bold tag, and there is no rule that inspects CSS, so the span contributes only its text. Content from ordinary web pages and from most CMS editors uses real tags and converts correctly. If you need the emphasis preserved from Docs, export the document as HTML or as Markdown from the File menu and work from that instead.'
+        },
+        {
+            question: 'Why did a block of CSS end up at the top of my Markdown?',
+            answer: 'Some applications, Word and Outlook among them, put a stylesheet on the clipboard alongside the content. There is no rule that discards a style block, so its font definitions and layout rules are treated as ordinary text and appear above your first paragraph, sometimes still wrapped in comment markers. Select that opening block and delete it; everything after it is your real content, correctly converted.'
+        },
+        {
+            question: 'Do tables convert properly?',
+            answer: 'Yes, through a rule written specifically for this page, because the underlying converter has no table support of its own. Rows become pipe-delimited lines with an alignment row beneath the header, and any pipe character inside a cell is escaped so it cannot break the columns. Two details to expect: a cell containing several paragraphs is flattened onto one line, and a table whose first row has no header cells gets an **empty header row**, because the format requires one. Type your column names into it after pasting.'
+        },
+        {
+            question: 'What happens to images?',
+            answer: 'An image tag becomes Markdown image syntax pointing at the original address, so the file is referenced rather than downloaded or embedded. That matters for Google Docs, whose image URLs are temporary and will stop resolving, so re-host anything you intend to keep. Pasting an image on its own gives you an empty box, since a bitmap on the clipboard carries no text to convert.'
+        },
+        {
+            question: 'Why did my second paste wipe the first one?',
+            answer: 'Each paste replaces the entire contents rather than inserting at the cursor. To assemble a document from several sources, convert one chunk, copy it out to its destination, then come back and paste the next. Typing and editing in the box behave normally; it is only the paste that starts fresh.'
+        },
+        {
+            question: 'Are strikethrough and task lists supported?',
+            answer: 'No. Struck-through text arrives as ordinary text with no tilde markers, and a checklist loses its checkboxes and becomes a plain bullet list. Both are extensions rather than core Markdown. Add the tildes and the bracket pairs by hand after pasting.'
+        },
+        {
+            question: 'Can I convert Markdown back into HTML?',
+            answer: 'This page only runs in one direction. For the reverse, and for checking that your Markdown renders the way you expect, use the **Markdown Previewer**, which shows rendered output beside the source.'
+        },
+        {
+            question: 'Is any of this sent to a server?',
+            answer: 'No. Your clipboard HTML is parsed and converted by your own browser, no request is made, and nothing is written to browser storage. Refreshing the page clears the box.'
+        }
     ]
 
     return (
         <ToolLayout
             title="Paste to Markdown"
             description={<span>No clicks needed. Just press <strong>Cmd+V</strong> (or Ctrl+V) to paste, and it instantly becomes Markdown.</span>}
-            seoTitle="Paste to Markdown - Free Online Tools"
-            seoDescription="Convert rich text directly to Markdown. Just paste and get Markdown."
+            seoTitle="Paste to Markdown - Convert Rich Text and HTML to Markdown"
+            seoDescription="Paste formatted content from Google Docs, Word or any web page and get GitHub-flavoured Markdown, including real pipe tables and fenced code blocks. Converted in your browser, nothing uploaded."
             faqs={faqs}
         >
             <div className="tool-workspace markdown-tool">
@@ -153,8 +195,56 @@ const PasteToMarkdown = () => {
                 }}>
                     <h2 style={{ fontSize: '1.8rem', marginBottom: '1.5rem' }}>How it works</h2>
                     <p style={{ lineHeight: '1.6', color: 'var(--text-secondary)', marginBottom: '1rem' }}>
-                        When you paste rich text (from Google Docs, Word, or websites), we intercept the paste event,
-                        read the HTML data from your clipboard, and convert to clean Markdown syntax on the fly.
+                        Copying formatted content puts two versions on your clipboard at once: the visible text, and
+                        an HTML version carrying the structure. This page intercepts the paste before the browser can
+                        drop the second one, parses that HTML into a document tree, walks it, and writes Markdown for
+                        each element it recognises. If the clipboard has no HTML version, which is what happens when
+                        you copy out of a terminal or a plain text editor, the text is inserted exactly as it is.
+                    </p>
+
+                    <h3 style={{ fontSize: '1.15rem', fontWeight: '600', margin: '1.75rem 0 0.75rem' }}>What the output looks like</h3>
+                    <p style={{ lineHeight: '1.6', color: 'var(--text-secondary)', marginBottom: '1rem' }}>
+                        Headings use hash marks rather than underlines. Emphasis becomes double asterisks for bold and
+                        single underscores for italic. Bullets use an asterisk, with sublists indented four spaces so
+                        that nesting survives; numbered lists keep their numbering. Block quotes get an angle bracket,
+                        horizontal rules become three dashes, and links are written inline with the address in
+                        brackets after the text. Code inside a preformatted block comes out fenced, and if the source
+                        tagged it with a language class the fence keeps that language, so a snippet marked as
+                        JavaScript stays marked as JavaScript.
+                    </p>
+
+                    <h3 style={{ fontSize: '1.15rem', fontWeight: '600', margin: '1.75rem 0 0.75rem' }}>Tables get special handling</h3>
+                    <p style={{ lineHeight: '1.6', color: 'var(--text-secondary)', marginBottom: '1rem' }}>
+                        Left alone, the conversion engine has no concept of tables and would spill every cell out as
+                        its own loose paragraph. A dedicated rule reads the row and cell structure directly and builds
+                        proper pipe tables instead, padding short rows so the columns line up and escaping any pipe
+                        character that appears inside a cell. Two consequences are worth expecting: a cell holding
+                        multiple paragraphs is collapsed onto a single line, and a table whose first row is made of
+                        ordinary cells rather than header cells is given a blank header row, because the pipe table
+                        format cannot exist without one.
+                    </p>
+
+                    <h3 style={{ fontSize: '1.15rem', fontWeight: '600', margin: '1.75rem 0 0.75rem' }}>Known rough edges by source</h3>
+                    <p style={{ lineHeight: '1.6', color: 'var(--text-secondary)', marginBottom: '1rem' }}>
+                        Conversion is driven by tags, and some applications express formatting as CSS instead, which
+                        produces predictable artifacts. Content from <strong>Google Docs</strong> arrives inside a
+                        bold wrapper that the document then cancels with a style attribute, so you get a stray pair of
+                        asterisks around everything, and bold set through a font-weight declaration is lost.
+                        Content from <strong>Word and Outlook</strong> travels with a stylesheet attached, which has
+                        no Markdown equivalent and lands at the top of the box as literal CSS to be deleted.
+                        Strikethrough and checkbox lists lose their markers wherever they come from, since both are
+                        extensions rather than core Markdown. Pages you copy from the open web are usually the
+                        cleanest source of all.
+                    </p>
+
+                    <h3 style={{ fontSize: '1.15rem', fontWeight: '600', margin: '1.75rem 0 0.75rem' }}>Working with the box</h3>
+                    <p style={{ lineHeight: '1.6', color: 'var(--text-secondary)', marginBottom: '1rem' }}>
+                        Each paste replaces everything, so build long documents one chunk at a time and copy each
+                        result out before pasting the next. After conversion the box is an ordinary editor: fix the
+                        artifacts above, tidy heading levels, then use Copy. Everything happens inside the tab, with
+                        no upload and no stored copy, and refreshing starts you clean. When you want to check that the
+                        result renders correctly, or you need to go the other way from Markdown to HTML, the Markdown
+                        Previewer is the companion tool.
                     </p>
                 </div>
 

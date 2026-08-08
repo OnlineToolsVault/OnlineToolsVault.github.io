@@ -7,23 +7,47 @@ import Cropper from 'react-easy-crop'
 import { saveAs } from 'file-saver'
 
 const features = [
-    { title: 'Ready-Made Presets', desc: 'One-click crop for Instagram Stories, Twitter Headers, Facebook Covers, and LinkedIn Posts.' },
-    { title: 'Smart Aspect Ratios', desc: 'Locks your crop selection to the exact dimension requirements of each social platform.' },
-    { title: 'High-Quality Export', desc: 'Download optimized JPGs that look crisp and professional on retina screens.' }
+    { title: 'Seven platform ratios', desc: 'Instagram square, portrait, landscape and story; Twitter header and post; Facebook cover. The crop box is locked to the chosen shape so it cannot drift while you position it.' },
+    { title: 'Zoom and drag to frame', desc: 'Magnify up to 3x and move the picture under the fixed box, which is how you keep a face out of the area a platform overlays with buttons or a profile photo.' },
+    { title: 'Cropped at full source resolution', desc: 'The selection is taken from the original pixels rather than a downscaled preview, so a phone photo cropped to 4:5 keeps thousands of pixels across, not hundreds.' }
 ]
 
 const faqs = [
     {
-        question: "Why does my Twitter header look blurry?",
-        answer: "Twitter compresses images heavily. Use our 'Twitter Header' preset to get the exact 3:1 ratio for the best results."
+        question: "Does this resize to the exact pixel size each platform wants?",
+        answer: "No — it fixes the **aspect ratio**, not the pixel dimensions. The crop is taken at your source resolution, so a 4000 px wide photo cropped to 1:1 gives you a large square, not a 1080 x 1080 one. That is usually what you want, because every platform downscales on upload anyway. If you need exact numbers, run the result through the Image Resizer afterwards."
     },
     {
-        question: "Can I use this for YouTube?",
-        answer: "Yes! Use the 'Twitter Post (16:9)' preset—it's the exact same aspect ratio as a YouTube Thumbnail."
+        question: "Which ratio goes with which post?",
+        answer: "**1:1** for a classic Instagram feed post, **4:5** for the portrait feed post that takes the most vertical space, **1.91:1** for a landscape feed post or a link preview card, and **9:16** for a Story or Reel. **3:1** is a Twitter header, **16:9** a standard Twitter or timeline post, and **2.6:1** a Facebook cover."
     },
     {
-        question: "Is it free for commercial use?",
-        answer: "Yes, you can use our tool to create social media content for your business or clients for free."
+        question: "Can I use it for a YouTube thumbnail?",
+        answer: "Yes — pick **Twitter Post (16:9)**, which is the same shape YouTube wants. Aim to end up around 1280 x 720 pixels; crop here for the shape, then set the exact size with the Image Resizer if your source is much larger."
+    },
+    {
+        question: "Why does my Twitter header get cut off?",
+        answer: "Because a 3:1 header is displayed differently on desktop and on mobile, and the profile picture sits over the lower-left corner. Cropping to 3:1 is necessary but not sufficient — keep anything important, especially text and faces, near the centre and away from the bottom-left, and use the zoom control to place it there."
+    },
+    {
+        question: "What format is the download?",
+        answer: "A JPEG at maximum quality, named after the preset you used so a batch of exports stays sorted. JPEG has no alpha channel, so a white background is painted before the crop is drawn — a transparent PNG comes out on white rather than black."
+    },
+    {
+        question: "My image looks soft after posting.",
+        answer: "Almost always the platform re-compressing it, not the crop. You can reduce the damage: upload at close to the platform's own display size rather than an enormous file, avoid uploading an image that has already been through several rounds of compression, and start from the original rather than a screenshot of a screenshot."
+    },
+    {
+        question: "It says my file cannot be opened.",
+        answer: "The file is decoded before the editor opens, so an unsupported format is caught immediately instead of leaving you with a Download button that does nothing. HEIC photos from an iPhone and TIFF scans are the usual culprits, along with anything corrupted mid-transfer. Convert with the HEIC to JPG tool or the Image Converter and come back with a JPG, PNG or WebP."
+    },
+    {
+        question: "Can I crop one photo for several platforms at once?",
+        answer: "Not in a single pass, but you do not have to reload the picture: change the preset, adjust the framing, and download again. The image stays loaded, so producing a square, a portrait and a story crop from one photo takes three downloads and no re-uploading."
+    },
+    {
+        question: "Is my photo uploaded anywhere?",
+        answer: "No. Decoding, cropping and JPEG encoding all happen inside this browser tab, and the file goes straight to your downloads. Nothing is sent to this site or to any social platform — posting the result is a separate step you take yourself."
     }
 ]
 
@@ -292,10 +316,21 @@ const InstagramTwitterResizer = () => {
                         <div className="about-section" style={{ background: 'var(--bg-card)', padding: '2rem', borderRadius: '1rem', border: '1px solid var(--border)', marginBottom: '2rem' }}>
                             <h2 style={{ fontSize: '1.8rem', marginBottom: '1.5rem' }}>About Social Media Image Resizer</h2>
                             <p style={{ lineHeight: '1.6', color: 'var(--text-secondary)', marginBottom: '1rem' }}>
-                                Stop guessing the right dimensions for your posts. Our Social Media Resizer provides pre-set cropping templates for Instagram, Twitter, Facebook, and more.
+                                Social platforms do not reject an image that is the wrong shape — they crop it for you, and rarely where you would have chosen. This tool lets you make that decision yourself. Pick the destination, and the crop box locks to its aspect ratio: <strong>1:1</strong> and <strong>4:5</strong> and <strong>1.91:1</strong> for Instagram feed posts, <strong>9:16</strong> for a Story or Reel, <strong>3:1</strong> for a Twitter header, <strong>16:9</strong> for a timeline post, and <strong>2.6:1</strong> for a Facebook cover.
+                            </p>
+                            <h3 style={{ fontSize: '1.15rem', margin: '1.5rem 0 0.75rem' }}>It sets the shape, not the pixel count</h3>
+                            <p style={{ lineHeight: '1.6', color: 'var(--text-secondary)', marginBottom: '1rem' }}>
+                                This is the part worth being clear about. The crop is taken from your image at its own resolution, so choosing the Instagram square preset on a 4000 x 3000 photo produces a 3000 x 3000 file rather than a 1080 x 1080 one. That is deliberate: the platforms downscale on upload regardless, and giving them more pixels than they need generally survives their re-compression better than giving them exactly the display size. When a specification really does demand exact numbers — an ad unit, say — crop for the shape here and set the dimensions with the Image Resizer afterwards.
+                            </p>
+                            <h3 style={{ fontSize: '1.15rem', margin: '1.5rem 0 0.75rem' }}>Framing around the interface</h3>
+                            <p style={{ lineHeight: '1.6', color: 'var(--text-secondary)', marginBottom: '1rem' }}>
+                                Getting the ratio right is half the job; the other half is knowing what sits on top of your image once it is posted. A profile picture covers part of a Twitter header, and headers are shown at different heights on desktop and mobile. Stories carry a caption bar at the bottom and interface controls at the top. Facebook covers are cropped differently again on a phone. Use the zoom slider and drag the picture under the box so that faces and text land near the middle, away from the edges anything is likely to be laid over.
+                            </p>
+                            <p style={{ lineHeight: '1.6', color: 'var(--text-secondary)', marginBottom: '1rem' }}>
+                                Files are checked before the editor opens, so an image the browser cannot decode — an iPhone HEIC or a TIFF scan, typically — is reported straight away rather than leaving you with a download button that silently does nothing. Convert those first with the HEIC to JPG tool or the Image Converter. Output is a JPEG at maximum quality, named after the preset key you used (ig_square, tw_header and so on) followed by your filename, with a white background painted behind anything transparent because JPEG has no alpha channel.
                             </p>
                             <p style={{ lineHeight: '1.6', color: 'var(--text-secondary)' }}>
-                                Just upload your photo, select the platform, and download a perfectly sized image that won't get cut off or pixelated.
+                                The picture stays loaded between exports, so you can switch preset, reframe and download again to produce a square, a portrait and a story crop from a single photograph without reloading anything. All of it runs in this browser tab — nothing is uploaded here, and posting the result to a platform remains a separate step you take yourself.
                             </p>
                         </div>
                         <div className="features-section" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))', gap: '2rem' }}>

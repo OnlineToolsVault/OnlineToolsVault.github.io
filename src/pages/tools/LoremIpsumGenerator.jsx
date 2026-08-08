@@ -6,18 +6,56 @@ import { LoremIpsum } from 'lorem-ipsum'
 
 
 const features = [
-    { title: 'Flexible Units', desc: 'Generate paragraphs, sentences, or individual words.', icon: <AlignLeft color="var(--primary)" size={24} /> },
-    { title: 'Precise Control', desc: 'Exact quantity control for perfect layout fitting.', icon: <Type color="var(--primary)" size={24} /> },
-    { title: 'Instant Copy', desc: 'One-click generation and copy to clipboard. Uses the industry standard Latin text for authentic-looking placeholders.', icon: <Copy color="var(--primary)" size={24} /> }
+    {
+        title: 'Three units, one control',
+        desc: 'Ask for paragraphs, sentences or bare words. Paragraphs run 4 to 8 sentences, sentences run 4 to 16 words, and word output is a flat lowercase run with no closing full stop.',
+        icon: <AlignLeft color="var(--primary)" size={24} />
+    },
+    {
+        title: 'Exact counts from 1 to 100',
+        desc: 'The quantity box is clamped at both ends, so a stray zero, a negative number or a pasted 5000 lands on the nearest valid value instead of producing nothing or hanging the page.',
+        icon: <Type color="var(--primary)" size={24} />
+    },
+    {
+        title: 'A different draw each time',
+        desc: 'Words are sampled at random from the classical vocabulary, so pressing Generate again gives fresh text at the same length. Useful for checking that a layout survives more than one set of line breaks.',
+        icon: <Copy color="var(--primary)" size={24} />
+    }
 ]
 
 const faqs = [
-    { question: 'What is Lorem Ipsum?', answer: 'Lorem Ipsum is generic placeholder text used in design and publishing to demonstrate visual layout.' },
-    { question: 'Is it real Latin?', answer: 'It has roots in classical Latin literature from 45 BC, but is altered to be nonsensical.' },
-    { question: 'Why use it?', answer: 'It ensures the viewer focuses on layout rather than reading the content.' },
-    { question: 'Who uses this text?', answer: 'Graphic designers, web developers, and typographers use it to visualize layouts before final copy is ready.' },
-    { question: 'Is this generator free?', answer: 'Yes, generate as much dummy text as you need for free.' },
-    { question: 'Can I copy the output?', answer: 'Yes, just click the Copy button to instantly save the text to your clipboard.' }
+    {
+        question: 'Why does the output not start with "Lorem ipsum dolor sit amet"?',
+        answer: 'Because each run samples words at random from the vocabulary rather than replaying the canonical passage. The familiar opening is just the first few words of that passage, and it appears here only by chance. If a client or a template expects the traditional opening, type those five words yourself and let the generator supply the rest of the block.'
+    },
+    {
+        question: 'Why do my paragraphs merge into one block when I paste them?',
+        answer: 'Paragraphs are separated by a single line break, not a blank line. On this page that looks correct because the output box preserves line breaks, but Markdown and HTML both need a blank line or an explicit paragraph tag to start a new paragraph, so everything runs together. Either add a second line break between paragraphs after pasting, or generate one paragraph at a time and paste them individually.'
+    },
+    {
+        question: 'How long are the sentences and paragraphs?',
+        answer: 'Every sentence is between 4 and 16 words, and every paragraph is between 4 and 8 sentences, both drawn at random inside those bounds. A single paragraph therefore lands somewhere around 16 to 128 words, which is why two paragraphs of the same setting can fill noticeably different amounts of space. Generate a few times if you are sizing a container.'
+    },
+    {
+        question: 'Can I generate more than 100 at once?',
+        answer: 'Not in one pass; the quantity is capped at 100 whichever unit you choose. One hundred paragraphs is already several thousand words, which is more than any layout test needs. For more, generate twice and concatenate.'
+    },
+    {
+        question: 'Is it real Latin?',
+        answer: 'It is real Latin vocabulary in meaningless order. The source is a passage from Cicero written in 45 BC, scrambled and corrupted by centuries of typesetters until it stopped being readable, which is exactly what makes it useful: a Latin reader cannot get absorbed in it either. This generator draws from 62 distinct word stems out of that passage.'
+    },
+    {
+        question: 'Why not just use English filler text?',
+        answer: 'Two reasons. Readable text pulls reviewers into editing the copy instead of judging the layout, and repeated filler such as the same word over and over produces unnaturally even line breaks that hide wrapping problems. The Latin pool averages about 5.6 letters per word, close enough to ordinary English that column widths, hyphenation and line counts behave the way real copy will.'
+    },
+    {
+        question: 'Can I get the output wrapped in HTML paragraph tags?',
+        answer: 'No, the output is always plain text with no markup of any kind. That keeps it safe to drop into a code editor, a design tool, a spreadsheet cell or a CMS field without stray tags. If you need paragraph tags, wrap the lines in your editor with a find and replace on the line break.'
+    },
+    {
+        question: 'Is anything sent to a server?',
+        answer: 'No. The text is generated by code running in your tab, so there is no request, no account and no stored history. The Copy button uses the system clipboard; everything else disappears when you close the page.'
+    }
 ]
 
 const LoremIpsumGenerator = () => {
@@ -54,8 +92,8 @@ const LoremIpsumGenerator = () => {
         <ToolLayout
             title="Lorem Ipsum Generator"
             description="Generate placeholder text for your designs."
-            seoTitle="Lorem Ipsum Generator - Dummy Text"
-            seoDescription="Free Lorem Ipsum generator. Create placeholder text for web design, graphic design, and mockups."
+            seoTitle="Lorem Ipsum Generator - Placeholder Text by Paragraph, Sentence or Word"
+            seoDescription="Generate 1 to 100 paragraphs, sentences or words of Lorem Ipsum placeholder text for design mockups and layout tests. Plain text output, a fresh random draw each time, generated in your browser."
             faqs={faqs}
         >
             <div className="tool-workspace" style={{ maxWidth: '1000px', margin: '0 auto' }}>
@@ -129,7 +167,62 @@ const LoremIpsumGenerator = () => {
                     <div className="about-section" style={{ background: 'var(--bg-card)', padding: '2rem', borderRadius: '1rem', border: '1px solid var(--border)', marginBottom: '2rem' }}>
                         <h2 style={{ fontSize: '1.8rem', marginBottom: '1.5rem' }}>About Lorem Ipsum Generator</h2>
                         <p style={{ lineHeight: '1.6', color: 'var(--text-secondary)', marginBottom: '1rem' }}>
-                            Free Lorem Ipsum generator. Create placeholder text for web design, graphic design, and mockups.
+                            Pick a unit, set a quantity between 1 and 100, and press Generate. A sample is already
+                            waiting when the page opens, so the common case of needing two paragraphs right now takes
+                            one click to copy. The output is plain text with no markup, which means it drops cleanly
+                            into a design tool, a code editor, a spreadsheet cell or a CMS field.
+                        </p>
+
+                        <h3 style={{ fontSize: '1.15rem', fontWeight: '600', margin: '1.75rem 0 0.75rem' }}>What each unit gives you</h3>
+                        <p style={{ lineHeight: '1.6', color: 'var(--text-secondary)', marginBottom: '1rem' }}>
+                            <strong>Words</strong> returns exactly the number you asked for, lowercase, separated by
+                            spaces, with no capital at the start and no full stop at the end, which is what you want
+                            for a headline or a button label you intend to trim.
+                            <strong> Sentences</strong> returns that many complete sentences on one line, each
+                            capitalised and closed with a full stop, running 4 to 16 words apiece.
+                            <strong> Paragraphs</strong> returns blocks of 4 to 8 sentences, so one paragraph lands
+                            anywhere from roughly 16 to 128 words. The variation is intentional: filler of a fixed
+                            length hides exactly the wrapping and overflow problems you are testing for.
+                        </p>
+
+                        <h3 style={{ fontSize: '1.15rem', fontWeight: '600', margin: '1.75rem 0 0.75rem' }}>The blank line to watch for</h3>
+                        <p style={{ lineHeight: '1.6', color: 'var(--text-secondary)', marginBottom: '1rem' }}>
+                            Paragraphs are joined with a single line break rather than an empty line. The box above
+                            preserves line breaks so they look separate here, but paste that into Markdown, into an
+                            HTML template or into most rich-text editors and the whole thing collapses into one
+                            paragraph, because those formats need a blank line or an explicit tag to start a new one.
+                            The fix is to add a second line break between blocks after pasting, or to generate one
+                            paragraph at a time.
+                        </p>
+
+                        <h3 style={{ fontSize: '1.15rem', fontWeight: '600', margin: '1.75rem 0 0.75rem' }}>Where the words come from</h3>
+                        <p style={{ lineHeight: '1.6', color: 'var(--text-secondary)', marginBottom: '1rem' }}>
+                            The pool is 62 distinct Latin stems taken from the passage that has served as printing
+                            filler since the sixteenth century, itself a scrambled fragment of a treatise Cicero wrote
+                            in 45 BC. Words are drawn from that pool at random on each run, which is why two presses
+                            of Generate at the same setting give different text and why the output rarely opens with
+                            the familiar first line. Average word length sits at about 5.6 letters, near enough to
+                            ordinary English that hyphenation, column widths and line counts behave realistically
+                            rather than collapsing into unnaturally even rows.
+                        </p>
+
+                        <h3 style={{ fontSize: '1.15rem', fontWeight: '600', margin: '1.75rem 0 0.75rem' }}>When filler is the wrong choice</h3>
+                        <p style={{ lineHeight: '1.6', color: 'var(--text-secondary)', marginBottom: '1rem' }}>
+                            Placeholder text is right for testing leading, measure, truncation and overflow, and
+                            wrong almost everywhere else. Navigation labels, buttons and error messages need real
+                            wording, because real wording is usually far shorter than filler and the layout you sign
+                            off will not survive the swap. Layouts intended for Arabic, Hebrew, Chinese, Japanese or
+                            Devanagari get a misleading picture from Latin, which has different line heights, no
+                            right-to-left behaviour and different word-breaking rules. And the oldest hazard is still
+                            the live one: filler that ships. Search your project for the word lorem before you
+                            release.
+                        </p>
+
+                        <h3 style={{ fontSize: '1.15rem', fontWeight: '600', margin: '1.75rem 0 0.75rem' }}>Privacy</h3>
+                        <p style={{ lineHeight: '1.6', color: 'var(--text-secondary)', marginBottom: '1rem' }}>
+                            Text is produced by code running in your tab. There is no request to a server, no account,
+                            no rate limit and nothing written to browser storage, so the page keeps working with the
+                            connection off and leaves nothing behind when you close it.
                         </p>
                     </div>
                     <div className="features-section" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))', gap: '2rem' }}>

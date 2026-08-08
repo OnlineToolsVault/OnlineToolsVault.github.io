@@ -5,6 +5,33 @@ import { useDropzone } from 'react-dropzone'
 import imageCompression from 'browser-image-compression'
 import { Upload, Download, Zap, ShieldCheck, Layers } from 'lucide-react'
 
+/**
+ * Where the compression Web Worker loads its copy of the library from.
+ *
+ * The `import` above is bundled, but it is not the copy that does the work. With
+ * `useWebWorker: true` the library spawns a Blob worker whose whole body is
+ * `self.importScripts(imageCompressionLibUrl)`, and a worker cannot import the bundled ESM module —
+ * so it fetches a classic build, defaulting to
+ * `https://cdn.jsdelivr.net/npm/browser-image-compression@2.0.2/dist/browser-image-compression.js`.
+ * That is why this page hit a CDN on a normal visit despite the package being an npm dependency.
+ *
+ * `libURL` overrides it. scripts/copy-runtime-assets.js stages the UMD build into
+ * public/vendor/browser-image-compression.js; change one and change the other, and keep this in
+ * step with the identical constant in BulkImageCompressor.jsx.
+ *
+ * It has to be an *absolute* URL. The worker's base URL is its `blob:` URL, and a root-relative
+ * path cannot be resolved against a blob: base (it has an opaque path), so "/vendor/..." would
+ * either fail outright or resolve somewhere unintended. BASE_URL keeps a subpath deploy working,
+ * exactly as in src/utils/monacoLoader.js.
+ *
+ * Resolved on use rather than at module load so this page can still be imported outside a browser.
+ */
+const compressionLibUrl = () =>
+  new URL(
+    `${import.meta.env.BASE_URL || '/'}vendor/browser-image-compression.js`,
+    window.location.href,
+  ).href
+
 const ImageCompressor = () => {
   const [originalImage, setOriginalImage] = useState(null)
   const [compressedImage, setCompressedImage] = useState(null)
@@ -58,6 +85,7 @@ const ImageCompressor = () => {
         maxSizeMB: 2,
         maxWidthOrHeight: 1920,
         useWebWorker: true,
+        libURL: compressionLibUrl(),
         initialQuality: q
       }
       const compressedFile = await imageCompression(file, options)
@@ -237,10 +265,24 @@ const ImageCompressor = () => {
           <div className="about-section" style={{ background: 'var(--bg-card)', padding: '2rem', borderRadius: '1rem', border: '1px solid var(--border)', marginBottom: '2rem' }}>
             <h2 style={{ fontSize: '1.8rem', marginBottom: '1.5rem' }}>About Image Compressor</h2>
             <p style={{ lineHeight: '1.6', color: 'var(--text-secondary)', marginBottom: '1rem' }}>
-              Make your website faster and save storage space. Our Image Compressor reduces file sizes dramatically while preserving the crisp details of your photos.
+              Compressing an image here means re-encoding it. The file you drop is decoded by the browser, redrawn onto a canvas, and written back out in the same format at a lower quality target. A JPEG comes back as a JPEG, a PNG as a PNG, a WebP as a WebP, so nothing that reads the file afterwards has to change.
+            </p>
+            <h3 style={{ fontSize: '1.15rem', margin: '1.5rem 0 0.75rem' }}>Three things shrink the file</h3>
+            <p style={{ lineHeight: '1.6', color: 'var(--text-secondary)', marginBottom: '1rem' }}>
+              The slider sets the encoder quality between 10% and 100%, starting at 80%. Independently of that, the longest side is capped at <strong>1920 pixels</strong>. A 3000 x 2000 photo therefore comes back at 1920 x 1280 even with quality at 100%, and on a large phone photo that resize is usually where most of the saving comes from. 1920 px is still wider than the screen most people will view it on. If you need the original pixel dimensions kept, the Bulk Image Compressor is configured to preserve resolution instead.
+            </p>
+            <p style={{ lineHeight: '1.6', color: 'var(--text-secondary)', marginBottom: '1rem' }}>
+              The third is a size target. The tool aims for a result under <strong>2 MB</strong> that is also no larger than the file you started with. If a single pass misses that, it re-encodes in a loop, dropping the quality a little each time and — only when the 2 MB target is the one being missed — shrinking the canvas by a further 5% per pass, up to ten passes. So a very large photo can come back below 1920 px on its longest side. That is the target being enforced, not a bug.
+            </p>
+            <p style={{ lineHeight: '1.6', color: 'var(--text-secondary)', marginBottom: '1rem' }}>
+              The slider works on PNG too, though not in the way you might expect. PNG has no JPEG-style quality knob, so the encoder used here converts the slider into a <em>colour count</em> and quantises the image to that many colours before writing the file — roughly 4,000 colours at 100%, around 400 at 10%. That makes PNG output here lossy rather than lossless, and it is why a flat graphic can shrink dramatically while a photograph saved as PNG picks up visible banding at low settings. If your PNG is a photograph rather than a screenshot, logo or diagram, converting it to JPEG or WebP with the Image Converter is still the better move.
+            </p>
+            <h3 style={{ fontSize: '1.15rem', margin: '1.5rem 0 0.75rem' }}>What happens to your file</h3>
+            <p style={{ lineHeight: '1.6', color: 'var(--text-secondary)', marginBottom: '1rem' }}>
+              Your picture never leaves the machine you are sitting at. It is read with the browser File API into an in-memory blob, encoded on your own CPU, and discarded — along with the compressed copy — when you close the tab. There is no upload step and no server to store anything. The encoding runs in a Web Worker so the page stays responsive, and that worker&rsquo;s script is served from this site rather than a third-party CDN, so pressing compress produces no cross-origin request at all. If that one script cannot be loaded the tool falls back to compressing on the main thread, so it still works offline — just without the worker.
             </p>
             <p style={{ lineHeight: '1.6', color: 'var(--text-secondary)' }}>
-              It's the safest way to optimize images. Since the compression happens entirely in your browser, your photos are never uploaded or shared with anyone.
+              The limit is what your browser can decode. JPEG, PNG and WebP go in and come back out in the same format, and BMP has its own writer here so it survives too. A GIF decodes, but a canvas only ever holds one frame and no browser can write GIF back, so the animation does not survive — reach for the Image Converter if you need to choose the output format explicitly. HEIC and HEIF straight from an iPhone cannot be decoded at all and give you an error rather than a silent failure; run those through the HEIC to JPG tool first. An SVG has nothing to re-encode in the first place, since it is vector markup rather than a grid of pixels.
             </p>
           </div>
           <div className="features-section" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))', gap: '2rem' }}>
@@ -261,35 +303,48 @@ const ImageCompressor = () => {
 }
 
 const features = [
-  { title: 'Intelligent Compression', desc: 'Analyzes your image to apply the optimal compression level, reducing file size by up to 90% without visible quality loss.', icon: <Zap color="var(--primary)" size={24} /> },
-  { title: 'Instant Preview', desc: 'Compare the original and compressed images side-by-side in real-time before you download.', icon: <Layers color="var(--primary)" size={24} /> },
-  { title: 'Secure & Private', desc: 'No servers involved. Your sensitive personal photos are compressed locally on your device.', icon: <ShieldCheck color="var(--primary)" size={24} /> }
+  { title: 'Quality slider you can see', desc: 'Every move of the slider re-encodes the picture and updates the byte count beside the preview, so you can stop at the point where the image starts to look wrong instead of guessing a number.', icon: <Zap color="var(--primary)" size={24} /> },
+  { title: 'Side-by-side comparison', desc: 'Original and result are shown at the same display size with their exact file sizes, which is the only reliable way to judge whether the saving cost you anything visible.', icon: <Layers color="var(--primary)" size={24} /> },
+  { title: 'Format is never switched', desc: 'A JPEG downloads as a JPEG and a PNG as a PNG, keeping the original filename behind a compressed- prefix. Nothing downstream has to be told the file changed.', icon: <Layers color="var(--primary)" size={24} /> },
+  { title: 'Encoded on your own device', desc: 'Your picture is never uploaded — it is decoded and re-encoded by a Web Worker on your own CPU. The only network request involved is the one that loads that worker’s script, and it comes from this site rather than a third-party CDN; if it fails the tool simply compresses on the main thread instead.', icon: <ShieldCheck color="var(--primary)" size={24} /> }
 ]
 
 const faqs = [
   {
-    question: "What is the best format to compress?",
-    answer: "JPGs usually offer the best compression ratios for photographs. PNGs are better for graphics but compress less."
+    question: "Why is my downloaded image smaller in pixels than the original?",
+    answer: "The tool caps the longest side at **1920 pixels**, so a 3000 x 2000 photo comes back as 1920 x 1280. That resize is deliberate: it is the single biggest saving available on a modern phone photo, and 1920 px is wider than most screens the image will be viewed on. It can go smaller still — if the result is over the 2 MB target the tool re-encodes in a loop and takes another 5% off each side per pass. If you need the original dimensions kept, use the Bulk Image Compressor, which preserves resolution, or the Image Resizer if you want to choose the numbers yourself."
   },
   {
-    question: "Will my image look blurry?",
-    answer: "No. We use advanced algorithms that remove redundant data invisible to the human eye, keeping the image sharp."
+    question: "Does the quality slider do anything to a PNG?",
+    answer: "Yes, but not in the JPEG sense. PNG has no quality parameter, so the encoder here turns the slider into a **colour count** and quantises the image before writing it — roughly 4,000 colours at 100% and around 400 at 10%. PNG output from this tool is therefore lossy: a logo or screenshot can shrink a lot with no visible change, while a photograph saved as PNG will start to show banding as you drag the slider down. If the PNG is really a photograph, convert it to JPEG or WebP with the Image Converter instead."
   },
   {
-    question: "Is it safe for private photos?",
-    answer: "Yes. Unlike other sites, we don't upload your images to a cloud server. Everything stays on your computer."
+    question: "Is my photo uploaded anywhere?",
+    answer: "No. Your photo is read into memory by your browser, encoded on your own CPU, and handed straight back as a download. Being precise about the Network tab: the compression library runs in a Web Worker, so the first time you compress you will see one request for a JavaScript file — that worker's script, served from this site, containing code and none of your image. It used to come from a public CDN; it no longer does, so nothing cross-origin happens when you compress. Block it or go offline and the tool falls back to compressing on the main thread."
   },
   {
-    question: "What file types are supported?",
-    answer: "We support the most common web image formats: JPG, JPEG, PNG, and WebP."
+    question: "Which file types actually work?",
+    answer: "Anything your browser can decode. JPEG, PNG, WebP and BMP round-trip in the same format. A GIF decodes but loses its animation, because a canvas holds one frame and browsers cannot write GIF. HEIC and HEIF photos straight off an iPhone cannot be decoded and will show an error instead of failing silently — run those through the HEIC to JPG tool first, then compress the JPEG. An SVG is vector markup with no pixel grid to re-encode."
   },
   {
-    question: "How much space can I save?",
-    answer: "It depends on the image, but we typically reduce file sizes by 50% to 90% while maintaining visual quality."
+    question: "Can I undo the compression later?",
+    answer: "Not for JPEG or WebP — the discarded detail is gone for good. Keep your originals somewhere safe. It also means you should always compress from the original rather than re-compressing a file that has already been through the tool, because each pass throws away more."
   },
   {
-    question: "Can I use this on mobile?",
-    answer: "Yes, our tool is fully responsive and works great on iPhone, iPad, and Android devices."
+    question: "How much smaller will my file get?",
+    answer: "It depends entirely on what is in the picture. Photographs with fine detail and noise compress heavily, often by 70-90%. Flat graphics, screenshots and text compress badly as JPEG and can even grow, because the encoder spends bits trying to reproduce hard edges. Content like that belongs in PNG or WebP."
+  },
+  {
+    question: "How do I compress a whole folder at once?",
+    answer: "Use the Bulk Image Compressor. It takes a multi-file selection, shows the before and after size for each image, and gives you everything back as a single ZIP. It also keeps every image at its original resolution, which this single-file tool does not."
+  },
+  {
+    question: "Does compressing strip GPS and camera data?",
+    answer: "Re-encoding through a canvas does drop the metadata blocks, but do not treat that as a privacy guarantee — it is a side effect, not the purpose. If your goal is to remove location data before sharing a photo, use Remove Image Metadata, which is built for it and can clean a JPEG without re-encoding the pixels at all."
+  },
+  {
+    question: "Why did my file get larger instead of smaller?",
+    answer: "It usually will not, because the tool notices and retries: if the first pass comes back bigger than the original it re-encodes at a lower quality, up to ten times, before giving up. When it still ends up larger, the source was already compressed harder than anything the encoder can match — re-encoding at 90% a JPEG that was saved at 60% adds bytes without adding detail. Drag the slider down until the result is genuinely smaller, or keep the file you already had."
   }
 ]
 

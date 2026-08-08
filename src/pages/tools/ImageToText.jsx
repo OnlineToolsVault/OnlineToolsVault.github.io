@@ -6,35 +6,48 @@ import { FileText, Image as ImageIcon, Copy, Check, Loader2, Upload, Languages }
 import { createWorker, OEM } from 'tesseract.js'
 
 const features = [
-    { title: 'Optical Character Recognition', desc: 'Extract text from images using advanced OCR technology.', icon: <FileText color="var(--primary)" size={24} /> },
-    { title: 'Multi-Language Support', desc: 'Recognizes text in over 100 languages.', icon: <Languages color="var(--primary)" size={24} /> },
-    { title: 'Privacy Focused', desc: 'Processing happens locally or securely via standard Tesseract libraries.', icon: <Check color="var(--primary)" size={24} /> }
+    { title: 'Tesseract LSTM engine', desc: 'Recognition runs on the neural line recogniser rather than the older character-matching engine, which is what makes ordinary printed text read reliably instead of approximately.', icon: <FileText color="var(--primary)" size={24} /> },
+    { title: 'English, trained data included', desc: 'The English language model is served from this site rather than a third-party CDN, so the tool works on locked-down networks and keeps working offline once cached.', icon: <Languages color="var(--primary)" size={24} /> },
+    { title: 'Genuinely local recognition', desc: 'The engine is WebAssembly running in a worker on your machine. A photograph of a contract, a payslip or an ID is read without being sent anywhere.', icon: <Check color="var(--primary)" size={24} /> },
+    { title: 'Live progress, then plain text', desc: 'A percentage bar tracks the recognition pass, and the result lands in an editable-looking panel with a one-press copy button for pasting straight into a document.', icon: <FileText color="var(--primary)" size={24} /> }
 ]
 
 const faqs = [
     {
-        question: "Is this tool free?",
-        answer: "Yes, this Image to Text converter is completely free to use."
+        question: "Which languages does it recognise?",
+        answer: "**English only.** The English trained data is the one language model bundled with this page, and there is no language selector. Text in another script — Cyrillic, Arabic, Chinese, Devanagari — will produce nonsense rather than an error. Accented Latin text in French, German or Spanish often comes out mostly right, but the model is not trained for it and accuracy will suffer."
     },
     {
-        question: "How accurate is the OCR?",
-        answer: "Accuracy depends on the image quality. Clear, high-contrast images yield the best results."
+        question: "How accurate should I expect it to be?",
+        answer: "On a clean screenshot or a flat, well-lit scan of printed text, near perfect. On a phone photo of a page taken at an angle in poor light, considerably worse. OCR accuracy is dominated by input quality, not by the engine: sharp focus, even lighting, high contrast, and text that is horizontal and reasonably large in the frame are worth more than any setting."
     },
     {
-        question: "Is my data secure?",
-        answer: "Yes, we use client-side OCR libraries where possible, so your images often remain on your device."
+        question: "How do I get a better result from a photo?",
+        answer: "Photograph the page straight on rather than at an angle, fill the frame with the text block, avoid shadows falling across the page, and keep the paper flat. If the photo is already taken, crop it down to just the text with the Image Cropper before running it here — removing the surrounding desk and background usually improves the result more than anything else."
     },
     {
-        question: "Supports handwriting?",
-        answer: "It works best with printed text. Handwriting recognition is experimental and may vary in accuracy."
+        question: "Does it read handwriting?",
+        answer: "Not usefully. Tesseract is trained on printed type, and cursive or casual handwriting will come back as a scattering of plausible-looking characters. Very neat block capitals sometimes work. If you need handwriting recognised, this is the wrong class of tool."
     },
     {
-        question: "Can I copy the text?",
-        answer: "Yes, once extracted, you can copy the text to your clipboard with a single click."
+        question: "Can I feed it a PDF?",
+        answer: "No — this page takes images only. For a PDF that already contains a text layer, PDF to TXT extracts the real text with no recognition step and no error rate, which is always better than OCR. For a scanned PDF with no text layer, export the pages as images first with PDF to PNG and bring them here one at a time."
     },
     {
-        question: "What formats are supported?",
-        answer: "We support all common image formats including JPG, PNG, and BMP."
+        question: "Which image formats work?",
+        answer: "JPG, JPEG, PNG and BMP. PNG is the best choice for screenshots because it has no compression artefacts to confuse the recogniser. A heavily compressed JPEG of small text is the hardest case, since the artefacts sit exactly where the letterforms are."
+    },
+    {
+        question: "Does the layout survive?",
+        answer: "Partly. Line breaks and paragraph structure usually come through, but tables, multiple columns and text wrapped around images are flattened into reading order. Expect to fix the structure by hand. What you get is the words, not the formatting."
+    },
+    {
+        question: "Is the image uploaded to a server?",
+        answer: "No. The Tesseract engine, the WebAssembly core and the English trained data are all served from this site and run inside a worker in your browser. The picture is passed to that worker in memory and never over the network. Once the engine files are cached you can disconnect entirely and OCR still works."
+    },
+    {
+        question: "The OCR engine failed to load.",
+        answer: "The engine core and the language data are several megabytes and must be fetched on first use. A blocked request, an interrupted download or a very restrictive content blocker will stop that, and the tool reports it rather than hanging. Reload the page, allow this site through any blocker, and try again."
     }
 ]
 
@@ -248,7 +261,22 @@ const ImageToText = () => {
                     <div className="about-section" style={{ background: 'var(--bg-card)', padding: '2rem', borderRadius: '1rem', border: '1px solid var(--border)', marginBottom: '2rem' }}>
                         <h2 style={{ fontSize: '1.8rem', marginBottom: '1.5rem' }}>About Image to Text Converter</h2>
                         <p style={{ lineHeight: '1.6', color: 'var(--text-secondary)', marginBottom: '1rem' }}>
-                            Convert images to text online. Extract text from photos, screenshots, and scanned documents using free OCR.
+                            Optical character recognition turns a picture of words back into words you can select, search and edit. Drop in a screenshot, a scan or a photograph of a page and the Tesseract engine reads it, showing a progress percentage as it goes and leaving the recognised text in a panel you can copy in one press.
+                        </p>
+                        <h3 style={{ fontSize: '1.15rem', margin: '1.5rem 0 0.75rem' }}>English only, and why that is stated up front</h3>
+                        <p style={{ lineHeight: '1.6', color: 'var(--text-secondary)', marginBottom: '1rem' }}>
+                            Tesseract supports many languages, but each one needs its own trained data file of around ten megabytes. This page bundles the <strong>English</strong> model and only that model, so that everything can be served from this site rather than fetched from a third-party CDN at the moment you press go. Text in another script will not raise an error — it will simply come back as nonsense, which is worth knowing before you conclude the tool is broken. Recognition runs on the LSTM engine, the neural line recogniser, rather than the older character-matching mode.
+                        </p>
+                        <h3 style={{ fontSize: '1.15rem', margin: '1.5rem 0 0.75rem' }}>Input quality is almost the whole story</h3>
+                        <p style={{ lineHeight: '1.6', color: 'var(--text-secondary)', marginBottom: '1rem' }}>
+                            A screenshot of a web page or a flat scan of printed type reads almost perfectly. A phone photo of a document taken at an angle, in a shadow, with the text occupying a third of the frame, reads badly — and no engine setting fixes that. The improvements that actually work are physical: shoot straight down rather than at an angle, get enough light onto the page, keep the paper flat, and fill the frame with the text. If the photo already exists, crop away the desk and background with the Image Cropper first; that single step often does more than everything else combined. PNG screenshots beat JPEG ones because JPEG artefacts cluster exactly around the fine strokes of letterforms.
+                        </p>
+                        <h3 style={{ fontSize: '1.15rem', margin: '1.5rem 0 0.75rem' }}>What you get, and what you do not</h3>
+                        <p style={{ lineHeight: '1.6', color: 'var(--text-secondary)', marginBottom: '1rem' }}>
+                            You get the words, as plain text, with line and paragraph breaks roughly intact. You do not get formatting: tables collapse, multi-column layouts are read in whatever order the engine chooses, and text wrapped around an image is interleaved. Printed type is what the model knows; handwriting, especially cursive, produces confident-looking nonsense. If your source is a PDF that already has a text layer, do not use OCR at all — PDF to TXT pulls the real characters out with no error rate whatsoever.
+                        </p>
+                        <p style={{ lineHeight: '1.6', color: 'var(--text-secondary)' }}>
+                            The engine, its WebAssembly core and the English trained data are all delivered from this site and executed in a worker inside your browser. Your image is handed to that worker in memory and is never sent over the network, which is the reason this is a reasonable tool to point at a payslip, a contract or a photograph of an ID document. Once the engine files have been cached by your browser, the whole thing keeps working with no connection at all.
                         </p>
                     </div>
                     <div className="features-section" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))', gap: '2rem' }}>

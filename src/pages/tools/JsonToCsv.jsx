@@ -8,18 +8,36 @@ import { saveAs } from 'file-saver'
 
 
 const features = [
-    { title: 'JSON to CSV', desc: 'Convert complex JSON objects or arrays into flat CSV tables.', icon: <FileJson color="var(--primary)" size={24} /> },
-    { title: 'Excel Compatible', desc: 'Output files are compatible with Microsoft Excel and Google Sheets.', icon: <Check color="var(--primary)" size={24} /> },
-    { title: 'Secure Processing', desc: 'No data is sent to the cloud. Conversion happens locally.', icon: <Shield color="var(--primary)" size={24} /> }
+    { title: 'Nesting Becomes Dotted Columns', desc: 'An address object turns into address.city and address.zip; a tags array turns into tags.0 and tags.1. Every leaf value reaches the table instead of being dropped as an empty cell.', icon: <FileJson color="var(--primary)" size={24} /> },
+    { title: 'Downloads With A UTF-8 Marker', desc: 'The saved file starts with a byte-order mark, so Excel reads accented names and non-Latin scripts correctly instead of guessing a legacy codepage and producing mojibake.', icon: <Check color="var(--primary)" size={24} /> },
+    { title: 'Parsed In The Page', desc: 'JSON.parse and the table builder both run in this tab. An API dump full of customer records is never uploaded, and closing the tab is the whole of the cleanup.', icon: <Shield color="var(--primary)" size={24} /> }
 ]
 
 const faqs = [
-    { question: 'How do I convert JSON to CSV?', answer: 'Simply drag and drop your .json file, and we will automatically convert it to a CSV table.' },
-    { question: 'Does it handle nested objects?', answer: 'It flattens basic nested structures, but complex deep nesting might need pre-processing.' },
-    { question: 'Is it free?', answer: 'Yes, completely free to use.' },
-    { question: 'Can I convert large JSON files?', answer: 'Yes, since it runs in your browser, it can handle relatively large files as long as your device has enough memory.' },
-    { question: 'Will my data remain private?', answer: 'Absolutely. The conversion happens entirely on your device; no data is sent to our servers.' },
-    { question: 'What if my JSON is invalid?', answer: 'The tool will alert you if the JSON format is incorrect. You can use our JSON Formatter tool to fix it first.' }
+    {
+        question: 'What shape does my JSON need to be?',
+        answer: 'An array of objects converts most naturally, one row per element. A single object becomes a one-row table. The common API envelope, where the array sits under a key such as {"users": [ ... ]}, is unwrapped automatically as long as exactly one key holds a non-empty array — so you usually do not have to strip the wrapper first. An array of plain values with no objects at all becomes a single column headed value.'
+    },
+    {
+        question: 'How exactly does the flattening work?',
+        answer: 'Every leaf in the structure gets its own column, named by joining the path with dots. Object keys contribute their name and array elements contribute their index, so a row of [{"id":1,"items":[{"sku":"A"},{"sku":"B"}]}] produces columns id, items.0.sku and items.1.sku. Note that a top-level {"items":[ ... ]} is not flattened that way at all: it matches the envelope rule below, so the array supplies the rows and you get one plain sku column instead. Nothing is lost, but the shape can be surprising: a row with fifty line items generates a hundred columns, and because column names include indexes, two records with different array lengths do not line up.'
+    },
+    {
+        question: 'What do I get when records have different fields?',
+        answer: 'The header is the union of every key seen across all rows, in the order each first appears, and any record missing a key gets an empty cell. That is usually what you want for a slightly ragged export. It becomes unwieldy when the file mixes genuinely different record types, since the result is a wide, mostly blank sheet — splitting those into separate conversions gives a far more usable table.'
+    },
+    {
+        question: 'How are nulls, booleans and awkward strings written?',
+        answer: 'A null becomes an empty cell, indistinguishable from a missing key, so if that distinction matters in your data the CSV will not preserve it. Booleans are written as uppercase TRUE and FALSE. Strings containing a comma, a double quote or a line break are wrapped in quotes with any internal quotes doubled, which is standard CSV escaping — a value spanning two lines therefore occupies two physical lines in the file while remaining a single cell.'
+    },
+    {
+        question: 'My file will not convert. What is it complaining about?',
+        answer: 'Three messages are possible, and in practice you will only ever see the first. "That file is not valid JSON" means the parser rejected it — a trailing comma, a single-quoted key or an unescaped newline inside a string are the usual causes, and the JSON Formatter will point at the line. "Could not read the file" is a filesystem-level failure. "Could not convert this JSON to a table" is a fallback for the table builder itself failing; it is rare, because almost any valid JSON converts to something — a bare number, string or null becomes a single row under a column headed value, and an empty array produces an empty CSV with a note above the box rather than an error. Note that JSON Lines, with one document per line, is not valid JSON as a whole; wrap the lines in brackets and separate them with commas first.'
+    },
+    {
+        question: 'Does the copied text differ from the downloaded file?',
+        answer: 'Slightly. Download prepends a UTF-8 byte-order mark so that double-clicking the file opens it correctly in Excel; Copy puts the plain text on your clipboard without it, which is what you want when pasting into an editor or a terminal. The delimiter is a comma in both cases, with no option to change it, so a tool expecting semicolons will need the file adjusted afterwards.'
+    }
 ]
 
 // json_to_sheet writes an empty cell for object/array values, so flatten to dotted keys first.
@@ -146,7 +164,27 @@ const JsonToCsv = () => {
                     <div className="about-section" style={{ background: 'var(--bg-card)', padding: '2rem', borderRadius: '1rem', border: '1px solid var(--border)', marginBottom: '2rem' }}>
                         <h2 style={{ fontSize: '1.8rem', marginBottom: '1.5rem' }}>About JSON to CSV Converter</h2>
                         <p style={{ lineHeight: '1.6', color: 'var(--text-secondary)', marginBottom: '1rem' }}>
-                            Convert JSON data to CSV online. Upload JSON file and download CSV spreadsheet compatible with Excel.
+                            JSON is a tree; a spreadsheet is a rectangle. Converting between them means deciding what becomes a row and what becomes a column. Drop a <code>.json</code> file above and this page makes those decisions for you, then shows the resulting CSV so you can check it before downloading.
+                        </p>
+
+                        <h3 style={{ fontSize: '1.15rem', fontWeight: '600', margin: '1.75rem 0 0.75rem' }}>How rows and columns are chosen</h3>
+                        <p style={{ lineHeight: '1.6', color: 'var(--text-secondary)', marginBottom: '1rem' }}>
+                            Rows come first. A top-level array gives one row per element. A top-level object whose only array is under a single key — the <code>{'{'}&quot;data&quot;: [ … ]{'}'}</code> envelope most APIs return — is unwrapped so that array supplies the rows. Anything else is treated as one record. Columns then come from flattening each row: every nested key and array index is folded into a dotted path, so no leaf value is silently dropped the way a naive conversion would drop an object into a blank cell.
+                        </p>
+
+                        <h3 style={{ fontSize: '1.15rem', fontWeight: '600', margin: '1.75rem 0 0.75rem' }}>Where the tree does not fit the rectangle</h3>
+                        <p style={{ lineHeight: '1.6', color: 'var(--text-secondary)', marginBottom: '1rem' }}>
+                            Arrays of sub-records are the hard case. Because each element gets its own indexed columns, an order containing three line items produces <code>items.0.sku</code> through <code>items.2.qty</code>, and an order with ten produces thirty. Nothing lines up between rows of different lengths, and the sheet grows sideways fast. When the nested array is the interesting part, you will get a far more useful result by extracting it and converting that instead, giving one row per line item with the order id repeated.
+                        </p>
+
+                        <h3 style={{ fontSize: '1.15rem', fontWeight: '600', margin: '1.75rem 0 0.75rem' }}>Encoding, quoting and Excel</h3>
+                        <p style={{ lineHeight: '1.6', color: 'var(--text-secondary)', marginBottom: '1rem' }}>
+                            Values needing protection are quoted and internal quotes doubled, per the usual CSV convention, so text with commas or newlines survives intact. The downloaded file is prefixed with a UTF-8 byte-order mark, which is the difference between a name like Zoë opening correctly in Excel and arriving as <code>ZoÃ«</code>. Google Sheets and LibreOffice detect UTF-8 without the marker and handle either version.
+                        </p>
+
+                        <h3 style={{ fontSize: '1.15rem', fontWeight: '600', margin: '1.75rem 0 0.75rem' }}>Before and after this step</h3>
+                        <p style={{ lineHeight: '1.6', color: 'var(--text-secondary)' }}>
+                            If the file will not parse, the <strong>JSON Formatter</strong> reports where the syntax breaks down. To go back the other way, <strong>CSV to JSON</strong> rebuilds an array of objects from a table, though it will not reconstruct the nesting that flattening removed — dotted headings come back as literal key names. And if the real destination is a workbook rather than a text file, converting here and then running the result through <strong>CSV to Excel</strong> produces an <code>.xlsx</code>.
                         </p>
                     </div>
                     <div className="features-section" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))', gap: '2rem' }}>

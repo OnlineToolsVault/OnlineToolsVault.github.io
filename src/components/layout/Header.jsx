@@ -19,14 +19,14 @@ const Header = () => {
             <div className="container header-container">
                 <Link to="/" className="logo">
                     <Rocket className="logo-icon" />
-                    <span>FreeTools</span>
+                    <span>OnlineToolsVault</span>
                 </Link>
 
                 {/* Desktop Nav */}
                 <nav className="nav-desktop">
                     <Link to="/" className="nav-link">Home</Link>
-                    <Link to="/about" className="nav-link">About</Link>
-                    <Link to="/contact" className="nav-link">Contact</Link>
+                    <Link to="/about/" className="nav-link">About</Link>
+                    <Link to="/contact/" className="nav-link">Contact</Link>
 
                     <div className="social-icons">
                         <a href="https://x.com/sourcestrongai" target="_blank" rel="noopener noreferrer" className="social-icon" aria-label="Twitter">
@@ -67,8 +67,8 @@ const Header = () => {
                     boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)'
                 }}>
                     <Link to="/" className="nav-link">Home</Link>
-                    <Link to="/about" className="nav-link">About</Link>
-                    <Link to="/contact" className="nav-link">Contact</Link>
+                    <Link to="/about/" className="nav-link">About</Link>
+                    <Link to="/contact/" className="nav-link">Contact</Link>
 
                     <div style={{
                         display: 'flex',

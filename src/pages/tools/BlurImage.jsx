@@ -5,35 +5,47 @@ import { useDropzone } from 'react-dropzone'
 import { Download, Wand2, EyeOff, Shield } from 'lucide-react'
 import { saveAs } from 'file-saver'
 const features = [
-    { title: 'Custom Blur Control', desc: 'Adjust blur intensity with precision to get the exact artistic or privacy effect you need.', icon: <Wand2 color="var(--primary)" size={24} /> },
-    { title: 'Hide Sensitive Info', desc: 'Easily obscure text, faces, or personal data from screenshots and photos before sharing.', icon: <EyeOff color="var(--primary)" size={24} /> },
-    { title: 'Secure & Private', desc: 'Blurring happens locally in your browser. Your sensitive images are never sent to a server.', icon: <Shield color="var(--primary)" size={24} /> }
+    { title: 'Preview matches the export', desc: 'The slider blurs the on-screen picture in CSS pixels, and the radius is scaled up by the same factor before the full-resolution export, so the downloaded file looks like what you approved.', icon: <Wand2 color="var(--primary)" size={24} /> },
+    { title: '0 to 50 px of Gaussian blur', desc: 'A continuous slider rather than presets. Low values soften a background for an artistic effect; the top of the range dissolves shapes completely.', icon: <Wand2 color="var(--primary)" size={24} /> },
+    { title: 'Clean edges, no dark frame', desc: 'Border pixels are replicated outward before the blur runs, so the filter has real colour to sample at the edges instead of smearing transparency into a grey border.', icon: <EyeOff color="var(--primary)" size={24} /> },
+    { title: 'Nothing is uploaded', desc: 'Blurring happens on a canvas in this tab. A screenshot you are blurring because it contains something private never travels anywhere to have that done to it.', icon: <Shield color="var(--primary)" size={24} /> }
 ]
 
 const faqs = [
     {
-        question: "Is this blur tool secure?",
-        answer: "Yes, absolutely. Your images are processed entirely within your browser and are never uploaded to any server."
+        question: "Does this blur only part of the image?",
+        answer: "No — and this is the most important thing to know before you start. The blur is applied uniformly to the **entire** picture. There is no selection rectangle and no brush. It is built for softening a whole image, not for masking one region of it."
     },
     {
-        question: "Can I remove the blur later?",
-        answer: "No. Once you download the blurred image, the pixels are permanently altered. This ensures the hidden information cannot be recovered."
+        question: "Then how do I hide one detail in a screenshot?",
+        answer: "Do not use blur for that. The reliable answer is to remove the pixels rather than smear them: crop the sensitive area out of the frame with the Image Cropper, or cover it with a solid opaque rectangle in any image editor. Both destroy the information outright, which blurring at a low radius does not."
     },
     {
-        question: "Does it work on photos with text?",
-        answer: "Yes, it's perfect for obfuscating text, license plates, credit card numbers, or faces in screenshots."
+        question: "Is a blurred image safe to publish?",
+        answer: "Treat blur as an aesthetic effect, not as redaction. A light Gaussian blur is a reversible mathematical operation in principle, and short strings like a licence plate, a postcode or a six-digit code have a small enough search space that a determined person can work backwards from a soft blur. Heavy blur destroys far more information, but if the content genuinely matters, remove it instead of obscuring it."
     },
     {
-        question: "Does this affect image quality?",
-        answer: "Only the blurred areas are affected. The rest of the image retains its original quality."
+        question: "Why does the exported file look blurrier than I expected?",
+        answer: "It should look the same, and matching them is a deliberate piece of work. The preview blurs the picture at its on-screen size, which may be a quarter of the real resolution, so the export scales the radius by the same ratio before applying it. Without that step a 10 px blur that looked right on screen would be almost invisible in a full-resolution file."
     },
     {
-        question: "What image formats are supported?",
-        answer: "We support all common web image formats including JPG, PNG, and WebP."
+        question: "I picked a huge blur on a huge photo and it came out weaker.",
+        answer: "That is a deliberate safety limit. A Gaussian blur needs padding around the image roughly three times the radius, and browsers cap canvas size by both the longest side and the total area — iOS Safari is the tightest at around 16 megapixels. If the padding will not fit, the tool reduces the radius to what does fit rather than failing to produce a file at all."
     },
     {
-        question: "Is there a limit on file size?",
-        answer: "There is no strict limit, but very large images (e.g., over 20MB) may take slightly longer to process depending on your device."
+        answer: "The same one you put in, wherever the browser can write it: a JPEG stays a JPEG, a PNG stays a PNG, a WebP stays a WebP. JPEG has no transparency, so the canvas is filled with white first and transparent areas come out white rather than black. Those three are the only formats a canvas can encode — anything else (a GIF, say) comes back as PNG data while the download keeps its original extension, so rename it or convert it with the Image Converter instead."
+    },
+    {
+        question: "Can the blur be undone from the downloaded file?",
+        answer: "Not by any ordinary tool, and not at all at high radii — the information is genuinely averaged away. The honest caveat is the one above: at low radii, blur is a convolution and convolutions can be attacked. If the answer needs to be an unqualified no, crop or cover instead."
+    },
+    {
+        question: "Is there a file size limit?",
+        answer: "No fixed limit, but very large photos are constrained by canvas memory rather than by file size. The tool works within your browser limits automatically, trimming the blur radius if necessary. On a phone, expect a large photo at maximum blur to take a moment and to be capped more tightly than on a desktop."
+    },
+    {
+        question: "Does my picture get uploaded?",
+        answer: "No. It is decoded, padded, blurred and re-encoded entirely inside this browser tab, and the result is handed to you as a download. Given that the reason for blurring is usually that the image contains something you would rather not share, that distinction matters more here than on most tools."
     }
 ]
 
@@ -153,9 +165,9 @@ const BlurImage = () => {
     return (
         <ToolLayout
             title="Blur Image"
-            description="Add blur effect to your images securely. Hide sensitive info or faces. Free online tool."
-            seoTitle="Blur Image Online - Hide Sensitive Info & Faces"
-            seoDescription="Blur part of an image or the entire photo online. Adjustable blur intensity for privacy or artistic effect. 100% free and private."
+            description="Apply a Gaussian blur to a whole image, from 0 to 50 pixels. Free, and the picture never leaves your browser."
+            seoTitle="Blur Image Online - Free Whole-Image Gaussian Blur"
+            seoDescription="Blur an entire photo online with an adjustable 0-50px Gaussian blur, for soft backgrounds and artistic effect. Free, and runs entirely in your browser."
             faqs={faqs}
         >
             <div className="tool-workspace" style={{ maxWidth: '1000px', margin: '0 auto' }}>
@@ -245,13 +257,21 @@ const BlurImage = () => {
                     <div className="about-section" style={{ background: 'var(--bg-card)', padding: '2rem', borderRadius: '1rem', border: '1px solid var(--border)', marginBottom: '2rem' }}>
                         <h2 style={{ fontSize: '1.8rem', marginBottom: '1.5rem' }}>About Blur Image Tool</h2>
                         <p style={{ lineHeight: '1.6', color: 'var(--text-secondary)', marginBottom: '1rem' }}>
-                            Protect your privacy or create artistic effects with our free <strong>Blur Image</strong> tool. Whether you need to hide sensitive information, obscure faces, or simply create a depth-of-field effect, our tool makes it easy.
+                            This applies a Gaussian blur to a whole picture at a radius you choose between 0 and 50 pixels. It is a single global effect, not a selection tool: there is no rectangle to drag and no brush. That makes it a good fit for softening a background image so text sits readably on top of it, blurring a photo behind a login card, or turning a busy screenshot into an abstract header — and a poor fit for hiding one detail inside an otherwise sharp image.
+                        </p>
+                        <h3 style={{ fontSize: '1.15rem', margin: '1.5rem 0 0.75rem' }}>Why blur is not redaction</h3>
+                        <p style={{ lineHeight: '1.6', color: 'var(--text-secondary)', marginBottom: '1rem' }}>
+                            A blur averages each pixel with its neighbours. Mathematically that is a convolution, and convolutions can be attacked — especially when the hidden content is short and predictable, like a card number, a postcode or a name from a known list. Heavy blur genuinely destroys the information, but a light one can leave enough structure for it to be recovered. If something in the frame must not be readable, take it out of the frame: crop it away with the Image Cropper, or cover it with a solid opaque shape. Use blur when the goal is how the picture looks, not when the goal is secrecy.
+                        </p>
+                        <h3 style={{ fontSize: '1.15rem', margin: '1.5rem 0 0.75rem' }}>Getting the export to match the preview</h3>
+                        <p style={{ lineHeight: '1.6', color: 'var(--text-secondary)', marginBottom: '1rem' }}>
+                            The preview blurs the image at the size it is displayed on your screen, which for a phone photo might be a quarter of its real width. Applying the same numeric radius to the full-resolution file would produce something far weaker than what you approved, so the radius is multiplied by the ratio between the natural width and the displayed width before the export runs. The two then look the same.
                         </p>
                         <p style={{ lineHeight: '1.6', color: 'var(--text-secondary)', marginBottom: '1rem' }}>
-                            Adjust the blur intensity with precision using our slider control. See the results instantly in the live preview.
+                            Two details make the output cleaner than a naive canvas blur. Before the filter runs, the edge pixels are replicated outward into a padded border, so the blur has real colour to sample at the boundary instead of pulling in transparency and leaving a dark smeared frame once JPEG flattens the alpha. And because browsers cap canvases by both their longest side and their total area — iOS Safari at roughly 16 megapixels is the strictest — the padding is fitted to what your device can actually allocate, with the radius reduced to match if it will not fit. You get a slightly softer result rather than a failed download.
                         </p>
                         <p style={{ lineHeight: '1.6', color: 'var(--text-secondary)' }}>
-                            Your photos are safe with us—all processing happens directly in your browser, ensuring your images are never shared or uploaded to a server.
+                            The download keeps your original format where the browser can write it, so a JPEG stays a JPEG, a PNG stays a PNG and a WebP stays a WebP, saved as blurred- plus your filename. Those three are the whole list a canvas can encode; drop in something else and you will get PNG data under the original extension, because the filename is reused as-is. JPEG output is drawn onto white first because it has no alpha channel. All of it runs in this tab: the image is never uploaded, which is the point when the reason you are blurring it is that it shows something you would rather not hand to a stranger.
                         </p>
                     </div>
                     <div className="features-section" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))', gap: '2rem' }}>

@@ -8,12 +8,28 @@ on:
 permissions:
   contents: write
 
+# Two pushes landing close together would otherwise race each other onto gh-pages and the
+# loser's dist would win. Queue instead of cancelling: a cancelled run can leave a partially
+# written publish branch, and the pipeline is cheap enough to just let both finish in order.
+concurrency:
+  group: pages-deploy
+  cancel-in-progress: false
+
 jobs:
   deploy:
     runs-on: ubuntu-latest
+    # Cold-cache worst case is a ~117 MB model download plus a headless Chrome pass over 89
+    # routes. 45 minutes is generous for that; the point is that a wedged browser cannot sit
+    # on the runner for the default six hours.
+    timeout-minutes: 45
+
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+        with:
+          # generate-sitemap.js derives <lastmod> from "git log -1" per component; a shallow
+          # clone has no history, so every URL would collapse to the build date.
+          fetch-depth: 0
 
       - name: Set up Node
         uses: actions/setup-node@v4
@@ -21,27 +37,137 @@ jobs:
           node-version: 20
           cache: 'npm'
 
+      # scripts/prerender.js drives a real Chrome, and a missing browser is a hard build
+      # failure by design (shipping an un-prerendered dist silently is the exact bug this
+      # pipeline exists to prevent). puppeteer's postinstall downloads ~150 MB of Chrome into
+      # ~/.cache/puppeteer during `npm ci`; caching that turns the download into a restore.
+      # Keyed on the lockfile because that is what pins the puppeteer version, and therefore
+      # which Chrome build it resolves.
+      - name: Cache Chrome for Puppeteer
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/puppeteer
+          key: ${{ runner.os }}-puppeteer-${{ hashFiles('package-lock.json') }}
+          restore-keys: |
+            ${{ runner.os }}-puppeteer-
+
+      # scripts/copy-ocr-assets.js fetches the background-removal ONNX model (~117 MB) from
+      # staticimgly.com and keeps it under .imgly-cache, keyed by library version, so a warm
+      # cache makes the prebuild fully offline. A miss is not fatal — that script catches the
+      # failure and the tool falls back to the CDN at runtime — but it costs minutes of build
+      # time and a lot of third-party bandwidth on every single deploy.
+      - name: Cache background-removal model
+        uses: actions/cache@v4
+        with:
+          path: .imgly-cache
+          key: ${{ runner.os }}-imgly-${{ hashFiles('package-lock.json') }}
+          restore-keys: |
+            ${{ runner.os }}-imgly-
+
       - name: Install dependencies
         run: npm ci
 
-      - name: Validate route consistency
-        run: node scripts/validate-routes.js
-        continue-on-error: false
+      # Belt and braces. `npm ci` normally installs Chrome via puppeteer's postinstall, but a
+      # future `ignore-scripts`, a partially populated browser cache, or an npm-cache-only hit
+      # would leave no binary — and scripts/prerender.js would then fail the whole deploy.
+      # Idempotent: @puppeteer/browsers returns early when the pinned build already exists in
+      # the cache directory, so on a warm cache this downloads nothing.
+      - name: Ensure Chrome for Puppeteer is installed
+        run: npx puppeteer browsers install chrome
 
-      - name: Build application
-        run: npm run build
+      # ONE command, byte-identical to what a developer runs locally, so CI and local can
+      # never drift again. package.json owns the order; do not inline the stages here.
+      #
+      #   npm run prepare-deploy
+      #     1. npm run validate-routes   App.jsx routes == generate-sitemap.js routes
+      #     2. npm run build
+      #          prebuild:  scripts/copy-ocr-assets.js    -> public/tesseract, public/imgly
+      #                     scripts/copy-monaco-assets.js -> public/monaco/vs
+      #          vite build                               -> dist/ (publicDir copied verbatim)
+      #          postbuild: scripts/prune-dead-assets.js  -> drops unreachable ORT wasm
+      #     3. node generate-sitemap.js  -> dist/<route>/index.html x89, sitemap.xml,
+      #                                     .nojekyll, 404.html
+      #     4. npm run prerender         -> fills every dist/<route>/index.html #root
+      #
+      # Step 4 is the one CI used to skip entirely, which is why every deploy before this
+      # shipped `<div id="root"></div>` to crawlers. PRERENDER_OPTIONAL is deliberately NOT
+      # set: a missing browser must fail the build, not quietly downgrade the output.
+      - name: Build, generate sitemap and prerender
+        run: npm run prepare-deploy
 
-      - name: Generate sitemap and prepare Multi-Entry SPA
-        run: node generate-sitemap.js
-
+      # Gate the publish on the artifacts actually being there. Every assertion below maps to
+      # a way this pipeline has silently produced a deployable-but-wrong dist.
       - name: Verify deployment structure
+        shell: bash
         run: |
-          echo "Verifying critical files..."
-          test -f dist/index.html || (echo "ERROR: dist/index.html missing" && exit 1)
-          test -f dist/.nojekyll || (echo "ERROR: dist/.nojekyll missing" && exit 1)
-          test -f dist/404.html || (echo "ERROR: dist/404.html missing" && exit 1)
-          test -f dist/og/default.png || (echo "ERROR: dist/og/default.png missing (social preview images not committed)" && exit 1)
-          echo "✅ All critical files present"
+          set -euo pipefail
+          fail() { echo "❌ ERROR: $*" >&2; exit 1; }
+
+          echo "── Critical files ───────────────────────────────────────────"
+          for f in dist/index.html dist/.nojekyll dist/404.html dist/og/default.png dist/sitemap.xml; do
+            [ -f "$f" ] || fail "$f is missing"
+            echo "   ✓ $f"
+          done
+
+          echo "── Route pages ──────────────────────────────────────────────"
+          # Exactly the set scripts/prerender.js walks: every index.html under dist except
+          # those inside dist/assets or a dot-directory. 89 today = home + 88 tool/legal routes.
+          # Built with a read loop rather than `mapfile` so this block stays runnable on any
+          # POSIX-ish bash, which is what let it be tested outside CI.
+          pages=()
+          while IFS= read -r page; do
+            pages+=("$page")
+          done < <(find dist \( -name assets -o -name '.*' \) -prune -o -type f -name index.html -print | sort)
+          echo "   found ${#pages[@]} route index.html files"
+          [ "${#pages[@]}" -ge 89 ] || fail "expected at least 89 route pages, found ${#pages[@]} — generate-sitemap.js did not emit them all"
+
+          echo "── Prerendered markup ───────────────────────────────────────"
+          # Two complementary checks, because either alone has a blind spot.
+          #
+          # 1. The exact literal from prerender.js's EMPTY_ROOT constant — byte-for-byte what
+          #    index.html ships and what generate-sitemap.js copies into every route. Kept as a
+          #    fixed string rather than a whitespace-tolerant regex: grep is line-oriented, so a
+          #    regex that looks like it spans newlines quietly would not.
+          empty_root=$(grep -lF '<div id="root"></div>' "${pages[@]}" || true)
+          if [ -n "$empty_root" ]; then
+            echo "$empty_root" | sed 's/^/     /'
+            fail "the pages above still ship an empty <div id=\"root\"></div> — prerender did not run or did not cover them"
+          fi
+          #
+          # 2. Positive proof that real content landed, which also covers the degenerate roots
+          #    the literal above cannot see (whitespace-only, spinner-only, truncated). Sound in
+          #    both directions: the SPA shell and dist/404.html contain no <h1 at all, and
+          #    prerender.js already hard-fails any route that renders without one.
+          no_heading=$(grep -LF '<h1' "${pages[@]}" || true)
+          if [ -n "$no_heading" ]; then
+            echo "$no_heading" | sed 's/^/     /'
+            fail "the pages above contain no <h1> — their prerendered body is empty or degenerate"
+          fi
+          echo "   ✓ all ${#pages[@]} route pages carry a filled #root and an <h1>"
+
+          echo "── Self-hosted Monaco ───────────────────────────────────────"
+          # src/utils/monacoLoader.js repoints @monaco-editor/loader at /monaco/vs. If that
+          # payload is absent the eight editor routes silently fall back to cdn.jsdelivr.net,
+          # which is the off-origin dependency the audit removed.
+          [ -f dist/monaco/vs/loader.js ] || fail "dist/monaco/vs/loader.js missing — editor routes would fall back to cdn.jsdelivr.net"
+          [ -f dist/monaco/vs/editor/editor.main.js ] || fail "dist/monaco/vs/editor/editor.main.js missing — the Monaco copy is incomplete"
+          monaco_files=$(find dist/monaco/vs -type f | wc -l | tr -d ' ')
+          # `du -sk` rather than `find -printf`/`stat`: identical on GNU and BSD, so this block
+          # is runnable off-CI. Block rounding only ever overstates, which for a floor check is
+          # slack measured in hundreds of KB against a multi-MB threshold.
+          monaco_kb=$(du -sk dist/monaco/vs | awk '{ print $1 }')
+          echo "   found $monaco_files files, $((monaco_kb / 1024)) MB"
+          # 108 files / ~14.7 MB at monaco-editor 0.55.1. The floors leave room for the package
+          # to shrink while still catching an absent or truncated copy.
+          [ "$monaco_kb" -ge 12288 ] || fail "Monaco payload is only $((monaco_kb / 1024)) MB (expected ~14 MB) — copy-monaco-assets.js did not stage it"
+          [ "$monaco_files" -ge 90 ] || fail "Monaco payload has only $monaco_files files (expected ~108) — the copy is incomplete"
+
+          echo "── Sitemap ──────────────────────────────────────────────────"
+          loc_count=$( { grep -o '<loc>' dist/sitemap.xml || true; } | wc -l | tr -d ' ')
+          echo "   found $loc_count <loc> entries"
+          [ "$loc_count" -ge 89 ] || fail "dist/sitemap.xml has $loc_count <loc> entries (expected 89)"
+
+          echo "✅ All deployment invariants hold"
 
       - name: Deploy to GitHub Pages
         uses: peaceiris/actions-gh-pages@v3

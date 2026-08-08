@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from 'react'
+import { useLocation } from 'react-router-dom'
 import { Helmet } from 'react-helmet-async'
 import { useDropzone } from 'react-dropzone'
 import * as pdfjsLib from 'pdfjs-dist'
@@ -7,6 +8,7 @@ import * as pdfjsLib from 'pdfjs-dist'
 import pdfWorkerUrl from 'pdfjs-dist/build/pdf.worker.min.mjs?url'
 import { PDFDocument, degrees } from '@cantoo/pdf-lib' // For saving (this fork can decrypt permission-encrypted PDFs)
 import { Upload } from 'lucide-react'
+import RelatedTools from '../../components/tools/RelatedTools'
 import { EditorProvider, useEditor } from '../../components/pdf-editor/EditorContext'
 import Toolbar from '../../components/pdf-editor/Toolbar'
 import Sidebar from '../../components/pdf-editor/Sidebar'
@@ -33,6 +35,79 @@ const overlayAnchor = (rotation, box) => {
     if (rotation === 270) return { x: box.x, y: box.y + box.height };
     return { x: box.x, y: box.y };
 };
+
+// Editorial copy for the landing view (the state a crawler and a first-time visitor see).
+// Kept at module scope so the visible FAQ list and the FAQPage structured data emitted in
+// <Helmet> below are generated from one array and cannot drift apart.
+const EDITOR_FEATURES = [
+    {
+        title: 'Seven Tools On One Overlay',
+        desc: 'Select, Text, Freehand Draw, Highlight, Rectangle, Circle and Redact, plus Add Image. Everything you place sits on an editable layer above the page and can be moved, resized, recoloured or deleted until you download.'
+    },
+    {
+        title: 'Properties Follow The Selection',
+        desc: 'The right panel tracks the active tool and whatever you click: eight swatches plus a colour picker, font size 8 to 72, brush size 1 to 50, border width up to 20, highlight opacity 10 to 100 per cent.'
+    },
+    {
+        title: 'Undo Per Page, Fifty Deep',
+        desc: 'Each page keeps its own history, up to fifty snapshots or eight megabytes. A burst of typing collapses into one entry, and Delete or Backspace removes the selection.'
+    },
+    {
+        title: 'Untouched Pages Are Copied, Not Rebuilt',
+        desc: 'Only pages carrying annotations are rewritten on save. The rest are copied from the original, so their text stays selectable and their quality is unchanged.'
+    },
+    {
+        title: 'Redaction Removes Rather Than Covers',
+        desc: 'A redaction box replaces its page with a flat 150 DPI image of the page plus your boxes, so the text underneath is gone from the file rather than hidden behind something.'
+    },
+    {
+        title: 'Nothing Leaves This Tab',
+        desc: 'pdf.js draws the pages, pdf-lib writes the result, both in your browser. No upload, no server round trip, and it keeps working offline once loaded.'
+    }
+]
+
+const HOW_IT_WORKS = [
+    'Drop a PDF on the panel above and pdf.js parses it in the page. Each sheet becomes a page object: the left column renders thumbnails from the top, one at a time, and the main area draws every page onto a canvas with a transparent editing layer stacked over it. Zoom runs from 50 to 300 per cent in ten-point steps, applied instantly as a CSS transform and re-rasterised 300 milliseconds after you stop clicking, so the page stays sharp without a full re-render on every press.',
+
+    'Long documents render as a moving window. Only pages within about 1,200 pixels of the viewport hold a bitmap; scroll past one and its raster, plus the backing store of the two canvases behind it, is released and rebuilt when it comes back. Annotations, layout and undo history all survive, because only pixels are discarded. A single page raster is capped at four million pixels, device pixel ratio at two, and pages are rasterised one at a time through a queue, so a few hundred pages stay workable.',
+
+    'Clicking with the Text tool puts a caret where you clicked; type and the box stays, click away without typing and it is dropped. Rectangle and Circle place a starter shape you drag and resize by its handles. Draw and Highlight are brush modes, the highlight carrying an alpha value from the opacity slider. Add Image scales a picture to 200 pixels wide and centres it on the page you are looking at — the page with the most pixels on screen, which is also the page Undo and Redo act on.',
+
+    'Download rebuilds the file with pdf-lib from the original bytes, not from what is on screen. A page annotated but not redacted has its overlay exported as a transparent PNG at 150 DPI and stamped over the untouched original; a page holding a redaction box is replaced by a flat image instead. Rotated pages are anchored to the corner their rotation maps to and measured from the CropBox, which is what a viewer uses. The result arrives as edited-yourfile.pdf, or secured-yourfile.pdf when anything was redacted.',
+
+    'What it will not do: rewrite the text already in the document, or change its structure. A PDF holds positioned glyphs in subset fonts rather than paragraphs, so cover the old text with a white rectangle and type over it. Pages cannot be added, deleted, reordered or rotated here, and typing into a form draws on top of the field rather than filling it.'
+]
+
+const PDF_EDITOR_FAQS = [
+    {
+        q: 'Can I change the text that is already in the PDF?',
+        a: 'No. A PDF stores glyphs at fixed positions in subset fonts, not editable paragraphs, so there is no text run to retype. Use the route that works: draw a rectangle over the old text with a white fill and a border width of zero, then add the replacement with the Text tool.'
+    },
+    {
+        q: 'Is my document uploaded anywhere?',
+        a: 'No. The file is read from disk with the browser File API, drawn by pdf.js, edited on a canvas and written back out by pdf-lib, all inside this tab. Once the editor has loaded you can disconnect from the network and it still works.'
+    },
+    {
+        q: 'How do I sign a document here?',
+        a: 'Either pick Freehand Draw, turn the brush size down and sign with a trackpad, mouse or touchscreen, or photograph a signature you already have, save it as a PNG with a transparent background and place it with Add Image. Either way the mark lands on the page you are viewing and can be dragged and resized before you download.'
+    },
+    {
+        q: 'What does Redact actually delete?',
+        a: 'The page underneath the box. On download that page is re-rendered at 150 DPI, your boxes are painted over the raster, and the image is written as the page in a newly built document, so the hidden text is not in the output for an extractor to find. The trade-off is that the whole page becomes an image: nothing on it stays selectable, and the file grows.'
+    },
+    {
+        q: 'Why is the text I typed not selectable in the saved file?',
+        a: 'Because annotations are stamped in as a raster layer: the editing surface is a canvas, and on save it is exported as a PNG and drawn over the page. It prints correctly, but it is a picture of text, so search will not find it and reopening the file here gives a flat page rather than editable objects.'
+    },
+    {
+        q: 'Saving says the PDF is password-protected. Now what?',
+        a: 'There are two kinds of protection. A permissions-only password, common on bank statements and invoices, is handled for you: the save path opens the document with an empty password. A PDF that needs a password to open is different — pdf.js will not display it at all, so it fails when you add the file. Run it through the Unlock PDF tool first, then open the unlocked copy here.'
+    },
+    {
+        q: 'Can I add, delete, reorder or rotate pages?',
+        a: 'Not in this editor: what you download has the same pages, in the same order, as what you opened. Organize PDF reorders and deletes, Rotate PDF fixes orientation, Merge PDF and Split PDF change the page count. Do the structural work first, then bring the result here to annotate.'
+    }
+]
 
 const PdfEditorContent = () => {
     const {
@@ -334,7 +409,7 @@ const PdfEditorContent = () => {
                         Professional PDF Editor
                     </h1>
                     <p style={{ color: '#64748b', fontSize: '1.25rem' }}>
-                        Edit, sign, and annotate PDFs with our free, secure, client-side editor.
+                        Annotate, sign and redact a PDF in your browser. The file is opened, edited and saved on this device.
                     </p>
                 </header>
 
@@ -366,18 +441,30 @@ const PdfEditorContent = () => {
                     <p style={{ color: '#64748b' }}>Drag & drop or click to browse</p>
                 </div>
 
-                <div style={{ marginTop: '4rem', display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '2rem', width: '100%', maxWidth: '1000px' }}>
-                    {[
-                        { title: 'Full Editing Suite', desc: 'Add text, shapes, and freehand drawings. Highlight important sections or strike through errors.' },
-                        { title: 'Form Filling & Signing', desc: 'Easily fill out PDF forms and add your signature electronically without printing.' },
-                        { title: 'Secure Redaction', desc: 'Permanently remove sensitive information. Our redaction tool flattens content to ensure it cannot be recovered.' }
-                    ].map((feat, i) => (
-                        <div key={i} className="tool-feature-block" style={{ padding: '2rem', background: 'white', borderRadius: '1rem', border: '1px solid var(--border)' }}>
-                            <h4 style={{ fontSize: '1.1rem', fontWeight: '700', marginBottom: '0.5rem' }}>{feat.title}</h4>
-                            <p style={{ color: '#64748b', fontSize: '0.9rem', lineHeight: 1.6 }}>{feat.desc}</p>
-                        </div>
+                <section style={{ marginTop: '4rem', width: '100%', maxWidth: '1000px' }}>
+                    <h2 style={{ fontSize: '1.75rem', fontWeight: '700', marginBottom: '1.5rem', textAlign: 'center' }}>
+                        What The Editor Gives You
+                    </h2>
+                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '2rem' }}>
+                        {EDITOR_FEATURES.map((feat, i) => (
+                            <div key={i} className="tool-feature-block" style={{ padding: '2rem', background: 'white', borderRadius: '1rem', border: '1px solid var(--border)' }}>
+                                <h3 style={{ fontSize: '1.1rem', fontWeight: '700', marginBottom: '0.5rem' }}>{feat.title}</h3>
+                                <p style={{ color: '#64748b', fontSize: '0.9rem', lineHeight: 1.6 }}>{feat.desc}</p>
+                            </div>
+                        ))}
+                    </div>
+                </section>
+
+                <section style={{ marginTop: '4rem', width: '100%', maxWidth: '800px', background: 'white', padding: '2rem', borderRadius: '1rem', border: '1px solid var(--border)' }}>
+                    <h2 style={{ fontSize: '1.75rem', fontWeight: '700', marginBottom: '1.5rem' }}>
+                        How This PDF Editor Works
+                    </h2>
+                    {HOW_IT_WORKS.map((paragraph, i) => (
+                        <p key={i} style={{ color: '#64748b', fontSize: '0.95rem', lineHeight: 1.7, marginBottom: '1rem' }}>
+                            {paragraph}
+                        </p>
                     ))}
-                </div>
+                </section>
 
                 {/* FAQ Section for SEO */}
                 <section style={{ marginTop: '4rem', width: '100%', maxWidth: '800px' }}>
@@ -385,13 +472,7 @@ const PdfEditorContent = () => {
                         Frequently Asked Questions
                     </h2>
                     <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-                        {[
-                            { q: 'Is it free to edit PDFs?', a: 'Yes, our editor is completely free. We do not charge for adding text, signatures, or annotations.' },
-                            { q: 'Can I edit existing text?', a: 'Because PDFs are complex, direct text modification is difficult in the browser. However, you can easily cover old text with a white box and write new text over it.' },
-                            { q: 'Is my document private?', a: 'Absolutely. We use 100% client-side processing, meaning your PDF never leaves your computer.' },
-                            { q: 'How do I sign a PDF?', a: 'Select the "Draw" tool or "Text" tool to add your signature. You can place it anywhere on the document.' },
-                            { q: 'Does it work on Mac and Windows?', a: 'Yes! Our tool works in any modern web browser (Chrome, Safari, Edge, Firefox) on any operating system.' }
-                        ].map((faq, i) => (
+                        {PDF_EDITOR_FAQS.map((faq, i) => (
                             <details key={i} style={{ background: 'white', borderRadius: '0.75rem', border: '1px solid var(--border)', overflow: 'hidden' }}>
                                 <summary style={{ padding: '1rem 1.25rem', fontWeight: '600', cursor: 'pointer', fontSize: '1rem' }}>{faq.q}</summary>
                                 <p style={{ padding: '0 1.25rem 1rem', color: '#64748b', fontSize: '0.95rem', lineHeight: 1.6 }}>{faq.a}</p>
@@ -399,6 +480,12 @@ const PdfEditorContent = () => {
                         ))}
                     </div>
                 </section>
+
+                {/* Contextual outbound links. Every other tool page renders this block; without it
+                    this page was the only one in the site emitting no related-tool links at all. */}
+                <div style={{ width: '100%', maxWidth: '1000px' }}>
+                    <RelatedTools />
+                </div>
             </div>
         )
     }
@@ -441,11 +528,34 @@ const PdfEditorContent = () => {
 }
 
 const PdfEditor = () => {
+    // This page renders its own <Helmet> instead of going through ToolLayout, so it has to declare
+    // the canonical itself. Helmet owns every head tag marked data-rh="true" (generate-sitemap.js
+    // stamps that on the prerendered canonical) and deletes the ones the mounted page does not
+    // re-declare — omit this and the built-in canonical disappears the moment React hydrates.
+    // Derivation is copied verbatim from ToolLayout so both emit the same trailing-slash URL, which
+    // is the only form GitHub Pages answers 200 on.
+    const location = useLocation()
+    const canonicalUrl = `https://onlinetoolsvault.com${location.pathname.replace(/\/+$/, '')}/`
+
     return (
         <EditorProvider>
             <Helmet>
                 <title>Free Online PDF Editor - Edit PDFs Securely</title>
                 <meta name="description" content="Professional PDF Editor. Add text, images, shapes, and freehand drawings to your PDF documents online. 100% free and client-side secure." />
+                <link rel="canonical" href={canonicalUrl} />
+                {/* Same FAQPage markup ToolLayout emits for the other 83 tools, built from the
+                    array that renders the visible list so the two cannot disagree. */}
+                <script type="application/ld+json">
+                    {JSON.stringify({
+                        '@context': 'https://schema.org',
+                        '@type': 'FAQPage',
+                        mainEntity: PDF_EDITOR_FAQS.map(faq => ({
+                            '@type': 'Question',
+                            name: faq.q,
+                            acceptedAnswer: { '@type': 'Answer', text: faq.a }
+                        }))
+                    })}
+                </script>
             </Helmet>
             <PdfEditorContent />
         </EditorProvider>

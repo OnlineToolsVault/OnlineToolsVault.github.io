@@ -1,5 +1,9 @@
 import { Helmet } from 'react-helmet-async'
 import { useLocation } from 'react-router-dom'
+import { tools } from '../../data/tools'
+
+// Route -> catalogue entry, keyed by the slash-less `path` the catalogue stores.
+const toolByPath = new Map(tools.map((tool) => [tool.path, tool]))
 
 const ToolLayout = ({
     title,
@@ -12,8 +16,22 @@ const ToolLayout = ({
     const location = useLocation()
     // GitHub Pages serves every route as a directory index and 301s the slash-less form, so the
     // trailing-slash URL is the one that actually returns 200 — that is what we point canonical at.
-    const canonicalPath = `${location.pathname.replace(/\/+$/, '')}/`
-    const canonicalUrl = `https://onlinetoolsvault.com${canonicalPath}`
+    const routePath = location.pathname.replace(/\/+$/, '')
+    const canonicalUrl = `https://onlinetoolsvault.com${routePath}/`
+
+    // The <title> and <meta name="description"> come from src/data/tools.js, NOT from this
+    // component's props. generate-sitemap.js writes the prerendered head from the same catalogue
+    // entry, so the tags Helmet installs on mount are byte-identical to the ones already in the
+    // document. Sourcing them from the props instead is what made every tool page's title change a
+    // moment after load: the static tag said "<name> | OnlineToolsVault" and React replaced it with
+    // the page's own, differently worded seoTitle.
+    //
+    // The props remain the fallback for anything not in the catalogue, and they still drive the
+    // visible <h1> and subtitle below — a page is free to say something longer on screen than it
+    // says in a search result.
+    const tool = toolByPath.get(routePath)
+    const headTitle = tool?.seoTitle || seoTitle || title
+    const headDescription = tool?.seoDescription || seoDescription || description
 
     const renderStyledText = (text) => {
         if (!text || typeof text !== 'string') return text
@@ -28,8 +46,8 @@ const ToolLayout = ({
     return (
         <>
             <Helmet>
-                <title>{seoTitle || title}</title>
-                <meta name="description" content={seoDescription || description} />
+                <title>{headTitle}</title>
+                <meta name="description" content={headDescription} />
                 <link rel="canonical" href={canonicalUrl} />
                 {faqs.length > 0 && (
                     <script type="application/ld+json">

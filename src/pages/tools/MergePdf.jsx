@@ -6,35 +6,43 @@ import { PDFDocument } from 'pdf-lib'
 import { Upload, Download, FileText, ArrowUp, ArrowDown, X, Loader2, ShieldCheck, Zap, Layers } from 'lucide-react'
 
 const features = [
-    { title: 'Combine Anything', desc: 'Seamlessly merge multiple PDF files into one. Perfect for combining reports, invoices, or ebook chapters.', icon: <Layers color="var(--primary)" size={24} /> },
-    { title: 'Intelligent Reordering', desc: 'Drag and drop to arrange your files exactly how you want them. What you see is exactly what you get.', icon: <Zap color="var(--primary)" size={24} /> },
-    { title: 'Private & Secure', desc: 'No uploads, no waiting. We process your files directly on your device for maximum speed and confidentiality.', icon: <ShieldCheck color="var(--primary)" size={24} /> }
+    { title: 'Pages copied, not re-rendered', desc: 'Each page object is copied into the new document with its content stream intact, so fonts stay embedded, vectors stay vector, and images keep their original resolution. Nothing is rasterised or re-compressed along the way.', icon: <Layers color="var(--primary)" size={24} /> },
+    { title: 'Merge order you control', desc: 'Files are appended top to bottom exactly as the list shows them. Use the up and down arrows on any row to move a file, or the remove button to drop one, before you press Merge.', icon: <Zap color="var(--primary)" size={24} /> },
+    { title: 'No upload step at all', desc: 'Assembly is done by the pdf-lib library running in this tab. Your PDFs are read with the File API and never sent over the network — after the page has loaded you can switch off Wi-Fi and it still works.', icon: <ShieldCheck color="var(--primary)" size={24} /> }
 ]
 
 const faqs = [
     {
-        question: "Is there a limit on file size?",
-        answer: "We place no artificial limits. You can merge as many files as your computer's memory can handle."
+        question: "What order are the files combined in?",
+        answer: "Top to bottom, in the order the list shows them. Dropping several files at once adds them in the order your operating system hands them over, which is not always alphabetical — check the numbers on the left and use the arrow buttons to fix the sequence before merging."
     },
     {
-        question: "Does it lower the quality?",
-        answer: "Never. Your merged PDF will maintain the exact same quality, resolution, and formatting as your original files."
+        question: "Do bookmarks and fillable form fields survive the merge?",
+        answer: "Page content does; document-level structures do not. Bookmarks (the PDF outline) live on the document catalogue rather than on any page, so they are dropped. Form fields are a mixed case: the widget stays visible on the page because it is a page annotation, but it is no longer registered in the merged file's form dictionary, so it stops being fillable. Fill the form in first, or flatten it with **Flatten PDF**, then merge."
     },
     {
-        question: "Can I merge PDF and images?",
-        answer: "This tool is designed for PDFs. To merge images, try our dedicated Image to PDF converter tool."
+        question: "How many files can I merge, and how large can they be?",
+        answer: "There is no limit written into the tool. The real ceiling is browser memory: every source file is decoded into an in-memory object graph and the finished document is held there too, so peak usage runs to a few times the combined input size. A dozen ordinary reports is unremarkable; several 200 MB scans at once may make the tab stall or crash."
     },
     {
-        question: "How do I reorder pages?",
-        answer: "After uploading, simply use the Up/Down arrow buttons next to each file to change their order."
+        question: "Why does a password-protected PDF fail?",
+        answer: "The merge engine refuses to parse encrypted documents, so the whole operation stops with an error. Run the file through **Unlock PDF** first (you need the password), then merge the unlocked copy."
     },
     {
-        question: "Is it secure?",
-        answer: "Yes, 100% secure. The merging process runs entirely in your browser using WebAssembly. Your files never leave your device."
+        question: "Can I merge images, Word files or Excel sheets into the PDF?",
+        answer: "Not directly — the file picker only accepts application/pdf. Convert first, then merge: **JPG to PDF** or **Image to PDF** for pictures, and **Word to PDF** for .docx files. Each converter hands you a normal PDF that this tool will accept."
     },
     {
-        question: "Can I execute this offline?",
-        answer: "Yes, once the page is loaded, you can disconnect from the internet and still merge PDFs."
+        question: "Can I take only some pages from each file?",
+        answer: "No. Merging always takes whole documents. Extract the ranges you want with **Split PDF** first and merge the resulting pieces, or merge everything and then delete the surplus pages in **Organize PDF**."
+    },
+    {
+        question: "Will the merged file be smaller than the originals added together?",
+        answer: "Usually slightly larger. Identical resources are not de-duplicated across documents, so if the same logo font appears in five source files it is embedded five times. If size matters, run the result through **Compress PDF**, which strips metadata and repacks the object structure."
+    },
+    {
+        question: "What is the merged file called and where does it go?",
+        answer: "It is generated as a Blob in the page and handed to the browser as merged-document.pdf, so it lands in whatever folder your browser uses for downloads. Rename it afterwards if you need something more descriptive."
     }
 ]
 
@@ -188,10 +196,33 @@ const MergePdf = () => {
                 <div className="about-section" style={{ background: 'var(--bg-card)', padding: '2rem', borderRadius: '1rem', border: '1px solid var(--border)', marginBottom: '2rem' }}>
                     <h2 style={{ fontSize: '1.8rem', marginBottom: '1.5rem' }}>About Merge PDF</h2>
                     <p style={{ lineHeight: '1.6', color: 'var(--text-secondary)', marginBottom: '1rem' }}>
-                        Simplify your document management by combining multiple PDF files into a single, organized document. Whether you're merging invoices for an expense report or combining chapters of a thesis, our tool makes it instant and effortless.
+                        This tool concatenates two or more PDF documents into one. Drop the files in, put them in the order you want with the arrow buttons, and press Merge; the browser builds a new document and downloads it as merged-document.pdf. The Merge button stays disabled until at least two files are in the list, because merging one file would just hand you back a copy.
                     </p>
+
+                    <h3 style={{ fontSize: '1.15rem', marginTop: '1.75rem', marginBottom: '0.75rem' }}>How the merge actually works</h3>
+                    <p style={{ lineHeight: '1.6', color: 'var(--text-secondary)', marginBottom: '1rem' }}>
+                        A PDF is not a stream of pages — it is a graph of numbered objects, and a page is one object that points at fonts, images, and a content stream. Merging here creates an empty document and then deep-copies each source page object, following every reference it depends on and renumbering it in the new file. Because the content stream is copied rather than replayed, text stays selectable, vector artwork stays sharp at any zoom, and a 600 DPI scan is still 600 DPI afterwards. This is the difference between merging and printing to PDF: printing flattens everything to a fresh rendering, merging moves the originals.
+                    </p>
+
+                    <h3 style={{ fontSize: '1.15rem', marginTop: '1.75rem', marginBottom: '0.75rem' }}>What travels with the pages, and what does not</h3>
+                    <p style={{ lineHeight: '1.6', color: 'var(--text-secondary)', marginBottom: '1rem' }}>
+                        Anything attached to a page comes along: embedded fonts, images, link and comment annotations, and the page size and rotation of each original — so merging an A4 report with a US Letter appendix produces one file whose pages are genuinely different sizes, which is normal and prints correctly.
+                    </p>
+                    <ul style={{ lineHeight: '1.7', color: 'var(--text-secondary)', marginBottom: '1rem', paddingLeft: '1.25rem' }}>
+                        <li><strong>Dropped:</strong> bookmarks and the outline panel, because they hang off the document catalogue, not off pages.</li>
+                        <li><strong>Dropped:</strong> registration of interactive form fields. The field still draws on the page but no longer accepts input, so fill or flatten forms before merging.</li>
+                        <li><strong>Dropped:</strong> document-level JavaScript, attachments, and the original metadata — the merged file starts with a clean Info dictionary.</li>
+                        <li><strong>Kept:</strong> page content, page dimensions, page rotation, embedded fonts, image resolution, and per-page annotations.</li>
+                    </ul>
+
+                    <h3 style={{ fontSize: '1.15rem', marginTop: '1.75rem', marginBottom: '0.75rem' }}>When something goes wrong</h3>
+                    <p style={{ lineHeight: '1.6', color: 'var(--text-secondary)', marginBottom: '1rem' }}>
+                        Two failures account for nearly everything. The first is encryption: a password-protected file cannot be parsed and the merge aborts, so unlock it first. The second is memory — the whole job happens inside one browser tab, and merging a stack of large scans can exhaust it. If a big merge stalls, combine the files in batches of three or four and then merge the batches, which keeps peak memory to a fraction of doing it in one pass. A file that other readers already struggle with (a truncated download, a partially-written export) will also fail here, and re-exporting it from its source application is the only real fix.
+                    </p>
+
+                    <h3 style={{ fontSize: '1.15rem', marginTop: '1.75rem', marginBottom: '0.75rem' }}>Why it runs in your browser</h3>
                     <p style={{ lineHeight: '1.6', color: 'var(--text-secondary)' }}>
-                        Forget about uploading sensitive data to the cloud. Our client-side technology ensures your files stay on your device, offering you the most secure way to merge PDFs online.
+                        Merging is usually the last step before a document goes to a client, a court, or a lender, which makes it a poor moment to upload signed contracts and payroll statements to somebody else's server. Everything here happens in the tab: the files are read through the browser File API, assembled by JavaScript, and written back out as a Blob that the download bar picks up. No request carries your document, there is nothing to delete afterwards, and the tool keeps working with the network switched off once the page has loaded.
                     </p>
                 </div>
                 <div className="features-section" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))', gap: '2rem' }}>

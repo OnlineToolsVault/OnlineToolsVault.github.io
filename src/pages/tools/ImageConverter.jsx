@@ -5,35 +5,49 @@ import { useDropzone } from 'react-dropzone'
 import { Image as ImageIcon, Download, Loader2, FileImage, RefreshCw, Zap } from 'lucide-react'
 import { saveAs } from 'file-saver'
 const features = [
-    { title: 'Universal Conversion', desc: 'Convert between all major formats including JPG, PNG, WebP, BMP, and SVG.', icon: <FileImage color="var(--primary)" size={24} /> },
-    { title: 'SVG & Vector Support', desc: 'Output images as SVG (embedded) for universal compatibility, or convert SVGs to raster formats.', icon: <RefreshCw color="var(--primary)" size={24} /> },
-    { title: 'Resize & Compress', desc: 'Scale images up to 7x or down to 20%. Adjust quality for JPG/WebP to save space.', icon: <Zap color="var(--primary)" size={24} /> }
+    { title: 'Five output formats', desc: 'JPG, PNG, WebP, BMP and SVG. BMP is written by hand as a 24-bit uncompressed bitmap because no browser canvas can produce one, which is what makes legacy and industrial targets possible.', icon: <FileImage color="var(--primary)" size={24} /> },
+    { title: 'Rasterises SVG input', desc: 'Drop in an SVG and get a fixed-pixel PNG or JPG out, rendered at whatever scale you choose. Useful when a system refuses vector uploads or renders SVG inconsistently.', icon: <RefreshCw color="var(--primary)" size={24} /> },
+    { title: 'Scale from 20% to 700%', desc: 'The scale slider runs on the same pass as the conversion, so one step both changes the format and sets the size — no need to resize separately and re-encode twice.', icon: <Zap color="var(--primary)" size={24} /> },
+    { title: 'Quality control where it exists', desc: 'A quality slider appears for JPG and WebP, the two formats that have one, and is hidden for PNG, BMP and SVG rather than pretending to do something.', icon: <Zap color="var(--primary)" size={24} /> },
+    { title: 'Refuses impossible sizes clearly', desc: 'If the scale you picked would exceed what your browser can allocate, you get a message naming the dimensions instead of a silent failure or an empty download.', icon: <RefreshCw color="var(--primary)" size={24} /> }
 ]
 
 const faqs = [
     {
-        question: "Can I convert images to SVG?",
-        answer: "Yes! You can convert any image (JPG, PNG, etc.) to SVG. Note that this embeds the image inside an SVG wrapper, making it compatible with vector-only software."
+        question: "Does converting to SVG trace my photo into vectors?",
+        answer: "No, and this is the single most misunderstood thing about image-to-SVG conversion. The tool wraps your picture in an SVG document as an embedded base64 PNG. The file is genuinely an .svg and will open in vector-only software, but it still contains pixels — enlarging it will not sharpen anything. Real vectorisation traces shapes and produces paths, which is a different problem entirely."
     },
     {
-        question: "Can I convert SVG to JPG or PNG?",
-        answer: "Absolutely. You can upload an SVG file and convert it to high-quality PNG or JPG files instanty."
+        question: "Can I go the other way and turn an SVG into a PNG?",
+        answer: "Yes, and that direction is a true conversion. The browser renders the vector artwork and the result is captured at whatever scale you have selected, so set the scale before you convert — 300% or 500% on a small icon gives you a crisp raster at the size you actually need. This is the practical fix when a platform rejects SVG uploads."
     },
     {
-        question: "Does resizing affect quality?",
-        answer: "We use high-quality lanczos-like smoothing when scaling. Downscaling generally looks sharp, while upscaling (up to 700%) tries to preserve as much detail as possible."
+        question: "What happens to transparency?",
+        answer: "PNG, WebP and the SVG wrapper all keep it. JPG and BMP have no alpha channel at all, so any transparent area is filled with **white** before encoding. If your logo has a transparent background and you need it to sit on a coloured page, stay in PNG or WebP."
     },
     {
-        question: "Is transparency preserved?",
-        answer: "Yes, for PNG, WebP, and SVG formats. Converting to JPG will replace transparency with a white background."
+        question: "Why is my BMP file enormous?",
+        answer: "Because BMP is uncompressed. Every pixel is stored as three raw bytes, so a 4000 x 3000 image is roughly 36 MB regardless of content. That is not a bug — it is the format. Only choose BMP when something on the other end genuinely requires it, such as older Windows software or an embedded display."
     },
     {
-        question: "How does the Quality slider work?",
-        answer: "For JPG and WebP, you can adjust the compression quality from 10% to 100%. Lower quality results in much smaller file sizes."
+        question: "How far can I scale, and does it hurt quality?",
+        answer: "The slider runs from 20% to 700% in steps of 20 percentage points. Scaling down uses the browser high-quality smoothing and stays clean. Scaling up spreads existing pixels over a bigger grid — soft rather than blocky, but no new detail. The exception is an SVG source, where scaling up genuinely re-renders the vector and stays sharp at any size."
     },
     {
-        question: "Is it secure?",
-        answer: "100% secure. Use our tool offline if you want! No image ever leaves your device."
+        question: "I got an error saying the image is too large for my browser.",
+        answer: "Canvases have hard ceilings — roughly 268 million pixels of total area and 32,767 pixels on any one side. A high scale factor on an already-large photo crosses that line, and the tool stops and tells you the dimensions it was asked for rather than handing back an empty file. Lower the scale slider and convert again."
+    },
+    {
+        question: "Which formats can I put in?",
+        answer: "Anything your browser can decode: JPG, PNG, WebP, GIF, BMP and SVG. HEIC and HEIF photos from an iPhone generally cannot be decoded and produce a clear error — send those through the HEIC to JPG converter first. An animated GIF is reduced to its first frame."
+    },
+    {
+        question: "When should I choose WebP over JPG?",
+        answer: "WebP is smaller than JPG at a matched visual quality and, unlike JPG, supports transparency — it is the better default for anything going on a website today. Stay with JPG when the file has to be opened by older software, attached to an email for an unknown recipient, or imported by a system with a fixed list of accepted types."
+    },
+    {
+        question: "Does my image get uploaded?",
+        answer: "No. Decoding, scaling and encoding all happen in this tab using your browser canvas, and the BMP writer is plain JavaScript running on your machine. Once the page has loaded you can go offline and every conversion still works."
     }
 ]
 
@@ -381,13 +395,22 @@ const ImageConverter = () => {
                     <div className="about-section" style={{ background: 'var(--bg-card)', padding: '2rem', borderRadius: '1rem', border: '1px solid var(--border)', marginBottom: '2rem' }}>
                         <h2 style={{ fontSize: '1.8rem', marginBottom: '1.5rem' }}>About Free Image Converter</h2>
                         <p style={{ lineHeight: '1.6', color: 'var(--text-secondary)', marginBottom: '1rem' }}>
-                            Need to change an image format quickly? Our <strong>Free Image Converter</strong> lets you transform photos between <strong>JPG, PNG, WebP, BMP, and SVG</strong> formats in seconds.
+                            Change an image from one file format to another, and optionally change its size on the same pass. Your file is decoded by the browser, drawn onto a canvas at the scale you chose, and encoded again as <strong>JPG</strong>, <strong>PNG</strong>, <strong>WebP</strong>, <strong>BMP</strong> or <strong>SVG</strong>. Doing both steps together matters: converting and then resizing separately would put the image through two lossy encodes instead of one.
                         </p>
+                        <h3 style={{ fontSize: '1.15rem', margin: '1.5rem 0 0.75rem' }}>Choosing the right output</h3>
                         <p style={{ lineHeight: '1.6', color: 'var(--text-secondary)', marginBottom: '1rem' }}>
-                            <strong>New Features:</strong> You can now <strong>convert images to SVG</strong> (useful for vector software compatibility) and <strong>resize/scale</strong> your images up to 700% or down to 20%.
+                            <strong>JPG</strong> for photographs going somewhere that must accept them, at the cost of no transparency. <strong>PNG</strong> for screenshots, logos, diagrams and anything with hard edges or an alpha channel, encoded losslessly. <strong>WebP</strong> when the destination is a modern browser: smaller than JPG at the same visual quality, and it keeps transparency. <strong>BMP</strong> only when something on the other end demands it — the writer here produces a 24-bit uncompressed bitmap, which means roughly three bytes per pixel and files that run into tens of megabytes.
+                        </p>
+                        <h3 style={{ fontSize: '1.15rem', margin: '1.5rem 0 0.75rem' }}>What SVG output really is</h3>
+                        <p style={{ lineHeight: '1.6', color: 'var(--text-secondary)', marginBottom: '1rem' }}>
+                            Choosing SVG does not trace your photograph into shapes and paths. It writes a valid SVG document with your image embedded inside it as base64 PNG data. That is genuinely useful — the file opens in vector-only tools and passes SVG-only upload filters — but it is still pixels in a vector wrapper, so it will not gain sharpness when scaled. Going the other way is a real conversion: drop an SVG in and the browser renders the vector artwork, so set the scale slider high before converting and you get a crisp raster at exactly the size you need.
+                        </p>
+                        <h3 style={{ fontSize: '1.15rem', margin: '1.5rem 0 0.75rem' }}>Transparency, limits and failures</h3>
+                        <p style={{ lineHeight: '1.6', color: 'var(--text-secondary)', marginBottom: '1rem' }}>
+                            JPG and BMP have no alpha channel, so transparent pixels are painted white before encoding rather than turning black. The quality slider appears only for JPG and WebP, running from 10% to 100%, because PNG and BMP have no such setting to expose. Scale runs from 20% to 700%, and if the combination of source size and scale would exceed what a browser canvas can allocate — around 268 million pixels of area, or 32,767 pixels on a side — the conversion stops and tells you the size it was asked for instead of returning an empty file.
                         </p>
                         <p style={{ lineHeight: '1.6', color: 'var(--text-secondary)' }}>
-                            We also offer a <strong>Quality Slider</strong> for JPG and WebP, giving you full control over the file size vs. quality balance.
+                            Input is limited to what your browser can decode, which covers JPG, PNG, WebP, GIF, BMP and SVG but generally excludes HEIC and HEIF from an iPhone; those give a clear error and should go through the HEIC to JPG tool first. Animated GIFs are reduced to their first frame. Every step runs locally in this tab — even the BMP file, which is assembled byte by byte in JavaScript because no browser canvas can write that format — so nothing is uploaded and the page keeps working offline.
                         </p>
                     </div>
                     <div className="features-section" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))', gap: '2rem' }}>

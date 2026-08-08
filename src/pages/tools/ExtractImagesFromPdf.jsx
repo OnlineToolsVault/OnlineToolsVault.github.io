@@ -14,35 +14,43 @@ PDFJS.GlobalWorkerOptions.workerSrc = pdfWorkerUrl
 
 
 const features = [
-    { title: 'Extract All Resources', desc: 'Powerful scanning engine identifies and extracts every embedded image resource from your PDF file.', icon: <Images color="var(--primary)" size={24} /> },
-    { title: 'Lossless Quality', desc: 'Every embedded image is saved as a lossless PNG at its full original resolution.', icon: <Sparkles color="var(--primary)" size={24} /> },
-    { title: 'Secure & Private', desc: 'Everything happens in your browser. No files are uploaded, ensuring your documents remain 100% confidential.', icon: <ShieldCheck color="var(--primary)" size={24} /> }
+    { title: 'Reads the drawing instructions', desc: 'The operator list of each page is walked for image-painting operations, catching both image XObjects and inline images. That finds pictures wherever they sit in the page, including ones tucked inside nested form XObjects.', icon: <Images color="var(--primary)" size={24} /> },
+    { title: 'Native pixels, saved as PNG', desc: 'Images come out at the resolution they were stored at, not at the size they happen to be printed. A 3000-pixel photograph scaled down into a small frame on the page is still 3000 pixels in the exported file.', icon: <Sparkles color="var(--primary)" size={24} /> },
+    { title: 'Falls back and says so', desc: 'A document whose pages are all vector artwork contains no image objects to pull out. Rather than returning nothing, each page is rendered to PNG at 2x and the interface tells you plainly that it did that instead.', icon: <ShieldCheck color="var(--primary)" size={24} /> }
 ]
 
 const faqs = [
     {
-        question: "Does it convert pages to images?",
-        answer: "No, it pulls out the images embedded inside the PDF. If a document has no embedded images, we fall back to rendering each page as a high-quality PNG and tell you that we did."
+        question: "What counts as an image here?",
+        answer: "A raster object the PDF stores and paints — a photograph, a scanned page, a logo saved as a bitmap. Vector artwork does not count, even when it looks like a picture: a chart drawn as lines and fills, or a logo saved as paths, is a set of drawing instructions with no image object to extract. If a document is entirely vector, the tool finds nothing and switches to rendering the pages instead."
     },
     {
-        question: "Is it free to use?",
-        answer: "Yes, our image extractor is completely free with no limits on the number of files."
+        question: "Why is a photograph bigger as an extracted PNG than the whole PDF was?",
+        answer: "Because it is decoded and re-encoded. The picture in the document may be a heavily compressed JPEG; what comes out is the decoded pixel data written losslessly as PNG, which is visually identical and often several times larger. This is a deliberate trade — PNG never adds a second generation of compression damage on top of whatever the original already had."
     },
     {
-        question: "Is it secure?",
-        answer: "Absolutely. All processing is done locally on your device using your browser's resources."
+        question: "An image appears on twenty pages. Do I get twenty copies?",
+        answer: "No. Repeated image objects are recognised as the same resource and exported once, named after the first page they appear on. That is what you want for a letterhead or a watermark logo, and it means the count of extracted files can be much lower than the number of pictures you can see in the document."
     },
     {
-        question: "Can I extract from password protected PDFs?",
-        answer: "You need to unlock the PDF first using our 'Unlock PDF' tool before extracting images."
+        question: "How are the files named?",
+        answer: "image-p4-2.png means the second image exported from page 4 — the counter restarts on each page and skips pictures already exported from an earlier one, so it will not always match the position of the image on the page. When the page-rendering fallback kicks in the names are page-1.png, page-2.png and so on instead. Download images individually from the grid, or take the whole set as extracted-images.zip."
     },
     {
-        question: "What format are the images?",
-        answer: "We extract images as high-quality PNGs to preserve transparency and detail."
+        question: "Some images are missing, or one page produced nothing.",
+        answer: "Three causes. The content may be vector rather than raster, in which case there is nothing to extract from that page. An image object can occasionally fail to resolve, in which case it is skipped after a few seconds rather than left hanging. And an image used as a stencil or a mask for another image may not be exported as a standalone picture. If you need every page as a picture regardless, use **PDF to PNG**, which renders rather than extracts."
     },
     {
-        question: "How do I download them?",
-        answer: "You can download individual images or use the 'Download All' button to get a ZIP file containing everything."
+        question: "Is transparency preserved?",
+        answer: "Where the renderer supplies it, yes — images with an alpha channel are written to PNG with that channel intact, which is why PNG is used rather than JPEG. Images that were opaque in the document come out opaque. What is not reproduced is the page context: an image partly hidden behind other page content is exported whole, exactly as it is stored."
+    },
+    {
+        question: "Do I get the images as they look on the page?",
+        answer: "You get them as they are stored, which is not always the same thing. Any scaling, rotation, cropping or clipping applied when the page draws the image is part of the page, not the image object, so a photograph cropped to a circle on the page comes out as the full uncropped rectangle. If you want the page as it appears, render it with **PDF to JPG** or **PDF to PNG** and crop with **Image Cropper**."
+    },
+    {
+        question: "Can I extract from a password-protected file?",
+        answer: "No — an encrypted document cannot be parsed at all. Run it through **Unlock PDF** first. Everything else happens in this browser tab: the file is read locally, images are decoded locally, and nothing is transmitted, so extracting artwork from a confidential deck does not leave it on a server belonging to anyone else."
     }
 ]
 
@@ -317,10 +325,36 @@ const ExtractImagesFromPdf = () => {
                     <div className="about-section" style={{ background: 'var(--bg-card)', padding: '2rem', borderRadius: '1rem', border: '1px solid var(--border)', marginBottom: '2rem' }}>
                         <h2 style={{ fontSize: '1.8rem', marginBottom: '1.5rem' }}>About Extract Images from PDF</h2>
                         <p style={{ lineHeight: '1.6', color: 'var(--text-secondary)', marginBottom: '1rem' }}>
-                            Need to get images out of a PDF document? Our free online tool pulls the embedded images straight out of the file and saves each one as a lossless PNG. Whether you're recovering photos from an old presentation or need to save artwork for a web gallery, we make it fast, easy, and secure.
+                            This pulls the pictures out of a PDF — the photographs, scans and bitmap logos the document actually stores — and saves each one as a PNG at its native resolution. Take them one at a time from the grid or all at once as extracted-images.zip. The file is parsed in this browser tab and never uploaded.
                         </p>
+
+                        <h3 style={{ fontSize: '1.15rem', marginTop: '1.75rem', marginBottom: '0.75rem' }}>Extracting is not the same as screenshotting a page</h3>
+                        <p style={{ lineHeight: '1.6', color: 'var(--text-secondary)', marginBottom: '1rem' }}>
+                            Most tools that claim to turn a PDF into images render the pages: they draw each page at some resolution and hand you a picture of it. This one does something different. It reads the list of drawing operations a page performs, watches for the ones that paint an image, and pulls the underlying image object out of the file. The difference shows up immediately in quality. A photograph placed at postcard size on a page might be stored at 3000 pixels across; render the page at 144 DPI and you capture perhaps 600 of them, while extraction gives you all 3000.
+                        </p>
+                        <p style={{ lineHeight: '1.6', color: 'var(--text-secondary)', marginBottom: '1rem' }}>
+                            The corollary is that extraction only finds things that are stored as images. Charts, diagrams, logos saved as vector paths and all text are drawing instructions, not pictures, and there is nothing to pull out. A document made entirely of such content yields nothing — at which point the tool renders every page at 2x instead and tells you it has done so, rather than leaving you with an empty grid and no explanation.
+                        </p>
+
+                        <h3 style={{ fontSize: '1.15rem', marginTop: '1.75rem', marginBottom: '0.75rem' }}>What arrives in the ZIP</h3>
+                        <ul style={{ lineHeight: '1.7', color: 'var(--text-secondary)', marginBottom: '1rem', paddingLeft: '1.25rem' }}>
+                            <li><strong>PNG files at stored resolution.</strong> The pixels are decoded from whatever the document used — JPEG, Flate, CCITT — and written losslessly, so nothing is compressed twice.</li>
+                            <li><strong>One copy per distinct image.</strong> A letterhead repeated on every page is exported once, named for the first page it appeared on.</li>
+                            <li><strong>Names that locate the source:</strong> image-p7-3.png is the third image exported from page 7 — duplicates already taken from an earlier page do not take a number.</li>
+                            <li><strong>Alpha where it exists.</strong> Transparency is preserved when the decoder supplies it, which is the reason PNG is used throughout.</li>
+                        </ul>
+                        <p style={{ lineHeight: '1.6', color: 'var(--text-secondary)', marginBottom: '1rem' }}>
+                            Expect the total to be larger than the PDF. A page holding a 2 MB JPEG produces a PNG of the same picture at perhaps 12 MB, because lossless coding of photographic pixels is simply bulkier. If size matters more than fidelity, convert the extracted files afterwards with <strong>Image Converter</strong> or shrink them with <strong>Bulk Image Compressor</strong>.
+                        </p>
+
+                        <h3 style={{ fontSize: '1.15rem', marginTop: '1.75rem', marginBottom: '0.75rem' }}>Stored form, not printed form</h3>
+                        <p style={{ lineHeight: '1.6', color: 'var(--text-secondary)', marginBottom: '1rem' }}>
+                            What you get is the image as the file holds it, before the page did anything to it. Scaling, rotation, cropping and clipping are properties of the page, so a photograph shown rotated and cropped to a circle comes out upright, rectangular and complete. That is usually a bonus — you often recover more of the original than the layout showed — but it means the export will not always match what you were looking at. When you want the page as it appears, including its text and vector content, render it with <strong>PDF to PNG</strong> and trim with <strong>Image Cropper</strong>.
+                        </p>
+
+                        <h3 style={{ fontSize: '1.15rem', marginTop: '1.75rem', marginBottom: '0.75rem' }}>Practical uses</h3>
                         <p style={{ lineHeight: '1.6', color: 'var(--text-secondary)' }}>
-                            Unlike other tools that require software installation, our extractor runs entirely in your web browser. This means your files never leave your computer, guaranteeing complete privacy for your sensitive documents.
+                            Recovering product photographs from a supplier catalogue, retrieving figures from a paper whose source files are long gone, lifting artwork out of a brochure to reuse elsewhere, or pulling the scanned page images out of a scan-only PDF so they can be run through <strong>Image to Text</strong> for recognition. One caution worth stating: a picture inside a document may belong to somebody else, and being able to extract it is not the same as being allowed to publish it.
                         </p>
                     </div>
                     <div className="features-section" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))', gap: '2rem' }}>

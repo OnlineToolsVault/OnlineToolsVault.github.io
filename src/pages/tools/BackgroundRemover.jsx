@@ -6,27 +6,49 @@ import { removeBackground } from '@imgly/background-removal'
 import { Download, Scissors, Loader2, AlertTriangle, Zap, ShieldCheck, Image as ImageIcon } from 'lucide-react'
 
 const features = [
-    { title: 'AI Precision', desc: 'Advanced AI instantly detects subjects and removes backgrounds with incredible accuracy.', icon: <Zap color="var(--primary)" size={24} /> },
-    { title: 'Total Privacy', desc: 'Processing happens entirely in your browser. Your photos are never uploaded to the cloud.', icon: <ShieldCheck color="var(--primary)" size={24} /> },
-    { title: 'Transparent PNG', desc: 'Download high-quality PNG images with transparent backgrounds, ready for any design.', icon: <ImageIcon color="var(--primary)" size={24} /> }
+    { title: 'A real neural network, locally', desc: 'An ISNet segmentation model runs through WebAssembly on your own CPU. This is the same class of model a paid service runs on a server, executing in your browser tab instead.', icon: <Zap color="var(--primary)" size={24} /> },
+    { title: 'The photo never uploads', desc: 'Most background removers require you to hand them the picture. Here the model comes to the image rather than the image going to the model, which changes what you can safely use it on.', icon: <ShieldCheck color="var(--primary)" size={24} /> },
+    { title: 'Full resolution preserved', desc: 'The transparent PNG comes back at the same pixel dimensions you put in — a 1234 x 789 source produces a 1234 x 789 cutout, not a downscaled preview.', icon: <ImageIcon color="var(--primary)" size={24} /> },
+    { title: 'Model cached after first use', desc: 'The weights are served from this site and stored by your browser cache, so the first run needs a connection and every run after it does not.', icon: <ImageIcon color="var(--primary)" size={24} /> },
+    { title: 'No credits, no queue, no account', desc: 'There is no per-image cost to anyone but your own CPU time, so there is nothing to meter. Run it fifty times in a row if you need to.', icon: <ShieldCheck color="var(--primary)" size={24} /> }
 ]
 
 const faqs = [
     {
-        question: "Is the background remover free?",
-        answer: "Yes, it is 100% free with no file limits or daily restrictions."
+        question: "Why does the first run take so long?",
+        answer: "The neural network weights are about **84 MB** and have to be downloaded before anything can be segmented. That happens once: your browser caches the files, and every later run starts immediately. On a slow connection the first attempt can take a couple of minutes with nothing visible happening, so let it finish rather than reloading the page."
     },
     {
-        question: "Are my images uploaded to a server?",
-        answer: "No! We use advanced WebAssembly AI to process everything on your device, ensuring maximum privacy."
+        question: "Is my photo really not uploaded?",
+        answer: "Correct — the traffic goes the other way. The model is downloaded to you, and your image is processed by WebAssembly code running on your own processor. You can verify it: after the model has cached once, disconnect from the network and the tool still removes backgrounds. Nothing about the picture is transmitted at any point."
     },
     {
-        question: "What image formats are supported?",
-        answer: "We support all major formats including JPG, PNG, and WebP. The output is always a transparent PNG."
+        question: "What kind of image does it handle best?",
+        answer: "A single clear subject that stands out from what is behind it — a person, a product on a table, a pet, an object on a plain surface. That is what the model was trained to find. Good contrast between subject and background and even lighting make far more difference to the result than resolution does."
     },
     {
-        question: "Does it work on complex backgrounds?",
-        answer: "Yes, our AI is trained to handle complex edges like hair and fur, though extremely cluttered backgrounds may vary in results."
+        question: "Where does it struggle?",
+        answer: "Fine hair against a busy background, transparent or reflective things like glass and water, motion blur, and scenes where several objects could all reasonably be the subject. It produces a hard-edged mask rather than a true alpha matte, so wispy detail is the usual casualty. Shooting against a plain wall, or lighting the subject brighter than the background, fixes most bad results."
+    },
+    {
+        question: "What do I get back?",
+        answer: "A **PNG with a transparent alpha channel**, at the same pixel dimensions as the file you supplied. It is saved as removed-bg- plus your filename with a .png extension — note that the name is taken up to the first dot, so `shoe.v2.jpg` comes back as `removed-bg-shoe.png`. PNG is required here because it is the common format that can carry transparency; a JPEG version would have to fill the background with a solid colour, which defeats the purpose."
+    },
+    {
+        question: "How do I put a solid colour behind the cutout?",
+        answer: "Convert the transparent PNG to JPG with the Image Converter — that fills every transparent pixel with white, which is exactly what most marketplace product listings ask for. For any other colour, drop the PNG onto a coloured layer in an image editor, since the transparency is a real alpha channel and composites normally."
+    },
+    {
+        question: "Which input formats work?",
+        answer: "Anything your browser can decode: JPG, PNG and WebP are all reliable. HEIC photos straight from an iPhone are not decodable and should go through the HEIC to JPG converter first. Very large images take proportionally longer, so consider resizing a 40-megapixel file before running it."
+    },
+    {
+        question: "The tool says it failed to process the image.",
+        answer: "The two common causes are a browser too old to run the WebAssembly build, and a first-run model download that was blocked or interrupted — a corporate proxy or an aggressive content blocker will do that. Try a current Chrome, Edge, Firefox or Safari, allow this site through any blocker, and reload so the download can restart."
+    },
+    {
+        question: "Can I do a batch of product photos?",
+        answer: "One at a time on this page. Each run is genuinely expensive in CPU terms, and queuing dozens would exhaust memory long before it finished. For a large catalogue, process the images individually here and then run the finished cutouts through the Bulk Image Resizer to bring them to a common size — that is the batch tool that changes dimensions. The Bulk Image Compressor deliberately leaves resolution alone, so it will shrink the files but not square them up."
     }
 ]
 
@@ -110,7 +132,7 @@ const BackgroundRemover = () => {
                     <AlertTriangle size={20} style={{ flexShrink: 0, marginTop: '2px' }} />
                     <div>
                         <strong>Note:</strong> Your image never leaves your device — the AI runs entirely in your
-                        browser using WebAssembly. The model itself (~95&nbsp;MB) is downloaded from this site once on
+                        browser using WebAssembly. The model itself (~84&nbsp;MB) is downloaded from this site once on
                         first use and then cached, so this tool needs an internet connection the first time you run it.
                     </div>
                 </div>
@@ -215,10 +237,21 @@ const BackgroundRemover = () => {
                     <div className="about-section" style={{ background: 'var(--bg-card)', padding: '2rem', borderRadius: '1rem', border: '1px solid var(--border)', marginBottom: '2rem' }}>
                         <h2 style={{ fontSize: '1.8rem', marginBottom: '1.5rem' }}>About Background Remover</h2>
                         <p style={{ lineHeight: '1.6', color: 'var(--text-secondary)', marginBottom: '1rem' }}>
-                            Instantly remove backgrounds from your photos using advanced AI technology. Whether it's for e-commerce product shots, profile pictures, or creative projects, our tool automatically detects the subject and creates a transparent background in seconds.
+                            Separate the subject of a photograph from everything behind it and get back a PNG with a real transparent alpha channel. The work is done by an ISNet segmentation network — a genuine neural model, not an edge-detection trick — executing through WebAssembly on your own processor. The cutout comes back at the same pixel dimensions you supplied.
+                        </p>
+                        <h3 style={{ fontSize: '1.15rem', margin: '1.5rem 0 0.75rem' }}>The model comes to you, not the other way round</h3>
+                        <p style={{ lineHeight: '1.6', color: 'var(--text-secondary)', marginBottom: '1rem' }}>
+                            Every hosted background remover works the same way: you upload the picture, their server runs a model, they send back a cutout. This one inverts that. Roughly 84 MB of model weights are downloaded from this site the first time you use the tool, cached by your browser, and then run locally on every image afterwards. The consequence is worth stating plainly — the photograph is never transmitted anywhere. Once the weights are cached you can disconnect from the network entirely and keep working, which is a straightforward way to prove the claim to yourself.
+                        </p>
+                        <p style={{ lineHeight: '1.6', color: 'var(--text-secondary)', marginBottom: '1rem' }}>
+                            The cost of that trade is the first run. Alongside the weights the browser also pulls down the ONNX WebAssembly runtime that executes them — between roughly 12 MB and 22 MB depending on which build your browser picks — so budget for around 100 MB in total, and nothing appears to happen while it downloads. It only happens once. After that, each image takes a few seconds to a minute depending on how fast your machine is and how many pixels it has to look at.
+                        </p>
+                        <h3 style={{ fontSize: '1.15rem', margin: '1.5rem 0 0.75rem' }}>Getting a good cutout</h3>
+                        <p style={{ lineHeight: '1.6', color: 'var(--text-secondary)', marginBottom: '1rem' }}>
+                            The model was trained to find one salient subject, so it is at its best on a person, a pet or a product that clearly stands apart from what is behind it. Contrast and even lighting help far more than megapixels. It is weakest on the things segmentation models are always weakest on: individual strands of hair against a cluttered background, glass and other transparent materials, motion blur, and frames where two or three objects could each plausibly be the subject. It produces a hard mask rather than a soft matte, so wispy edges are where you will see the limits. Shooting against a plain wall, or simply lighting the subject brighter than the background, resolves most disappointing results.
                         </p>
                         <p style={{ lineHeight: '1.6', color: 'var(--text-secondary)' }}>
-                            Unlike other services, this tool runs completely in your browser. Your images are never uploaded to a server, ensuring 100% privacy and security for your personal or professional photos.
+                            The output is always PNG, because it is the widely supported format that can carry transparency. If a marketplace listing wants a white background instead, run the transparent PNG through the Image Converter and choose JPG — every transparent pixel is filled with white on the way. Feed the tool JPG, PNG or WebP; an iPhone HEIC file cannot be decoded by the browser and should go through the HEIC to JPG converter first.
                         </p>
                     </div>
                     <div className="features-section" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))', gap: '2rem' }}>

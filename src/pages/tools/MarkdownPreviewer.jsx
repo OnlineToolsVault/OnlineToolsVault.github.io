@@ -1,4 +1,5 @@
 import React, { useState } from 'react'
+import { useLocation } from 'react-router-dom'
 import RelatedTools from '../../components/tools/RelatedTools'
 import { Helmet } from 'react-helmet-async'
 import ReactMarkdown from 'react-markdown'
@@ -11,6 +12,11 @@ const MARKDOWN_CSS = `
     .markdown-body h1 { font-size: 2em; border-bottom: 1px solid #eaecef; padding-bottom: 0.3em; margin-bottom: 1rem; }
     .markdown-body h2 { font-size: 1.5em; border-bottom: 1px solid #eaecef; padding-bottom: 0.3em; margin-bottom: 1rem; margin-top: 1.5rem; }
     .markdown-body h3 { font-size: 1.25em; margin-bottom: 1rem; margin-top: 1.5rem; font-weight: 600; }
+    /* index.css applies a global \`* { margin: 0 }\`, so h4-h6 need explicit rhythm or the
+       rendered heading ladder in the sample document collapses into one solid block. */
+    .markdown-body h4 { font-size: 1em; margin-bottom: 1rem; margin-top: 1.5rem; font-weight: 600; }
+    .markdown-body h5 { font-size: 0.875em; margin-bottom: 1rem; margin-top: 1.5rem; font-weight: 600; }
+    .markdown-body h6 { font-size: 0.85em; margin-bottom: 1rem; margin-top: 1.5rem; font-weight: 600; color: #64748b; }
     .markdown-body p { margin-bottom: 1rem; }
     
     /* Lists */
@@ -40,11 +46,53 @@ const MARKDOWN_CSS = `
 
 
 const MarkdownPreviewer = () => {
-    const [markdown, setMarkdown] = useState(`# Markdown syntax guide
+    // This page renders its own <Helmet> instead of going through ToolLayout, so it has to declare
+    // the canonical itself. Helmet owns every head tag marked data-rh="true" (generate-sitemap.js
+    // stamps that on the prerendered canonical) and deletes the ones the mounted page does not
+    // re-declare — omit this and the built-in canonical disappears the moment React hydrates.
+    // Derivation is copied verbatim from ToolLayout so both emit the same trailing-slash URL, which
+    // is the only form GitHub Pages answers 200 on.
+    const location = useLocation()
+    const canonicalUrl = `https://onlinetoolsvault.com${location.pathname.replace(/\/+$/, '')}/`
+
+    // The seeded sample deliberately starts at `##`, and the level-1 example lives inside a fenced
+    // code block instead of being rendered. The preview pane is real DOM inside this page — and
+    // scripts/prerender.js snapshots that DOM into dist/markdown-previewer/index.html — so every
+    // `#` line in this string used to become another <h1> competing with the tool's own title.
+    // One page, one h1.
+    //
+    // This constrains the *seed* only. ReactMarkdown below is left un-remapped on purpose: a user
+    // who types `# Title` still gets a real <h1>, because faithful Markdown -> HTML is the whole
+    // product. Demoting headings at render time would also corrupt the exports, since both
+    // "Export HTML" and "Save as PDF" serialise `.markdown-body` verbatim.
+    //
+    // For the same reason the "Images" section demonstrates the syntax in a fenced block instead of
+    // rendering a picture. It used to embed an upload.wikimedia.org thumbnail, which made a page
+    // that advertises "nothing leaves your browser" fetch a third-party image unprompted on every
+    // visit — and left a broken-image icon sitting in the demo for anyone offline, behind a
+    // corporate proxy, or running a content blocker. A data: URI is not an alternative here:
+    // react-markdown's default urlTransform only passes http/https/mailto/xmpp/ircs and would strip
+    // it, and the only local images this site ships are the 24px favicon and the 220 KB Open Graph
+    // cards — neither worth the bytes or the confusion in a syntax guide.
+    const [markdown, setMarkdown] = useState(`## Markdown syntax guide
+
+Edit this document on the left and the preview updates as you type. Clear it whenever you want to start on your own text.
 
 ## Headers
 
+Add one \`#\` for each level, from \`#\` (largest) down to \`######\` (smallest):
+
+\`\`\`markdown
 # This is a Heading h1
+## This is a Heading h2
+### This is a Heading h3
+#### This is a Heading h4
+##### This is a Heading h5
+###### This is a Heading h6
+\`\`\`
+
+Levels 2 through 6 are rendered below. This sample leaves out the rendered \`#\` so the page keeps a single level-1 heading — its title — but a \`#\` line in your own document works exactly the same way.
+
 ## This is a Heading h2
 ### This is a Heading h3
 #### This is a Heading h4
@@ -83,7 +131,14 @@ _You **can** combine them_
 
 ## Images
 
-![This is an alt text.](https://upload.wikimedia.org/wikipedia/commons/thumb/b/b6/Image_created_with_a_mobile_phone.png/250px-Image_created_with_a_mobile_phone.png)
+Images use the link syntax with a \`!\` in front: alt text in the brackets, the image location in the parentheses.
+
+\`\`\`markdown
+![Alt text describing the image](https://example.com/photo.jpg)
+![A file sitting next to your document](images/diagram.png)
+\`\`\`
+
+Paste a full URL or a path relative to wherever the exported HTML will live, and the preview pane loads it exactly as a browser would.
 
 ## Links
 
@@ -201,7 +256,8 @@ This web site is using \`js\`.`)
         <>
             <Helmet>
                 <title>Markdown Previewer - Free Online Markdown Editor & Converter</title>
-                <meta name="description" content="Free online Markdown editor with live preview. Convert Markdown to HTML or PDF. Features split view, syntax highlighting, and instant download." />
+                <meta name="description" content="Write GitHub-flavoured Markdown and watch it render live beside the editor, then export the result as a standalone HTML file or print it to PDF. No upload." />
+                <link rel="canonical" href={canonicalUrl} />
             </Helmet>
 
             <div className="tool-workspace" style={{ maxWidth: '1400px', margin: '0 auto', padding: '2rem' }}>

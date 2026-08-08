@@ -7,18 +7,48 @@ import CryptoJS from 'crypto-js'
 
 
 const features = [
-    { title: 'Verify Integrity', desc: 'Ensure your files are authentic and have not been corrupted or tempered with.', icon: <Check color="var(--primary)" size={24} /> },
-    { title: 'Multi-Algorithm', desc: 'Calculate MD5, SHA-1, and SHA-256 hashes simultaneously for comprehensive verification.', icon: <FileCode color="var(--primary)" size={24} /> },
-    { title: 'Local Calculation', desc: 'Hashes are computed in your browser. Your huge files are never uploaded, saving time and bandwidth.', icon: <Loader2 color="var(--primary)" size={24} /> }
+    { title: 'Three digests from one read', desc: 'MD5, SHA-1 and SHA-256 are fed the same bytes as the file streams past, so you get all three for the cost of reading the file once instead of three separate passes.', icon: <Check color="var(--primary)" size={24} /> },
+    { title: 'Streamed in 4 MB slices', desc: 'The file is read a slice at a time and each slice is folded into the running digests, so memory use stays flat whether you hash a 2 KB config file or a 40 GB disk image.', icon: <FileCode color="var(--primary)" size={24} /> },
+    { title: 'Content only, nothing else', desc: 'The digest depends on the bytes and nothing more. Renaming the file, moving it, or changing its timestamp leaves all three values identical, which is exactly what makes them useful for verification.', icon: <Loader2 color="var(--primary)" size={24} /> }
 ]
 
 const faqs = [
-    { question: 'Is my file uploaded?', answer: 'No, the checksum is calculated locally in your browser.' },
-    { question: 'Which algorithms are supported?', answer: 'We support MD5, SHA-1, and SHA-256.' },
-    { question: 'Why calculate a checksum?', answer: 'To verify that a downloaded file is identical to the original source and has not been modified.' },
-    { question: 'Does file name or date affect the hash?', answer: 'No, the hash is calculated solely based on the file contents (bytes).' },
-    { question: 'Can I verify large files?', answer: 'Yes, but very large files (e.g., several GBs) might take longer to process in the browser.' },
-    { question: 'Is it free?', answer: 'Yes, unlimited calculations for free.' }
+    {
+        question: 'Which of the three should I use?',
+        answer: 'Use whichever one the source you are checking against published — a checksum is only useful compared against a reference value. If you get to choose, use SHA-256. MD5 and SHA-1 are both broken for collision resistance, meaning someone can deliberately construct two different files with the same digest, and neither should be trusted where an attacker has any influence over the file. All three remain perfectly good at catching accidental corruption.'
+    },
+    {
+        question: 'How do I compare the result with a published checksum?',
+        answer: 'Copy the value from the row that matches the algorithm the publisher used and compare it character by character with theirs. Case does not matter — the digest is a number written in hexadecimal, and this page prints it lowercase while Windows PowerShell prints uppercase. Comparing the first and last six characters catches essentially every real mismatch; pasting both into a text comparison tool catches the rest.'
+    },
+    {
+        question: 'How do I get the same value from a terminal?',
+        answer: 'On macOS and Linux, shasum -a 256 filename gives SHA-256 and shasum -a 1 gives SHA-1; md5 on macOS and md5sum on Linux give MD5. On Windows, Get-FileHash filename -Algorithm SHA256 works in PowerShell and certutil -hashfile filename SHA256 works in the classic command prompt. All of them should produce exactly the string shown here.'
+    },
+    {
+        question: 'Why is it not instant, and how long will a big file take?',
+        answer: 'The digests are computed in JavaScript rather than by your CPU hashing instructions, which costs roughly a factor of ten in speed. In practice all three algorithms together run in the tens of megabytes per second, so a 1 GB file takes something like half a minute and a 4 GB installer a couple of minutes. The progress percentage reflects bytes read, and the page stays responsive throughout because the work is broken into slices.'
+    },
+    {
+        question: 'Does renaming the file change the hash?',
+        answer: 'No. Only the contents are hashed — the file name, its folder, its modification date and its permissions are all invisible to the calculation. Two identical copies with different names produce identical digests, and that is precisely the property that lets a publisher post one checksum for a file everybody saves under a different name.'
+    },
+    {
+        question: 'My hash does not match the one on the download page. What now?',
+        answer: 'Re-download first: a truncated or interrupted transfer is by far the most common cause, and comparing the byte count on the download page against the file size is a quick sanity check. After that, make sure you are hashing the same thing the publisher hashed — the .zip they shipped rather than a file you extracted from it — and that you are reading the right algorithm from their page. Text files transferred through tools that rewrite line endings will also hash differently while looking identical.'
+    },
+    {
+        question: 'Does a matching checksum prove the file is genuine?',
+        answer: 'It proves the file matches the checksum, which is a weaker claim than it sounds. If an attacker can alter the download they can usually alter the checksum published next to it. A checksum protects against accidental corruption and against a mirror serving something stale; proving who produced a file requires a cryptographic signature, such as a GPG or code-signing check, which this tool does not perform.'
+    },
+    {
+        question: 'Is my file uploaded to a server?',
+        answer: 'No. The file is read in slices by your browser and never leaves the machine — nothing is transmitted, and there is no server-side component to receive it. That also means there is no upload wait, which is the main reason hashing a multi-gigabyte image is practical here at all.'
+    },
+    {
+        question: 'Can I hash a folder or several files at once?',
+        answer: 'No, one file per run. There is also no field for pasting an expected value, so the comparison is yours to make. If you need to fingerprint a whole directory, archive it first and hash the archive, keeping in mind that two archives of the same folder can differ in their bytes — and therefore in their digests — because of timestamps and entry ordering.'
+    }
 ]
 
 
@@ -170,7 +200,46 @@ const FileChecksumGenerator = () => {
                 <div className="about-section" style={{ background: 'var(--bg-card)', padding: '2rem', borderRadius: '1rem', border: '1px solid var(--border)', marginBottom: '2rem' }}>
                     <h2 style={{ fontSize: '1.8rem', marginBottom: '1.5rem' }}>About File Checksum Generator</h2>
                     <p style={{ lineHeight: '1.6', color: 'var(--text-secondary)', marginBottom: '1rem' }}>
-                        Calculate file hash online. Verify file integrity with MD5, SHA-1, SHA-256 checksums.
+                        Pick a file and this page reads it and prints its MD5, SHA-1 and SHA-256 digests. A digest is a
+                        fixed-length fingerprint of a file&apos;s exact bytes: change one bit anywhere and roughly half the
+                        output characters change. That is what makes it useful for confirming a download arrived intact, that
+                        a backup copy still matches the original, or that two files you suspect are duplicates really are.
+                    </p>
+
+                    <h3 style={{ fontSize: '1.15rem', fontWeight: '600', margin: '1.75rem 0 0.75rem' }}>How the file is read</h3>
+                    <p style={{ lineHeight: '1.6', color: 'var(--text-secondary)', marginBottom: '1rem' }}>
+                        The file is sliced into 4 MB chunks and each chunk is folded into all three running digests before the
+                        next one is read, so the whole file is never held in memory at once and the progress bar can move.
+                        Hashing algorithms are designed to work this way — they consume a stream and keep only a small internal
+                        state — which is why a 40 GB disk image uses no more memory than a small text file, and only takes
+                        longer.
+                    </p>
+                    <p style={{ lineHeight: '1.6', color: 'var(--text-secondary)', marginBottom: '1rem' }}>
+                        All three digests are computed in the same pass rather than by reading the file three times. The
+                        arithmetic runs in JavaScript rather than in your processor&apos;s dedicated hashing instructions, so
+                        expect tens of megabytes per second rather than the hundreds a native command-line tool manages. The
+                        browser&apos;s own crypto API is faster but offers no MD5 and no streaming interface, which is why it
+                        is not used here.
+                    </p>
+
+                    <h3 style={{ fontSize: '1.15rem', fontWeight: '600', margin: '1.75rem 0 0.75rem' }}>Reading the three values</h3>
+                    <p style={{ lineHeight: '1.6', color: 'var(--text-secondary)', marginBottom: '1rem' }}>
+                        MD5 is 32 hexadecimal characters, SHA-1 is 40 and SHA-256 is 64. They are shown in lowercase; other
+                        tools may print uppercase, and the comparison is case-insensitive either way. Match the algorithm to
+                        whatever the publisher listed rather than picking a favourite, because a SHA-256 digest tells you
+                        nothing about an MD5 reference. Where you have a free choice, prefer SHA-256: MD5 and SHA-1 can both be
+                        deliberately collided, so they are fine for spotting a corrupted transfer and unsuitable for anything
+                        adversarial.
+                    </p>
+
+                    <h3 style={{ fontSize: '1.15rem', fontWeight: '600', margin: '1.75rem 0 0.75rem' }}>What a checksum does not tell you</h3>
+                    <p style={{ lineHeight: '1.6', color: 'var(--text-secondary)' }}>
+                        A matching digest proves the bytes match the reference value. It does not prove who made the file, and
+                        if the same site serves both the download and the checksum, an attacker who can change one can usually
+                        change the other. Authenticity needs a signature, not a hash. This page also has no field for pasting
+                        an expected value and no folder mode — it produces the numbers, and comparing them is left to you. If
+                        what you actually want is a hash of some text rather than a file, the Hash Generator takes typed input
+                        directly.
                     </p>
                 </div>
                 <div className="features-section" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))', gap: '2rem' }}>

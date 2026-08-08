@@ -2,6 +2,7 @@ import { Suspense, lazy } from 'react'
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom'
 import { HelmetProvider } from 'react-helmet-async'
 import Layout from './components/layout/Layout'
+import RouteErrorBoundary from './components/RouteErrorBoundary'
 import { Loader2 } from 'lucide-react'
 
 // --- Lazy Load Pages ---
@@ -132,116 +133,118 @@ function App() {
                 future={{ v7_relativeSplatPath: true }}
             >
                 <Layout>
-                    <Suspense fallback={<Loading />}>
-                        <Routes>
-                            <Route path="/" element={<Home />} />
+                    <RouteErrorBoundary>
+                        <Suspense fallback={<Loading />}>
+                            <Routes>
+                                <Route path="/" element={<Home />} />
 
-                            {/* Text */}
-                            <Route path="/word-counter" element={<WordCounter />} />
-                            <Route path="/humanize-text" element={<HumanizeAi />} />
-                            <Route path="/paste-to-markdown" element={<PasteToMarkdown />} />
-                            <Route path="/markdown-previewer" element={<MarkdownPreviewer />} />
-                            <Route path="/lorem-ipsum-generator" element={<LoremIpsumGenerator />} />
-                            <Route path="/diff-viewer" element={<DiffViewer />} />
+                                {/* Text */}
+                                <Route path="/word-counter" element={<WordCounter />} />
+                                <Route path="/humanize-text" element={<HumanizeAi />} />
+                                <Route path="/paste-to-markdown" element={<PasteToMarkdown />} />
+                                <Route path="/markdown-previewer" element={<MarkdownPreviewer />} />
+                                <Route path="/lorem-ipsum-generator" element={<LoremIpsumGenerator />} />
+                                <Route path="/diff-viewer" element={<DiffViewer />} />
 
-                            {/* PDF */}
-                            <Route path="/merge-pdf" element={<MergePdf />} />
-                            <Route path="/split-pdf" element={<SplitPdf />} />
-                            <Route path="/compress-pdf" element={<CompressPdf />} />
-                            <Route path="/pdf-to-word" element={<PdfToWord />} />
-                            <Route path="/word-to-pdf" element={<WordToPdf />} />
-                            <Route path="/pdf-to-excel" element={<PdfToExcel />} />
-                            <Route path="/pdf-to-jpg" element={<PdfToJpg />} />
-                            <Route path="/pdf-to-png" element={<PdfToPng />} />
-                            <Route path="/jpg-to-pdf" element={<JpgToPdf />} />
-                            <Route path="/pdf-editor" element={<PdfEditor />} />
-                            <Route path="/protect-pdf" element={<ProtectPdf />} />
-                            <Route path="/unlock-pdf" element={<UnlockPdf />} />
-                            <Route path="/rotate-pdf" element={<RotatePdf />} />
-                            <Route path="/flatten-pdf" element={<FlattenPdf />} />
-                            <Route path="/add-watermark-pdf" element={<AddWatermarkToPdf />} />
-                            <Route path="/add-page-numbers-pdf" element={<AddPageNumbersToPdf />} />
-                            <Route path="/pdf-metadata-editor" element={<PdfMetadataEditor />} />
-                            <Route path="/remove-pdf-metadata" element={<RemovePdfMetadata />} />
-                            <Route path="/extract-images-from-pdf" element={<ExtractImagesFromPdf />} />
-                            <Route path="/organize-pdf" element={<OrganizePdf />} />
-                            <Route path="/pdf-to-txt" element={<PdfToTxt />} />
-                            <Route path="/pdf-thumbnail-generator" element={<PdfThumbnailGenerator />} />
+                                {/* PDF */}
+                                <Route path="/merge-pdf" element={<MergePdf />} />
+                                <Route path="/split-pdf" element={<SplitPdf />} />
+                                <Route path="/compress-pdf" element={<CompressPdf />} />
+                                <Route path="/pdf-to-word" element={<PdfToWord />} />
+                                <Route path="/word-to-pdf" element={<WordToPdf />} />
+                                <Route path="/pdf-to-excel" element={<PdfToExcel />} />
+                                <Route path="/pdf-to-jpg" element={<PdfToJpg />} />
+                                <Route path="/pdf-to-png" element={<PdfToPng />} />
+                                <Route path="/jpg-to-pdf" element={<JpgToPdf />} />
+                                <Route path="/pdf-editor" element={<PdfEditor />} />
+                                <Route path="/protect-pdf" element={<ProtectPdf />} />
+                                <Route path="/unlock-pdf" element={<UnlockPdf />} />
+                                <Route path="/rotate-pdf" element={<RotatePdf />} />
+                                <Route path="/flatten-pdf" element={<FlattenPdf />} />
+                                <Route path="/add-watermark-pdf" element={<AddWatermarkToPdf />} />
+                                <Route path="/add-page-numbers-pdf" element={<AddPageNumbersToPdf />} />
+                                <Route path="/pdf-metadata-editor" element={<PdfMetadataEditor />} />
+                                <Route path="/remove-pdf-metadata" element={<RemovePdfMetadata />} />
+                                <Route path="/extract-images-from-pdf" element={<ExtractImagesFromPdf />} />
+                                <Route path="/organize-pdf" element={<OrganizePdf />} />
+                                <Route path="/pdf-to-txt" element={<PdfToTxt />} />
+                                <Route path="/pdf-thumbnail-generator" element={<PdfThumbnailGenerator />} />
 
-                            {/* Audio/Video */}
-                            <Route path="/video-to-audio" element={<VideoToAudio />} />
-                            <Route path="/audio-converter" element={<AudioConverter />} />
+                                {/* Audio/Video */}
+                                <Route path="/video-to-audio" element={<VideoToAudio />} />
+                                <Route path="/audio-converter" element={<AudioConverter />} />
 
-                            {/* Image */}
-                            <Route path="/image-compressor" element={<ImageCompressor />} />
-                            <Route path="/background-remover" element={<BackgroundRemover />} />
-                            <Route path="/image-converter" element={<ImageConverter />} />
-                            <Route path="/image-resizer" element={<ImageResizer />} />
-                            <Route path="/image-cropper" element={<ImageCropper />} />
-                            <Route path="/heic-to-jpg" element={<HeicToJpg />} />
-                            <Route path="/webp-to-jpg" element={<WebPToJpg />} />
-                            <Route path="/blur-image" element={<BlurImage />} />
-                            <Route path="/add-watermark-to-image" element={<AddWatermarkToImage />} />
-                            <Route path="/passport-photo-maker" element={<PassportPhotoMaker />} />
-                            <Route path="/image-metadata-editor" element={<ImageMetadataEditor />} />
-                            <Route path="/remove-image-metadata" element={<RemoveImageMetadata />} />
-                            <Route path="/image-to-text" element={<ImageToText />} />
-                            <Route path="/image-to-pdf" element={<ImageToPdf />} />
-                            <Route path="/youtube-thumbnail-downloader" element={<YouTubeThumbnailDownloader />} />
-                            <Route path="/instagram-twitter-resizer" element={<InstagramTwitterResizer />} />
-                            <Route path="/bulk-image-compressor" element={<BulkImageCompressor />} />
-                            <Route path="/bulk-image-resizer" element={<BulkImageResizer />} />
-                            <Route path="/merge-images" element={<MergeImages />} />
+                                {/* Image */}
+                                <Route path="/image-compressor" element={<ImageCompressor />} />
+                                <Route path="/background-remover" element={<BackgroundRemover />} />
+                                <Route path="/image-converter" element={<ImageConverter />} />
+                                <Route path="/image-resizer" element={<ImageResizer />} />
+                                <Route path="/image-cropper" element={<ImageCropper />} />
+                                <Route path="/heic-to-jpg" element={<HeicToJpg />} />
+                                <Route path="/webp-to-jpg" element={<WebPToJpg />} />
+                                <Route path="/blur-image" element={<BlurImage />} />
+                                <Route path="/add-watermark-to-image" element={<AddWatermarkToImage />} />
+                                <Route path="/passport-photo-maker" element={<PassportPhotoMaker />} />
+                                <Route path="/image-metadata-editor" element={<ImageMetadataEditor />} />
+                                <Route path="/remove-image-metadata" element={<RemoveImageMetadata />} />
+                                <Route path="/image-to-text" element={<ImageToText />} />
+                                <Route path="/image-to-pdf" element={<ImageToPdf />} />
+                                <Route path="/youtube-thumbnail-downloader" element={<YouTubeThumbnailDownloader />} />
+                                <Route path="/instagram-twitter-resizer" element={<InstagramTwitterResizer />} />
+                                <Route path="/bulk-image-compressor" element={<BulkImageCompressor />} />
+                                <Route path="/bulk-image-resizer" element={<BulkImageResizer />} />
+                                <Route path="/merge-images" element={<MergeImages />} />
 
-                            {/* Developer */}
-                            <Route path="/code-formatter" element={<CodeFormatter />} />
-                            <Route path="/html-formatter" element={<HtmlFormatter />} />
-                            <Route path="/css-formatter" element={<CssFormatter />} />
-                            <Route path="/js-formatter" element={<JsFormatter />} />
-                            <Route path="/json-formatter" element={<JsonFormatter />} />
-                            <Route path="/sql-formatter" element={<SqlFormatter />} />
-                            <Route path="/xml-formatter" element={<XmlFormatter />} />
-                            <Route path="/cron-parser" element={<CronParser />} />
-                            <Route path="/regular-expression-tester" element={<RegularExpressionTester />} />
-                            <Route path="/color-picker" element={<ColorPicker />} />
+                                {/* Developer */}
+                                <Route path="/code-formatter" element={<CodeFormatter />} />
+                                <Route path="/html-formatter" element={<HtmlFormatter />} />
+                                <Route path="/css-formatter" element={<CssFormatter />} />
+                                <Route path="/js-formatter" element={<JsFormatter />} />
+                                <Route path="/json-formatter" element={<JsonFormatter />} />
+                                <Route path="/sql-formatter" element={<SqlFormatter />} />
+                                <Route path="/xml-formatter" element={<XmlFormatter />} />
+                                <Route path="/cron-parser" element={<CronParser />} />
+                                <Route path="/regular-expression-tester" element={<RegularExpressionTester />} />
+                                <Route path="/color-picker" element={<ColorPicker />} />
 
-                            {/* Security */}
-                            <Route path="/hash-generator" element={<HashGenerator />} />
-                            <Route path="/encrypt-text" element={<EncryptText />} />
-                            <Route path="/decrypt-text" element={<DecryptText />} />
-                            <Route path="/bcrypt-generator" element={<BcryptGenerator />} />
-                            <Route path="/uuid-generator" element={<UuidGenerator />} />
-                            <Route path="/base64-encoder" element={<Base64Encoder />} />
-                            <Route path="/base64-decoder" element={<Base64Decoder />} />
-                            <Route path="/url-encoder" element={<UrlEncoder />} />
-                            <Route path="/url-decoder" element={<UrlDecoder />} />
-                            <Route path="/jwt-decoder" element={<JwtDecoder />} />
-                            <Route path="/password-strength-checker" element={<PasswordStrengthChecker />} />
-                            <Route path="/file-checksum-generator" element={<FileChecksumGenerator />} />
-                            <Route path="/file-encryption-tool" element={<FileEncryptionTool />} />
+                                {/* Security */}
+                                <Route path="/hash-generator" element={<HashGenerator />} />
+                                <Route path="/encrypt-text" element={<EncryptText />} />
+                                <Route path="/decrypt-text" element={<DecryptText />} />
+                                <Route path="/bcrypt-generator" element={<BcryptGenerator />} />
+                                <Route path="/uuid-generator" element={<UuidGenerator />} />
+                                <Route path="/base64-encoder" element={<Base64Encoder />} />
+                                <Route path="/base64-decoder" element={<Base64Decoder />} />
+                                <Route path="/url-encoder" element={<UrlEncoder />} />
+                                <Route path="/url-decoder" element={<UrlDecoder />} />
+                                <Route path="/jwt-decoder" element={<JwtDecoder />} />
+                                <Route path="/password-strength-checker" element={<PasswordStrengthChecker />} />
+                                <Route path="/file-checksum-generator" element={<FileChecksumGenerator />} />
+                                <Route path="/file-encryption-tool" element={<FileEncryptionTool />} />
 
-                            {/* Converter & Utility */}
-                            <Route path="/qr-generator" element={<QrGenerator />} />
-                            <Route path="/csv-to-json" element={<CsvToJson />} />
-                            <Route path="/json-to-csv" element={<JsonToCsv />} />
-                            <Route path="/csv-to-excel" element={<CsvToExcel />} />
-                            <Route path="/excel-to-csv" element={<ExcelToCsv />} />
-                            <Route path="/timestamp-converter" element={<TimestampConverter />} />
-                            <Route path="/unit-converter" element={<UnitConverter />} />
-                            <Route path="/zip-file-creator" element={<ZipFileCreator />} />
-                            <Route path="/zip-viewer" element={<ZipViewer />} />
-                            <Route path="/file-size-calculator" element={<FileSizeCalculator />} />
-                            <Route path="/batch-file-renamer" element={<BatchFileRenamer />} />
-                            <Route path="/file-metadata-viewer" element={<FileMetadataViewer />} />
+                                {/* Converter & Utility */}
+                                <Route path="/qr-generator" element={<QrGenerator />} />
+                                <Route path="/csv-to-json" element={<CsvToJson />} />
+                                <Route path="/json-to-csv" element={<JsonToCsv />} />
+                                <Route path="/csv-to-excel" element={<CsvToExcel />} />
+                                <Route path="/excel-to-csv" element={<ExcelToCsv />} />
+                                <Route path="/timestamp-converter" element={<TimestampConverter />} />
+                                <Route path="/unit-converter" element={<UnitConverter />} />
+                                <Route path="/zip-file-creator" element={<ZipFileCreator />} />
+                                <Route path="/zip-viewer" element={<ZipViewer />} />
+                                <Route path="/file-size-calculator" element={<FileSizeCalculator />} />
+                                <Route path="/batch-file-renamer" element={<BatchFileRenamer />} />
+                                <Route path="/file-metadata-viewer" element={<FileMetadataViewer />} />
 
-                            {/* Footer Pages */}
-                            <Route path="/terms" element={<Terms />} />
-                            <Route path="/about" element={<About />} />
-                            <Route path="/contact" element={<Contact />} />
-                            <Route path="/privacy" element={<PrivacyPolicy />} />
-                            <Route path="*" element={<NotFound />} />
-                        </Routes>
-                    </Suspense>
+                                {/* Footer Pages */}
+                                <Route path="/terms" element={<Terms />} />
+                                <Route path="/about" element={<About />} />
+                                <Route path="/contact" element={<Contact />} />
+                                <Route path="/privacy" element={<PrivacyPolicy />} />
+                                <Route path="*" element={<NotFound />} />
+                            </Routes>
+                        </Suspense>
+                    </RouteErrorBoundary>
                 </Layout>
             </Router>
         </HelmetProvider>

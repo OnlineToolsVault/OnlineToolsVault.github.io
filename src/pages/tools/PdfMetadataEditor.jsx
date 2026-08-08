@@ -7,35 +7,43 @@ import { PDFDocument } from 'pdf-lib'
 import { saveAs } from 'file-saver'
 
 const features = [
-    { title: 'Complete Metadata Control', desc: 'View and edit all standard PDF properties including Title, Author, Subject, Keywords, Creator, and Producer.', icon: <Settings color="var(--primary)" size={24} /> },
-    { title: 'SEO Enhancement', desc: 'Optimize your PDF for search engines by adding relevant titles and keywords before publishing online.', icon: <Search color="var(--primary)" size={24} /> },
-    { title: 'Privacy Cleaning', desc: 'Remove or anonymize author names and tool information to protect your privacy before sharing documents.', icon: <Shield color="var(--primary)" size={24} /> }
+    { title: 'Six fields, read and written', desc: 'Title, Author, Subject, Keywords, Producer and Creator are loaded from the document information dictionary into editable boxes, and written back exactly as you leave them.', icon: <Settings color="var(--primary)" size={24} /> },
+    { title: 'Shows what is really in there', desc: 'The file is opened without the usual courtesy rewrite, so the Producer and modification date you see are the ones the original actually carries rather than values stamped on at load time.', icon: <Search color="var(--primary)" size={24} /> },
+    { title: 'Dates and page content left alone', desc: 'Creation and modification dates pass through untouched, and no page is re-encoded. Editing properties changes the label on the file, not the document inside it.', icon: <Shield color="var(--primary)" size={24} /> }
 ]
 
 const faqs = [
     {
-        question: "What is PDF metadata?",
-        answer: "Metadata is hidden information embedded in the file that describes it, such as who created it, when, and with what software. It's not visible on the page itself."
+        question: "What are these six fields for?",
+        answer: "Title is the human-readable name a reader shows in its window bar and in search results. Author is the person or organisation responsible. Subject is a one-line description. Keywords are search terms. Creator names the application the content was authored in, and Producer names the software that wrote the PDF itself — the two are frequently different, as in a document created in a word processor and produced by a print driver."
     },
     {
-        question: "Why should I edit metadata?",
-        answer: "Correct metadata helps with file organization and searchability. It's also crucial for professional branding and removing sensitive internal info."
+        question: "Does it update XMP metadata as well?",
+        answer: "No, and this matters. Modern PDFs often carry a second copy of their metadata as an XMP packet, a block of XML attached to the document catalogue, and some readers prefer it over the information dictionary. Only the dictionary is edited here, so a file with an XMP packet may keep showing its old title in Acrobat. If the old values must be gone, strip both with **Remove PDF Metadata**, which deletes the XMP streams outright, and then set the fields you want here."
     },
     {
-        question: "Does this change the visual content?",
-        answer: "No, editing metadata only changes the properties of the file. The text, images, and layout of your PDF remain exactly the same."
+        question: "How do I clear a field?",
+        answer: "Empty the box and save. Strictly speaking the entry is written as an empty value rather than removed, which is enough for readers to display nothing and enough for most inspection tools. If you need the keys genuinely absent along with the dates and the XMP packet, use **Remove PDF Metadata** — that tool is built for erasure, this one for control."
     },
     {
-        question: "How does this help SEO?",
-        answer: "Search engines like Google read PDF metadata (especially Title and Author) to understand what your document is about. A good title improves your search ranking."
+        question: "How should I fill in Keywords?",
+        answer: "As one line, with your own separator — commas or semicolons both work. The whole string is stored as a single keyword entry, so what you type is what a reader displays. Avoid stuffing dozens of terms in: document management systems index them literally, and a long unfocused list is worse than five accurate words."
     },
     {
-        question: "Can I leave fields blank?",
-        answer: "Yes, you can specific fields blank to 'remove' that data. For example, clearing the Author field is great for privacy."
+        question: "Does editing metadata affect search visibility?",
+        answer: "It can, modestly. Search engines index PDFs and commonly use the Title field for the result heading, so a document titled Microsoft Word - final_v3_REALLY final.docx looks exactly as careless in a results page as it sounds. Setting a clear Title and Subject is worth the thirty seconds for anything you publish. Keywords carry very little weight with general search engines but are used by many internal document systems."
     },
     {
-        question: "What is XMP?",
-        answer: "XMP (Extensible Metadata Platform) is a standard for handling metadata. Our tool updates both the standard PDF info dictionary and XMP packets where applicable."
+        question: "Are the creation and modification dates changed?",
+        answer: "No. There is no field for them and nothing rewrites them, so both pass through as they were. That is deliberate — silently restamping the modification date would make the tool a poor choice for anyone who needs the history of a document to stay intact."
+    },
+    {
+        question: "Does any of this alter the pages?",
+        answer: "Not at all. Text, images, fonts, annotations and form fields are untouched, and nothing is re-encoded. The file is rewritten, so the byte layout changes and any digital signature is invalidated, but visually and structurally the document is what it was. The result downloads as edited-yourfile.pdf."
+    },
+    {
+        question: "It would not open my file.",
+        answer: "Encrypted PDFs cannot be parsed — run **Unlock PDF** first, edit the properties, then re-protect with **Protect PDF** if needed. Note also that **Compress PDF** deliberately clears all six of these fields, so if you compress a document, set its metadata afterwards rather than before."
     }
 ]
 
@@ -209,10 +217,32 @@ const PdfMetadataEditor = () => {
                     <div className="about-section" style={{ background: 'var(--bg-card)', padding: '2rem', borderRadius: '1rem', border: '1px solid var(--border)', marginBottom: '2rem' }}>
                         <h2 style={{ fontSize: '1.8rem', marginBottom: '1.5rem' }}>About PDF Metadata Editor</h2>
                         <p style={{ lineHeight: '1.6', color: 'var(--text-secondary)', marginBottom: '1rem' }}>
-                            Take control of your PDF's hidden data. Every PDF contains "metadata" that describes usage, origin, and authorship. Our editor lets you view, modify, or clear this information easily.
+                            Drop in a PDF and its six standard properties appear in editable boxes, filled with whatever the file currently holds. Change what you like, save, and the document comes back as edited-yourfile.pdf with the new values written into its information dictionary. The pages themselves are not touched, and nothing is uploaded.
                         </p>
+
+                        <h3 style={{ fontSize: '1.15rem', marginTop: '1.75rem', marginBottom: '0.75rem' }}>The fields, and what each is actually for</h3>
+                        <ul style={{ lineHeight: '1.7', color: 'var(--text-secondary)', marginBottom: '1rem', paddingLeft: '1.25rem' }}>
+                            <li><strong>Title</strong> — the document name a reader shows in its title bar, and often the heading a search engine uses in a results page. The single most worthwhile field to set.</li>
+                            <li><strong>Author</strong> — a person or an organisation. Frequently left holding a login name nobody meant to publish.</li>
+                            <li><strong>Subject</strong> — a one-line description; useful in document management systems that surface it in list views.</li>
+                            <li><strong>Keywords</strong> — search terms, stored here as a single line so your own separators survive.</li>
+                            <li><strong>Creator</strong> — the application the content was authored in.</li>
+                            <li><strong>Producer</strong> — the software that wrote the PDF, which is usually a different program from the Creator and is the field that quietly tells the world what your organisation runs.</li>
+                        </ul>
+
+                        <h3 style={{ fontSize: '1.15rem', marginTop: '1.75rem', marginBottom: '0.75rem' }}>Two places metadata hides</h3>
+                        <p style={{ lineHeight: '1.6', color: 'var(--text-secondary)', marginBottom: '1rem' }}>
+                            The information dictionary is the classic mechanism and the one this tool reads and writes. Alongside it, many documents carry an XMP packet — an XML block attached to the document catalogue that mirrors the same values and adds more. Readers disagree about which to trust, and Acrobat in particular leans on XMP. Editing here changes the dictionary only, so on a file that has both you may see your new title in one viewer and the old one in another. When old values must genuinely disappear, run <strong>Remove PDF Metadata</strong> first — it deletes the XMP streams from the catalogue and every page — and then come back here to set the values you want.
+                        </p>
+
+                        <h3 style={{ fontSize: '1.15rem', marginTop: '1.75rem', marginBottom: '0.75rem' }}>Reading the file honestly</h3>
+                        <p style={{ lineHeight: '1.6', color: 'var(--text-secondary)', marginBottom: '1rem' }}>
+                            Many PDF libraries stamp their own Producer and a fresh modification date on any document they open, which means a naive editor shows you its own fingerprints rather than the file&apos;s. This one deliberately opens without that behaviour, so the Producer you see is the one the document really carries and the dates pass through unchanged. If you are inspecting a file to find out where it came from, that distinction is the whole point.
+                        </p>
+
+                        <h3 style={{ fontSize: '1.15rem', marginTop: '1.75rem', marginBottom: '0.75rem' }}>Where it fits with the other tools</h3>
                         <p style={{ lineHeight: '1.6', color: 'var(--text-secondary)' }}>
-                            Whether you need to fix a typo in the title for better SEO or anonymize the author field for privacy, this tool handles it all securely within your browser.
+                            Set metadata last. <strong>Compress PDF</strong> clears all six fields as part of its optimisation, and <strong>Merge PDF</strong> and <strong>Organize PDF</strong> build new documents with empty dictionaries, so anything you set before those steps is lost. Encrypted files cannot be opened at all until they go through <strong>Unlock PDF</strong>. And bear in mind that rewriting the file invalidates a digital signature, so sign after the metadata is final. For the images inside your document rather than the document itself, <strong>Image Metadata Editor</strong> handles EXIF.
                         </p>
                     </div>
                     <div className="features-section" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))', gap: '2rem' }}>

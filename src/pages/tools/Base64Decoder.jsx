@@ -5,27 +5,35 @@ import { Copy, Check, ArrowRight, Zap, ShieldAlert, Shield } from 'lucide-react'
 
 const faqs = [
     {
-        question: "How do I decode Base64?",
-        answer: "Simply paste your Base64 string into the input box and click 'Decode'. The plain text will appear instantly."
+        question: "Why does my string fail with hyphens and underscores in it?",
+        answer: "Because that is base64url, a different alphabet. It swaps plus for hyphen and slash for underscore so the value is safe inside URLs and filenames, and it usually drops the trailing equals signs too. This box expects the standard alphabet and rejects the substitutes outright. Replace every hyphen with a plus and every underscore with a slash and it will decode. If the value came from a JSON Web Token, the JWT Decoder does that translation for you and parses the claims as well."
     },
     {
-        question: "Is it safe to decode passwords?",
-        answer: "Yes, because the decoding happens widely in your browser. However, we recommend never pasting actual sensitive passwords into any online tool."
+        question: "Do line breaks or missing padding matter?",
+        answer: "Neither breaks anything here. Base64 copied out of an email header, a PEM certificate or a wrapped log line arrives split across many 64- or 76-column rows, and the browser's decoder ignores all whitespace before it starts. Absent equals signs are tolerated as well. The one length that genuinely cannot be decoded is a string whose character count leaves a remainder of one when divided by four — that is a truncated value, not a padding problem, and the missing characters cannot be reconstructed."
     },
     {
-        question: "Why do I see weird characters?",
-        answer: "We decode text as UTF-8, so accented letters and emoji come through correctly. If you still see strange symbols, the original data was not text at all — it was a binary file such as an image or a ZIP archive."
+        question: "Why is the output full of question marks and boxes?",
+        answer: "The bytes decoded correctly but they were never text. The tool first attempts a strict UTF-8 decode; when that fails it falls back to showing the raw bytes one character at a time, which is what produces the garbage. A result starting with PNG, PK or %PDF is a real file that happens to have been Base64-wrapped, and reading it in a text box will not help — it needs to be written back out as a binary file."
     },
     {
-        question: "Can I decode output from the Encoder tool?",
-        answer: "Yes! The Base64 Encoder and Decoder tools are perfectly compatible with each other."
+        question: "Does decoding tell me whether the data was tampered with?",
+        answer: "No. Base64 carries no checksum, no signature and no key, so a modified string simply decodes to different bytes without complaint. The only inputs that raise an error are ones containing characters outside the alphabet or a length that cannot be valid. If integrity matters, compare a digest of the decoded content using the Hash Generator against a digest you trust."
+    },
+    {
+        question: "Is it safe to paste a token or credential in here?",
+        answer: "Nothing you paste leaves this tab — decoding is a single browser API call with no network step, which you can confirm in the Network panel of DevTools. The real risks are local rather than remote: the value sits in your clipboard, in the page until you navigate away, and in a screen recording or shoulder-surfer's view. For a live production secret, decode it on your own machine instead."
+    },
+    {
+        question: "Can I decode more than one string at a time?",
+        answer: "No. Whitespace is stripped before decoding, so several strings on separate lines are treated as one long value. If they still carry their trailing equals signs, the padding ends up in the middle of that value and you get the red Invalid Base64 string error; if the padding was already absent, the strings silently merge and decode to garbage. Either way, decode them one at a time."
     }
 ]
 
 const features = [
-    { title: 'Instant Decoding', desc: 'Convert Base64 encoded strings back to readable plain text immediately.' },
-    { title: 'Error Handling', desc: 'Smart validation detects invalid Base64 strings to prevent conversion errors.' },
-    { title: 'Privacy Focused', desc: 'Decode sensitive data fragments locally in your browser without sending them to any server.' }
+    { title: 'Whitespace And Padding Tolerant', desc: 'Base64 wrapped across many lines, or missing its trailing equals signs, decodes without any cleanup — paste straight from a PEM block, an email header or a log file.' },
+    { title: 'Strict UTF-8, With A Fallback', desc: 'Text is decoded as UTF-8 so accents and emoji survive intact. When the bytes are not valid UTF-8 the tool shows them raw instead of failing, which is how you spot that a value was really a file.' },
+    { title: 'One Browser API Call', desc: 'Decoding uses the platform’s own atob, so there is no upload, no queue and no history. Closing the tab is all the cleanup there is.' }
 ]
 
 const decodeBase64ToText = (b64) => {
@@ -126,7 +134,27 @@ const Base64Decoder = () => {
                     <div className="about-section" style={{ background: 'var(--bg-card)', padding: '2rem', borderRadius: '1rem', border: '1px solid var(--border)', marginBottom: '2rem' }}>
                         <h2 style={{ fontSize: '1.8rem', marginBottom: '1.5rem' }}>About Base64 Decoder</h2>
                         <p style={{ lineHeight: '1.6', color: 'var(--text-secondary)', marginBottom: '1rem' }}>
-                            Convert Base64 strings back to text online. Free Base64 decoder tool.
+                            Base64 shows up wherever bytes have to travel through something that only handles text: an <code>Authorization: Basic</code> header, a Kubernetes Secret, a certificate pasted into a config file, a <code>data:</code> URI in a stylesheet. Paste the string above and this page reverses the transformation, four characters at a time, back into the original three bytes.
+                        </p>
+
+                        <h3 style={{ fontSize: '1.15rem', fontWeight: '600', margin: '1.75rem 0 0.75rem' }}>Two decoding steps, and why the second one can fail</h3>
+                        <p style={{ lineHeight: '1.6', color: 'var(--text-secondary)', marginBottom: '1rem' }}>
+                            Decoding happens in two stages. First the characters are mapped back to bytes, which either succeeds or reports <em>Invalid Base64 string</em>. Then those bytes are interpreted as UTF-8 text so that accented letters, CJK characters and emoji come out whole. The second stage is the one that can be wrong even when nothing errored: if the payload was a PNG, a ZIP or a protobuf message, the bytes are perfectly valid but they are not text, and what you see is the tool rendering them literally.
+                        </p>
+
+                        <h3 style={{ fontSize: '1.15rem', fontWeight: '600', margin: '1.75rem 0 0.75rem' }}>Reading the failure message</h3>
+                        <p style={{ lineHeight: '1.6', color: 'var(--text-secondary)', marginBottom: '1rem' }}>
+                            Only two things trigger the red error box. One is a character outside the standard alphabet — most often a hyphen or underscore from the URL-safe variant, occasionally a stray quote copied along with the value from JSON. The other is a length that no valid Base64 string can have, which means the value was cut off in transit. Whitespace, newlines and missing padding are all handled silently, so they are never the cause.
+                        </p>
+
+                        <h3 style={{ fontSize: '1.15rem', fontWeight: '600', margin: '1.75rem 0 0.75rem' }}>What decoding does and does not prove</h3>
+                        <p style={{ lineHeight: '1.6', color: 'var(--text-secondary)', marginBottom: '1rem' }}>
+                            A string that decodes cleanly has told you nothing about who produced it. Base64 is an encoding, not a signature and not encryption, and a Kubernetes Secret is exactly as readable as its <code>data</code> field suggests. Treat any credential recovered here as public the moment it appeared on screen.
+                        </p>
+
+                        <h3 style={{ fontSize: '1.15rem', fontWeight: '600', margin: '1.75rem 0 0.75rem' }}>When another tool fits better</h3>
+                        <p style={{ lineHeight: '1.6', color: 'var(--text-secondary)', marginBottom: '1rem' }}>
+                            For a JSON Web Token, use the <strong>JWT Decoder</strong>: it handles the URL-safe alphabet, splits the three segments for you and pretty-prints the claims. For percent-encoded text such as <code>%20</code> and <code>%3D</code>, that is URL encoding rather than Base64 — the <strong>URL Decoder</strong> is the right tool. And when the decoded output turns out to be JSON, the <strong>JSON Formatter</strong> will indent it into something readable.
                         </p>
                     </div>
                     <div className="features-section" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))', gap: '2rem' }}>

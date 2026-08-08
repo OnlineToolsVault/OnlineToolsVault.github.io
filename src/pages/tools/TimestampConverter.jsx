@@ -5,41 +5,49 @@ import { Clock, ArrowLeftRight, List } from 'lucide-react'
 
 const faqs = [
     {
-        question: "What is a Unix Timestamp?",
-        answer: "It is the number of seconds that have passed since the 'Unix Epoch' (January 1st, 1970 at 00:00:00 UTC). It is widely used by computer systems to track time independently of time zones."
+        question: "I pasted my timestamp and got a date in the year 57571. What happened?",
+        answer: "You pasted milliseconds into a field that expects seconds. JavaScript's Date.now, Java's System.currentTimeMillis and most JSON APIs report milliseconds, while Unix time, PostgreSQL's extract(epoch), Go's Unix() and JWT claims use seconds. The giveaway is length: a current value in seconds has ten digits, one in milliseconds has thirteen. Drop the last three digits and try again. A sixteen-digit value is microseconds, common in ClickHouse and some tracing systems, so drop six."
     },
     {
-        question: "Does this tool handle my time zone?",
-        answer: "Yes. All conversions are performed locally in your browser, so the 'Date & Time (Local)' field automatically reflects your specific time zone settings."
+        question: "Why do the three result rows disagree?",
+        answer: "They are the same instant written three ways. Local uses your operating system's time zone and locale formatting, so it is what a person in your chair would recognise. ISO 8601 is always UTC and ends in Z, which is the form to put in an API payload or a log line. The third row is the GMT string used in HTTP headers such as Expires and Last-Modified. If Local and ISO differ by a whole number of hours, that difference is your UTC offset."
     },
     {
-        question: "Why does the timestamp keep increasing?",
-        answer: "Because time never stops! The current timestamp increases by 1 every second. Our live clock updates in real-time to show you the exact current epoch time."
+        question: "Does the 2038 problem affect this page?",
+        answer: "No. That limit comes from C's 32-bit signed time_t, which overflows in January 2038, and it still matters for embedded systems and old database columns. JavaScript stores time as a double-precision number of milliseconds, and the language caps valid dates at 8.64e15 milliseconds either side of 1970 — roughly 273,790 years. In this seconds field anything up to 8,640,000,000,000 converts; beyond that you get Invalid Date rather than a wrong answer."
     },
     {
-        question: "Is this tool compatible with the Year 2038 problem?",
-        answer: "Modern browsers (and this tool) use 64-bit integers for numbers, meaning they can handle dates well beyond the year 2038 without issues."
+        question: "How do I convert a date back into a timestamp?",
+        answer: "Use the Date & Time picker on the right and the seconds field updates to match. Two caveats. The picker interprets what you choose in your local zone, not UTC, so the number reflects your offset — check the ISO row to confirm you got the instant you meant. And the browser's picker usually offers only hours and minutes, so seconds land on zero."
     },
     {
-        question: "Can I convert negative timestamps?",
-        answer: "Yes, negative timestamps represent dates before 1970. This tool supports them correctly."
+        question: "Can I enter a date before 1970?",
+        answer: "Yes, as a negative number of seconds. -1000000000 resolves to April 1938, and the ISO and GMT rows render it correctly. Historical dates carry a caveat that has nothing to do with this tool: the further back you go, the less the arithmetic corresponds to what a calendar of the time actually said, because time zones, daylight saving rules and the Gregorian changeover are applied as if today's rules had always held."
     },
     {
-        question: "What formats are supported?",
-        answer: "We support ISO 8601, RFC 2822, and standard local date string formats for easy integration."
+        question: "Why does the big green number keep changing?",
+        answer: "That panel is a live clock rather than a converted result — it re-reads your device's time once a second and shows the current epoch value. It is there so you can grab a timestamp for a test fixture or compare it against an exp claim without any arithmetic. It has no effect on the fields below, which only change when you edit them."
     }
 ]
 
 const TimestampConverter = () => {
-    const [now, setNow] = useState(Math.floor(Date.now() / 1000))
-    const [timestamp, setTimestamp] = useState(String(now))
+    // Seeded to null rather than Date.now() so the prerendered HTML does not bake the build
+    // machine's clock into every indexed copy of this page; the real values arrive on mount.
+    const [now, setNow] = useState(null)
+    const [timestamp, setTimestamp] = useState('')
     const [dateString, setDateString] = useState('')
     const [isoString, setIsoString] = useState('')
     const [rfcString, setRfcString] = useState('')
 
-    // Live clock
+    // Live clock — the first tick also seeds the input, which starts empty for the reason above.
+    // Skipped entirely while prerendering (scripts/prerender.js sets the flag), because that
+    // browser's DOM is serialised into the shipped HTML and would freeze the build time into it.
     useEffect(() => {
-        const timer = setInterval(() => setNow(Math.floor(Date.now() / 1000)), 1000)
+        if (typeof window !== 'undefined' && window.__PRERENDER__) return
+        const tick = () => setNow(Math.floor(Date.now() / 1000))
+        tick()
+        setTimestamp((current) => current || String(Math.floor(Date.now() / 1000)))
+        const timer = setInterval(tick, 1000)
         return () => clearInterval(timer)
     }, [])
 
@@ -130,13 +138,27 @@ const TimestampConverter = () => {
                 <div className="about-section" style={{ background: 'var(--bg-card)', padding: '2rem', borderRadius: '1rem', border: '1px solid var(--border)', marginBottom: '2rem' }}>
                     <h2 style={{ fontSize: '1.8rem', marginBottom: '1.5rem' }}>About Unix Timestamp Converter</h2>
                     <p style={{ lineHeight: '1.6', color: 'var(--text-secondary)', marginBottom: '1rem' }}>
-                        A <strong>Unix Timestamp</strong> (or Epoch time) represents the number of seconds that have elapsed since January 1, 1970 (UTC). It's the standard way computers track time.
+                        Unix time counts the seconds elapsed since midnight UTC on 1 January 1970. It is a single integer with no zone, no locale and no formatting attached, which is exactly why databases, log files and API payloads prefer it — and exactly why it is unreadable at a glance. Type a value into the seconds field above and it is rendered three ways at once.
                     </p>
+
+                    <h3 style={{ fontSize: '1.15rem', fontWeight: '600', margin: '1.75rem 0 0.75rem' }}>Seconds, milliseconds, and the mistake everyone makes</h3>
                     <p style={{ lineHeight: '1.6', color: 'var(--text-secondary)', marginBottom: '1rem' }}>
-                        Our <strong>Unix Timestamp Converter</strong> helps you translate these cryptic numbers into human-readable dates and vice versa. It's an essential tool for developers debugging logs, database entries, or API responses.
+                        The field on this page expects <em>seconds</em>. Nothing in a bare integer records its unit, so a millisecond value is not rejected — it is faithfully converted into a date tens of thousands of years from now. Count the digits before you paste: ten is seconds through the 2030s, thirteen is milliseconds, sixteen is microseconds. Getting this wrong in production is how a cache entry ends up valid for a millennium or a token expires the instant it is issued.
                     </p>
+
+                    <h3 style={{ fontSize: '1.15rem', fontWeight: '600', margin: '1.75rem 0 0.75rem' }}>Which output belongs where</h3>
+                    <p style={{ lineHeight: '1.6', color: 'var(--text-secondary)', marginBottom: '1rem' }}>
+                        Use the ISO 8601 row for anything a machine will read back — it is unambiguous, sorts correctly as a string, and is what <code>JSON.stringify</code> produces for a Date. Use the row labelled RFC 2822, the one ending in GMT, when you are writing an HTTP header. Use the Local row only for reading, never for storage: it is formatted for your device&apos;s region, so the same instant reads as 03/04 in one country and 04/03 in another.
+                    </p>
+
+                    <h3 style={{ fontSize: '1.15rem', fontWeight: '600', margin: '1.75rem 0 0.75rem' }}>Where this comes up</h3>
+                    <p style={{ lineHeight: '1.6', color: 'var(--text-secondary)', marginBottom: '1rem' }}>
+                        The usual jobs are reading an <code>exp</code> or <code>iat</code> claim out of a decoded JSON Web Token, lining a log entry up with an incident window, checking what a <code>created_at</code> integer column actually holds, working out whether a signed URL has expired, and generating a fixed timestamp for a test fixture. The live counter at the top of the page exists for that last case.
+                    </p>
+
+                    <h3 style={{ fontSize: '1.15rem', fontWeight: '600', margin: '1.75rem 0 0.75rem' }}>Limits worth knowing</h3>
                     <p style={{ lineHeight: '1.6', color: 'var(--text-secondary)' }}>
-                        We support conversion to local time, ISO 8601, and RFC 2822 formats instantly.
+                        Every conversion is arithmetic on your device — the page makes no request, so the values you paste are never transmitted and the tool works offline. Two things it does not do: there is no time zone selector, so to see an instant in a zone other than yours, read the UTC row and offset it yourself; and leap seconds are ignored, as they are in Unix time generally, since the count deliberately pretends every day has exactly 86,400 seconds. To decode a token before converting its claims, the <strong>JWT Decoder</strong> is the companion tool.
                     </p>
                 </div>
             </div>
@@ -159,7 +181,7 @@ const TimestampConverter = () => {
 export default TimestampConverter
 
 TimestampConverter.features = [
-    { title: 'Bidirectional Conversion', desc: 'Instantly convert Unix timestamps to human-readable dates and vice versa.', icon: <ArrowLeftRight color="var(--primary)" size={24} /> },
-    { title: 'Live & Local Clock', desc: 'See the current Unix timestamp in real-time. All conversions happen locally.', icon: <Clock color="var(--primary)" size={24} /> },
-    { title: 'Multiple Formats', desc: 'Get results in various formats including UTC, ISO 8601, and local time.', icon: <List color="var(--primary)" size={24} /> }
+    { title: 'Both Directions, Same Screen', desc: 'Type an epoch value on the left and the three rendered forms follow it; pick a calendar date on the right and the epoch field is filled in to match. The picker does not track edits made to the number, so it stays where you last set it.', icon: <ArrowLeftRight color="var(--primary)" size={24} /> },
+    { title: 'A Clock You Can Copy From', desc: 'The panel at the top ticks once a second with the current epoch value, which saves opening a console just to find out what time it is in integer form.', icon: <Clock color="var(--primary)" size={24} /> },
+    { title: 'Three Renderings At Once', desc: 'Local time for reading, ISO 8601 in UTC for storing and sending, and the row labelled RFC 2822, which is the GMT string HTTP headers use — shown together so the offset between them is visible.', icon: <List color="var(--primary)" size={24} /> }
 ]

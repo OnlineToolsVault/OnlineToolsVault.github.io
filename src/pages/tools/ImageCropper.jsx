@@ -704,13 +704,22 @@ const ImageCropper = () => {
                     <div className="about-section" style={{ background: 'var(--bg-card)', padding: '2rem', borderRadius: '1rem', border: '1px solid var(--border)', marginBottom: '2rem' }}>
                         <h2 style={{ fontSize: '1.8rem', marginBottom: '1.5rem' }}>About Image Cropper</h2>
                         <p style={{ lineHeight: '1.6', color: 'var(--text-secondary)', marginBottom: '1rem' }}>
-                            Need to crop a photo for <strong>Instagram</strong>, <strong>Twitter</strong>, or your <strong>Passport</strong> application? Our free online <strong>Image Cropper</strong> makes it simple and fast.
+                            Cropping means choosing which part of a picture to keep and discarding the rest. The selection you draw on screen is converted back into the coordinate space of the full-resolution image and drawn out at exactly that size, with no scaling in either direction — the crop rectangle is rounded to whole pixels and nothing else about the picture is touched. What you get is an extract of the original at its original detail, not a resized copy of it.
                         </p>
+                        <h3 style={{ fontSize: '1.15rem', margin: '1.5rem 0 0.75rem' }}>Working with the aspect ratios</h3>
                         <p style={{ lineHeight: '1.6', color: 'var(--text-secondary)', marginBottom: '1rem' }}>
-                            Upload any JPG, PNG, or WebP image and use our intuitive drag-and-drop editor. You can choose from popular preset aspect ratios (like 16:9 or 1:1) or enter custom dimensions for pixel-perfect precision.
+                            <strong>Original</strong> keeps the shape of the file you loaded, which is what you want when you are simply tightening the framing. <strong>Free</strong> releases the constraint entirely, and holding <strong>Shift</strong> while resizing in that mode locks whatever ratio the box currently has. <strong>16:9</strong>, <strong>4:3</strong> and <strong>1:1</strong> are one-press presets. <strong>Custom</strong> takes two numbers and locks the box to that proportion — worth being clear that these are a <em>ratio</em>, not pixel dimensions, so 9 and 16 gives you a vertical Story shape at whatever size you drag it to. The real output size is displayed live above the preview as you work.
+                        </p>
+                        <h3 style={{ fontSize: '1.15rem', margin: '1.5rem 0 0.75rem' }}>Crop mode, Move mode, and precise placement</h3>
+                        <p style={{ lineHeight: '1.6', color: 'var(--text-secondary)', marginBottom: '1rem' }}>
+                            In Crop mode you drag the selection over a stationary image. Switch to Move mode and the selection freezes while you drag the picture beneath it, which is far easier once you have zoomed in — the zoom slider runs from 50% to 300% and affects only the editing view, never the exported resolution. For work that has to be exact rather than judged by eye, the X and Y position boxes accept real pixel offsets, and the Center X and Center Y buttons place the selection precisely on an axis. The small preview panel beneath the controls is the actual output canvas, checkerboard and all, so what you see there is what the file will contain.
+                        </p>
+                        <h3 style={{ fontSize: '1.15rem', margin: '1.5rem 0 0.75rem' }}>Output, and what to do next</h3>
+                        <p style={{ lineHeight: '1.6', color: 'var(--text-secondary)', marginBottom: '1rem' }}>
+                            The download is always a <strong>PNG</strong>, named with its dimensions, and transparency in a source PNG or WebP is carried through intact. PNG is lossless, which is good for quality and awkward for file size: a crop taken from a JPEG photograph can easily weigh several times more than the entire original did. That is the format behaving normally rather than a fault, and the fix is to pass the result through the Image Compressor or convert it back to JPEG with the Image Converter. If the shape is right but the pixel count is wrong, the Image Resizer sets exact numbers; if you want named social platform ratios instead of doing the arithmetic, the Social Media Resizer has them built in.
                         </p>
                         <p style={{ lineHeight: '1.6', color: 'var(--text-secondary)' }}>
-                            Best of all, your privacy is guaranteed. All cropping happens <strong>locally in your browser</strong>, so your personal photos never leave your device.
+                            The whole editor runs inside this browser tab. Your file is read into memory, drawn onto a canvas, and exported straight to a download — it is never uploaded, there is no temporary server copy to expire, and closing the tab is all the cleanup there is. The one practical consequence of working this way is memory: the image is held as a data URL, which takes roughly a third more room than the file on disk, so a very large photo behaves better on a desktop than on an older phone.
                         </p>
                     </div>
                     <div className="features-section" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))', gap: '2rem' }}>
@@ -739,35 +748,49 @@ const ImageCropper = () => {
 }
 
 const features = [
-    { title: 'Precise Cropping', desc: 'Crop your images with pixel-perfect precision using our advanced editor.', icon: <Crop color="var(--primary)" size={24} /> },
-    { title: 'Social Media Ready', desc: 'Preset aspect ratios (16:9, 4:3, 1:1) perfect for Instagram, Facebook, and Twitter.', icon: <Smartphone color="var(--primary)" size={24} /> },
-    { title: 'Real-time Preview', desc: 'See the exact result including dimensions in real-time as you adjust your crop.', icon: <Monitor color="var(--primary)" size={24} /> }
+    { title: 'Copied at 1:1, never rescaled', desc: 'The selection is mapped back to the source at its natural resolution and drawn out at exactly that size. There is no upscaling or downscaling step, so the crop carries the full detail of the original.', icon: <Crop color="var(--primary)" size={24} /> },
+    { title: 'Live output dimensions', desc: 'The exact width and height of the result are shown as you drag, so you can hit a spec like 1200 x 630 by watching the numbers instead of measuring afterwards.', icon: <Monitor color="var(--primary)" size={24} /> },
+    { title: 'Zoom and pan for fine work', desc: 'Magnify up to 300% and switch to Move mode to drag the picture under the selection, which is how you place an edge accurately on a detailed image.', icon: <Monitor color="var(--primary)" size={24} /> },
+    { title: 'Numeric position with centring', desc: 'Type the X and Y offset in real pixels, or press Center X and Center Y to place the selection exactly on an axis rather than eyeballing it.', icon: <Crop color="var(--primary)" size={24} /> },
+    { title: 'Ratios, locked or free', desc: 'Original, Free, 16:9, 4:3, 1:1 and a custom ratio you type. Holding Shift in Free mode locks whatever ratio the selection currently has while you resize it.', icon: <Smartphone color="var(--primary)" size={24} /> }
 ]
 
 const faqs = [
     {
-        question: "How do I crop for Instagram?",
-        answer: "For Instagram posts, select the **1:1 (Square)** ratio. For Stories or Reels, use **9:16**. You can easily switch between these in our tool."
+        question: "How do I crop for Instagram or a Story?",
+        answer: "A square feed post is the built-in **1:1** button. For a Story or Reel there is no 9:16 preset — press **Custom** and type 9 in the first box and 16 in the second, which locks the selection to that shape. If you would rather not think about ratios at all, the Social Media Resizer has Instagram, Twitter and Facebook sizes as named presets."
     },
     {
-        question: "Does it support transparent PNGs?",
-        answer: "Yes! Our cropper fully preserves transparency for PNG and WebP files, so you won't lose your background."
+        question: "The Custom boxes ask for W and H. Are those pixels?",
+        answer: "No, they are a **ratio**. Typing 4 and 5 locks the selection to 4:5 at whatever size you drag it to; it does not produce a 4 x 5 pixel image. The actual output size is shown live above the preview as you resize. If you need an exact pixel result, crop to the right shape here and then set the numbers in the Image Resizer."
     },
     {
-        question: "Is it free and private?",
-        answer: "Yes, it's 100% free with no watermarks. Plus, it processes images on your device (client-side), ensuring your photos remain private."
+        question: "What format do I get, and why is my file bigger?",
+        answer: "The download is always a **PNG**, named with the output dimensions. PNG is lossless, so a crop taken from a JPEG photo can easily be several times larger in bytes than the whole original was. That is the format, not a bug. Run the result through the Image Compressor or convert it back to JPEG with the Image Converter if size matters."
     },
     {
-        question: "Can I crop to a specific size?",
-        answer: "Absolutely. Select 'Custom' aspect ratio and enter your desired Width and Height to get the exact dimensions you need."
+        question: "Does cropping lose quality?",
+        answer: "Effectively no. The selection is converted back into the coordinates of the full-resolution image and drawn out at exactly that size, so nothing is scaled up or down and no detail is thrown away. The crop rectangle is rounded to whole pixels, which can shift an edge by a fraction of a pixel, and the output is re-encoded as PNG, which is lossless. Neither is visible."
+    },
+    {
+        question: "What is the difference between Crop mode and Move mode?",
+        answer: "In **Crop** mode you drag the selection rectangle. In **Move** mode the rectangle is locked and you drag the picture underneath it instead, which is much easier when you are zoomed in and want to nudge the framing. The zoom slider runs from 50% to 300% and only affects the editor view — it never changes the output resolution."
+    },
+    {
+        question: "Is transparency kept?",
+        answer: "Yes. The preview canvas is cleared before the crop is drawn, so transparent pixels in a PNG or WebP stay transparent all the way to the download. The checkerboard behind the preview is showing you the real alpha channel, not a placeholder."
+    },
+    {
+        question: "How is cropping different from resizing?",
+        answer: "Cropping discards part of the frame and leaves the surviving pixels untouched. Resizing keeps the whole frame and changes how many pixels describe it. If your image is the right shape but the wrong dimensions, you want the Image Resizer. Very often a job needs both: crop to shape here, then resize to the exact pixel count."
     },
     {
         question: "Is there a file size limit?",
-        answer: "Since processing happens on your device, we can handle heavy files (up to 50MB+) smoothly without uploading."
+        answer: "No hard limit, but the picture is read into memory as a data URL, which uses roughly a third more memory than the file on disk. Very large photos are therefore constrained by your device rather than by any rule — a 50 MB image is fine on a desktop and may struggle on an older phone."
     },
     {
-        question: "Does it reduce image quality?",
-        answer: "No. We generally preserve the original quality unless you are heavily resizing. The output format defaults to high-quality PNG."
+        question: "Does the image get uploaded?",
+        answer: "No. The file is read by your browser, drawn into a canvas in this tab, and exported straight to a download. There is no server round trip, no temporary storage and no account, and the editor keeps working if you disconnect from the network after the page loads."
     }
 ]
 

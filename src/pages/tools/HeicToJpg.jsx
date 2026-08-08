@@ -6,35 +6,48 @@ import { Image as ImageIcon, Download, Loader2, Smartphone, RefreshCw, ShieldChe
 import heic2any from 'heic2any'
 import { saveAs } from 'file-saver'
 const features = [
-    { title: 'iPhone Photo Support', desc: 'Seamlessly convert Apple HEIC/HEIF photos from iPhone and iPad to standard JPGs.', icon: <Smartphone color="var(--primary)" size={24} /> },
-    { title: 'High Quality', desc: 'Preserves the details and colors of your original photos while maximizing compatibility.', icon: <RefreshCw color="var(--primary)" size={24} /> },
-    { title: '100% Private', desc: 'Conversion happens locally in your browser. Your personal photos are never uploaded.', icon: <ShieldCheck color="var(--primary)" size={24} /> }
+    { title: 'Decodes HEVC in the browser', desc: 'A JavaScript build of the libheif decoder unpacks the HEVC-compressed image inside the container, which is why this works on a machine that has no HEIC support installed at all.', icon: <Smartphone color="var(--primary)" size={24} /> },
+    { title: 'Fixed 90% JPEG quality', desc: 'The output is encoded at 90%, high enough that the difference from the source is not visible at normal viewing sizes while keeping the file a sensible weight.', icon: <RefreshCw color="var(--primary)" size={24} /> },
+    { title: 'All four HEIF extensions', desc: 'Accepts .heic and .heif still images plus the .heics and .heifs sequence variants, which is what a burst or Live Photo still can arrive as.', icon: <Smartphone color="var(--primary)" size={24} /> },
+    { title: 'The photo stays on your device', desc: 'No upload step exists. For pictures of documents, children or anything you would not email to a stranger, that is the whole reason to use a local converter.', icon: <ShieldCheck color="var(--primary)" size={24} /> }
 ]
 
 const faqs = [
     {
-        question: "Is this HEIC converter free?",
-        answer: "Yes, it is completely free. You can convert as many iPhone photos as you like."
+        question: "Why does my iPhone save photos as .HEIC in the first place?",
+        answer: "Since iOS 11, Apple has stored photos in a HEIF container using HEVC compression, which is roughly half the size of an equivalent JPEG. The saving is real, but the format is still refused by plenty of websites, older photo software and print services — which is why converting is so often necessary before you can actually use the picture."
     },
     {
-        question: "Is it safe for my private photos?",
-        answer: "Absolute safety. We use browser-based technology so your photos never leave your device."
+        question: "How does this work if my computer cannot open HEIC files?",
+        answer: "It does not rely on your operating system. A JavaScript build of the libheif decoder runs inside the page and unpacks the HEVC image itself, then re-encodes it as a JPEG. That is why the tool works identically on Windows without the HEIF Image Extensions installed, on Linux, and on an older Mac."
     },
     {
-        question: "Why do I see .HEIC files?",
-        answer: "Apple uses HEIC (High Efficiency Image Container) to save space on iPhones. Our tool converts them to standard JPGs so you can share them anywhere."
+        question: "How much quality do I lose?",
+        answer: "The JPEG is written at 90% quality, which is visually indistinguishable from the source at any normal viewing size. There is a real loss in principle — HEIC and JPEG are different lossy codecs, so the pixels are re-encoded — but nothing you will see. Keep the original .heic file if you may need to re-export later."
     },
     {
-        question: "Can I convert HEIC on Windows?",
-        answer: "Yes! Windows doesn't natively open HEIC files easily, so using this online tool is the fastest way to view them."
+        question: "Why only one photo at a time?",
+        answer: "Decoding HEVC in JavaScript is heavy work, and a 12-megapixel photo takes real memory and CPU. Running a whole camera roll at once would freeze the tab or crash it on a phone, so the tool deliberately handles one file per run. For a large batch, it is usually faster to change the setting on the phone instead — see the next answer."
     },
     {
-        question: "Does it reduce quality?",
-        answer: "Our converter aims for high quality (90%), so your photos look great while being much more compatible."
+        question: "Can I stop my iPhone producing HEIC files altogether?",
+        answer: "Yes, and for a lot of people that is the better fix. On the phone, open **Settings > Camera > Formats** and choose **Most Compatible**; new photos are then captured as JPEG. There is also **Settings > Photos > Transfer to Mac or PC > Automatic**, which converts on the way out when you plug the phone into a computer."
     },
     {
-        question: "Can I convert multiple files?",
-        answer: "Currently, we support converting one file at a time to ensure the browser doesn't freeze with large high-res photos."
+        question: "What about Live Photos and bursts?",
+        answer: "A Live Photo is a still image plus a short video, stored separately. Only the still is inside the .heic file, so that is what you get back — the motion is in a companion .mov that the phone keeps alongside it. Sequence files with .heics or .heifs extensions are accepted, and the first image in the sequence is converted."
+    },
+    {
+        question: "Does the location where I took the photo travel with the JPEG?",
+        answer: "Do not assume either way. If the picture is going somewhere public and the GPS coordinates matter to you, run the converted JPEG through Remove Image Metadata afterwards — that tool is built to strip EXIF, IPTC and XMP blocks and will show you a clean result."
+    },
+    {
+        question: "The conversion failed. What now?",
+        answer: "The usual causes are a file that is not actually HEIF despite the extension, a partially copied file from a phone transfer that stopped early, or a HEIC variant the decoder does not handle. Re-copy the file from the device and try again. If it still fails, open it on the phone and export or share it as JPEG directly."
+    },
+    {
+        question: "Is anything uploaded while it converts?",
+        answer: "No. The decoder and the JPEG encoder both run inside this browser tab on your own processor. There is no server involved, nothing is stored, and once the page has loaded you can disconnect from the internet and the conversion still completes."
     }
 ]
 
@@ -217,13 +230,21 @@ const HeicToJpg = () => {
                         <div className="about-section" style={{ background: 'var(--bg-card)', padding: '2rem', borderRadius: '1rem', border: '1px solid var(--border)', marginBottom: '2rem' }}>
                             <h2 style={{ fontSize: '1.8rem', marginBottom: '1.5rem' }}>About HEIC to JPG Converter</h2>
                             <p style={{ lineHeight: '1.6', color: 'var(--text-secondary)', marginBottom: '1rem' }}>
-                                Struggling to open iPhone photos on your computer? Our free <strong>HEIC to JPG Converter</strong> makes it simple. Convert Apple's High Efficiency Image Container (HEIC) format into widely supported JPG or JPEG images instantly.
+                                A <strong>.heic</strong> file is a HEIF container holding an image compressed with HEVC — the same codec used for 4K video. Apple made it the iPhone default in iOS 11 because it stores a photo in roughly half the space of an equivalent JPEG. The trade is compatibility: upload forms, older desktop software, print kiosks and plenty of web apps still reject it outright, and Windows only opens it if the HEIF Image Extensions have been installed.
+                            </p>
+                            <h3 style={{ fontSize: '1.15rem', margin: '1.5rem 0 0.75rem' }}>How the conversion happens here</h3>
+                            <p style={{ lineHeight: '1.6', color: 'var(--text-secondary)', marginBottom: '1rem' }}>
+                                This page does not ask your operating system to open the file, which is the whole point — if it could, you would not be here. A JavaScript build of the libheif decoder runs inside the page, parses the container, decodes the HEVC image data, and hands the raw pixels to a JPEG encoder set to <strong>90% quality</strong>. The download keeps your original filename with the extension swapped to .jpg. Because it is all self-contained, the tool behaves the same on Windows, Linux, ChromeOS and an old Mac.
+                            </p>
+                            <h3 style={{ fontSize: '1.15rem', margin: '1.5rem 0 0.75rem' }}>One file at a time, on purpose</h3>
+                            <p style={{ lineHeight: '1.6', color: 'var(--text-secondary)', marginBottom: '1rem' }}>
+                                HEVC decoding in JavaScript is genuinely expensive. A 12-megapixel photo needs both the compressed data and the full uncompressed bitmap in memory at once, and running a camera roll in parallel is a reliable way to freeze a browser tab or exhaust the memory on a phone. Handling a single file per run keeps it predictable. If you have hundreds of photos, the faster route is to stop producing HEIC in the first place: on the iPhone, <strong>Settings &gt; Camera &gt; Formats &gt; Most Compatible</strong> captures JPEG directly, and <strong>Settings &gt; Photos &gt; Transfer to Mac or PC &gt; Automatic</strong> converts them as they leave the device.
                             </p>
                             <p style={{ lineHeight: '1.6', color: 'var(--text-secondary)', marginBottom: '1rem' }}>
-                                Unlike other online converters that require you to upload your personal photos to a cloud server, our tool processes everything <strong>locally</strong> in your web browser. This means your private memories stay on your device, ensuring 100% privacy and security.
+                                The dropzone accepts <strong>.heic</strong>, <strong>.heif</strong>, and the <strong>.heics</strong> and <strong>.heifs</strong> sequence variants; anything else is refused with a message rather than failing halfway through. A Live Photo contributes only its still frame here, since the motion lives in a separate video file the phone keeps alongside it. Conversions usually fail for one of three reasons: the file is not really HEIF despite its name, the transfer from the phone was incomplete, or the container uses a variant the decoder cannot read.
                             </p>
                             <p style={{ lineHeight: '1.6', color: 'var(--text-secondary)' }}>
-                                Enjoy high-quality conversion without any software installation or file size limits.
+                                Nothing is uploaded at any point. The photo is read into memory, decoded and re-encoded on your own processor, and the result is handed straight back as a download — there is no server copy to delete and no account to trust. If the picture is headed somewhere public and you also want the GPS coordinates gone, follow up with Remove Image Metadata, which strips EXIF from the converted JPEG.
                             </p>
                         </div>
                         <div className="features-section" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))', gap: '2rem' }}>

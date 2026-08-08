@@ -6,27 +6,49 @@ import { Loader2, Save, Edit3, Camera, Calendar, User, Copyright } from 'lucide-
 import { saveAs } from 'file-saver'
 import piexif from 'piexifjs'
 const features = [
-    { title: 'Edit EXIF Tags', desc: 'View and modify hidden metadata like Artist, Copyright, Software, and Date/Time timestamps.', icon: <Edit3 color="var(--primary)" size={24} /> },
-    { title: 'Camera Details', desc: 'Update or remove Camera Make, Model, and other technical specifications embedded in your photos.', icon: <Camera color="var(--primary)" size={24} /> },
-    { title: 'Private Editing', desc: 'Editing happens entirely in your browser using JavaScript. No files are uploaded to any server.', icon: <Save color="var(--primary)" size={24} /> }
+    { title: 'The pixels are never touched', desc: 'Only the EXIF segment at the front of the JPEG is rewritten. The compressed image data is left exactly as it was, so saving costs you no quality at all.', icon: <Save color="var(--primary)" size={24} /> },
+    { title: 'Six IFD0 fields, read and write', desc: 'Artist, Copyright, Date & Time, Software, Camera Make and Camera Model are loaded from the file, shown as they are, and written back when you save.', icon: <Edit3 color="var(--primary)" size={24} /> },
+    { title: 'Other tags are preserved', desc: 'The existing EXIF block is parsed and re-emitted, so exposure, lens, GPS and thumbnail tags you are not editing survive the round trip instead of being wiped.', icon: <Camera color="var(--primary)" size={24} /> },
+    { title: 'Latin-1 checked before saving', desc: 'EXIF text tags are byte strings that cannot hold Japanese, Chinese, Cyrillic or emoji. The tool names the offending field up front instead of writing a file that reads back as garbage.', icon: <Copyright color="var(--primary)" size={24} /> },
+    { title: 'Works on a photo with no EXIF', desc: 'If a file has no metadata block at all, a fresh one is created and your values are written into it, which is how you add authorship to an image exported by a tool that stripped everything.', icon: <Edit3 color="var(--primary)" size={24} /> }
 ]
 
 const faqs = [
     {
-        question: "What is EXIF data?",
-        answer: "EXIF (Exchangeable Image File Format) stores details like date taken, camera settings, GPS location, and copyright info inside your image files."
+        question: "What exactly can I edit here?",
+        answer: "Six fields from the main IFD0 block: **Artist**, **Copyright**, **Date & Time**, **Software**, **Camera Make** and **Camera Model**. They cover the two realistic reasons to edit metadata by hand — stamping authorship and ownership onto your own work, and correcting a wrong capture date from a camera whose clock was not set."
     },
     {
-        question: "Is this tool free?",
-        answer: "Yes, our Image Metadata Editor is 100% free. You can edit as many photos as you need."
+        question: "What format does the date need to be in?",
+        answer: "EXIF specifies a rigid nineteen-character form: **YYYY:MM:DD HH:MM:SS**, with colons between the date parts, a single space, and a 24-hour clock. `2024:03:17 14:05:00` is valid; `17/03/2024` is not. Software reading a malformed value will usually ignore the field, so if a corrected date does not appear afterwards, check the punctuation first."
     },
     {
-        question: "Is it secure?",
-        answer: "Completely. We use client-side processing, so your photos stay on your device and are never sent to a server."
+        question: "Does saving re-compress my photo?",
+        answer: "No, and this is the main reason to use a metadata editor rather than an image editor. Only the EXIF segment near the start of the file is replaced; the compressed scan data is copied through untouched. The saved file is pixel-for-pixel identical to the original, so you can edit the tags as many times as you like with no cumulative loss."
     },
     {
-        question: "What formats are supported?",
-        answer: "We currently support standard JPG and JPEG files, which are the most common formats for EXIF data."
+        question: "Why can I only load JPG files?",
+        answer: "EXIF was designed for JPEG and TIFF, and the library used here writes the JPEG variant. PNG and WebP have their own, different metadata containers that are not interchangeable with EXIF. If your file is a PNG or a WebP, there is nothing here for this tool to edit."
+    },
+    {
+        question: "I got a message about Latin-1 characters.",
+        answer: "EXIF text tags are byte strings limited to the Latin-1 range, so accented Western European letters are fine but Japanese, Chinese, Korean, Cyrillic, Greek and emoji cannot be encoded at all. Rather than silently writing bytes that read back as garbage, the tool refuses and tells you which field to fix. Transliterate the value into Latin characters and save again."
+    },
+    {
+        question: "Will the tags I am not editing be lost?",
+        answer: "No. The existing metadata is parsed, your six values are set on it, and the whole block is written back. Exposure settings, lens information, GPS coordinates and the embedded thumbnail all survive. If the file has no readable EXIF to begin with, a new block is created containing just what you typed."
+    },
+    {
+        question: "Can I edit or remove the GPS location here?",
+        answer: "Not from this page — the coordinates are preserved but not exposed as an editable field. To delete location data before sharing a photo, use Remove Image Metadata, which strips the EXIF, IPTC and XMP blocks wholesale and can do it on a JPEG without re-encoding the pixels."
+    },
+    {
+        question: "Why bother setting Artist and Copyright?",
+        answer: "Because it travels with the file. A copyright line typed into these fields stays inside the JPEG when it is downloaded, emailed or archived, and it is what a stock library, a picture desk or an asset manager reads to establish provenance. It is not enforcement, but it makes ownership a fact recorded in the file rather than a claim made separately."
+    },
+    {
+        question: "Is my photo uploaded to edit its tags?",
+        answer: "No. The file is read into memory, the EXIF block is parsed and rebuilt in JavaScript on your machine, and the result is saved straight back to your downloads. Nothing is transmitted — which matters here, because the metadata you are looking at may itself contain the location where the photo was taken."
     }
 ]
 
@@ -319,13 +341,22 @@ const ImageMetadataEditor = () => {
                         <div className="about-section" style={{ background: 'var(--bg-card)', padding: '2rem', borderRadius: '1rem', border: '1px solid var(--border)', marginBottom: '2rem' }}>
                             <h2 style={{ fontSize: '1.8rem', marginBottom: '1.5rem' }}>About Image Metadata Editor</h2>
                             <p style={{ lineHeight: '1.6', color: 'var(--text-secondary)', marginBottom: '1rem' }}>
-                                Every time you take a photo, your camera stores hidden information called EXIF data. Our <strong>Image Metadata Editor</strong> lets you view and modify this data directly in your browser.
+                                A JPEG is not only pixels. Near the front of the file sits an EXIF block: a small structured record written by the camera holding the capture time, the make and model of the body, exposure settings, and often the coordinates where the shutter was pressed. This page loads that block from a JPEG, shows you six of its fields, and writes your changes back.
                             </p>
+                            <h3 style={{ fontSize: '1.15rem', margin: '1.5rem 0 0.75rem' }}>Editing tags without re-encoding pixels</h3>
                             <p style={{ lineHeight: '1.6', color: 'var(--text-secondary)', marginBottom: '1rem' }}>
-                                You can easily update the <strong>Artist</strong> name, add <strong>Copyright</strong> notices, change the <strong>Date/Time</strong>, or modify <strong>Camera Model</strong> details. This is essential for photographers who want to attribute their  work correctly or remove sensitive information before sharing.
+                                Opening a photo in an image editor and saving it again re-compresses the whole picture, costing a generation of quality for the sake of a text field. This tool does not do that. The EXIF segment is parsed, your values are set on it, and the segment is spliced back into the original file — the compressed scan data is copied through byte for byte. The saved image is pixel-identical to the one you loaded, however many times you edit it. Tags you are not touching, including exposure data, lens information and the embedded thumbnail, are re-emitted unchanged rather than dropped.
+                            </p>
+                            <h3 style={{ fontSize: '1.15rem', margin: '1.5rem 0 0.75rem' }}>The six fields, and what they are for</h3>
+                            <p style={{ lineHeight: '1.6', color: 'var(--text-secondary)', marginBottom: '1rem' }}>
+                                <strong>Artist</strong> and <strong>Copyright</strong> are the attribution pair. Written here, they travel inside the file wherever it goes — through a download, an email, a stock library ingest or an asset manager — which is a more durable statement of authorship than a note kept somewhere else. <strong>Date &amp; Time</strong> is the one people most often need to correct, because a camera whose clock was never set will file an entire trip under the wrong year; it must be typed in the EXIF form <strong>YYYY:MM:DD HH:MM:SS</strong>, with colons in the date and a 24-hour clock, or readers will ignore it. <strong>Software</strong>, <strong>Camera Make</strong> and <strong>Camera Model</strong> record or correct the equipment that produced the image.
+                            </p>
+                            <h3 style={{ fontSize: '1.15rem', margin: '1.5rem 0 0.75rem' }}>Two real limitations</h3>
+                            <p style={{ lineHeight: '1.6', color: 'var(--text-secondary)', marginBottom: '1rem' }}>
+                                The first is format: EXIF as written here belongs to JPEG, so only .jpg and .jpeg files can be loaded. PNG and WebP store metadata in entirely different containers. The second is character set: EXIF text tags are byte strings limited to Latin-1, which covers accented Western European letters but not Japanese, Chinese, Korean, Cyrillic, Greek or emoji. Rather than write bytes that read back as nonsense, the tool checks before saving and names the field that needs changing. If the photo has no EXIF block at all, a fresh one is created from what you typed.
                             </p>
                             <p style={{ lineHeight: '1.6', color: 'var(--text-secondary)' }}>
-                                We value your privacy. Unlike other tools, we process your images legally on your device using JavaScript. Your photos are never uploaded to any cloud server.
+                                Everything happens in this browser tab — the file is read into memory, the metadata is rebuilt in JavaScript, and the result goes straight to your downloads as edited- plus the original name. Nothing is uploaded, which is worth noting given that the data on screen may include the exact coordinates of where the photograph was taken. If your goal is to delete that information rather than adjust it, Remove Image Metadata strips the EXIF, IPTC and XMP blocks outright.
                             </p>
                         </div>
                         <div className="features-section" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))', gap: '2rem' }}>

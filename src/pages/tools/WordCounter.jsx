@@ -4,15 +4,49 @@ import ToolLayout from '../../components/tools/ToolLayout'
 import { Copy, Trash2, Zap, Clock, Shield } from 'lucide-react'
 
 const features = [
-    { title: 'Real-time Counting', desc: 'Instantly counts words, characters, sentences, and paragraphs as you type.' },
-    { title: 'Reading Time', desc: 'Automatically estimates how long it will take to read your text.' },
-    { title: 'Privacy Focused & Formatted Stats', desc: 'Works 100% in your browser. No text is ever sent to any server. Clean, easy-to-read dashboard of all your text metrics.' }
+    {
+        title: 'Five counters, no Analyse button',
+        desc: 'Words, characters, sentences, paragraphs and reading time recalculate on every keystroke, so you can trim toward a limit and watch the number move.'
+    },
+    {
+        title: 'Reading time at 200 words per minute',
+        desc: 'The estimate is your word count divided by 200, rounded up. That pace sits at the cautious end of silent adult reading, so a post rarely takes longer than shown.'
+    },
+    {
+        title: 'Nothing leaves the tab',
+        desc: 'Counting is string arithmetic running in the page: no upload, no server request, no localStorage entry. Refreshing clears the box and leaves nothing behind.'
+    }
 ]
 
 const faqs = [
-    { question: 'Is this word counter accurate?', answer: 'Yes, it uses standard algorithms to count words and characters, including handling various whitespace scenarios.' },
-    { question: 'Does it save my text?', answer: 'No, all processing happens instantly in your browser. Your text is never sent to any server.' },
-    { question: 'Is it free?', answer: 'Yes, this tool is 100% free with no usage limits.' }
+    {
+        question: 'What exactly counts as one word?',
+        answer: 'The text is trimmed and split on every run of whitespace, so a word is anything with a space, tab or line break on each side. Hyphenated compounds stay whole: **state-of-the-art** is one word, not four. Numbers count, and so does a smiley like :) with spaces around it. The catch is a dash typed closed-up: **fast—but** is a single word here rather than two, because there is no whitespace for the split to find.'
+    },
+    {
+        question: 'Why does adding one emoji raise the character count by two?',
+        answer: 'The count is the length of the string in UTF-16 code units rather than visible glyphs. Characters outside the basic range take two units each, so a face emoji adds 2 and a flag emoji adds 4. Accented letters typed as a base letter plus a combining mark also count as 2. For plain Latin text the figure matches what you see.'
+    },
+    {
+        question: 'Why is the sentence count higher than the number of sentences I wrote?',
+        answer: 'Sentences are found by splitting on runs of full stops, exclamation marks and question marks. That cannot tell a full stop from a dot inside an abbreviation, so **Dr. Smith went home. He left!** counts as three. Decimals and initials such as J. R. R. inflate it the same way. A run like ... or ?! is one break, and text with no closing punctuation counts as one sentence.'
+    },
+    {
+        question: 'Does a single line break start a new paragraph?',
+        answer: 'Yes. Paragraphs split on runs of newlines, so every press of Enter adds one. Consecutive newlines collapse into a single break, which means single-spaced and double-spaced text of the same length report the same number, and blank lines at the top of the box are ignored.'
+    },
+    {
+        question: 'Why does my word processor report a different number?',
+        answer: 'Counters draw the boundary differently around hyphens, dashes, numbers with units, and text in footnotes or tables. This page uses one rule and states it: trim, then split on whitespace. Knowing the rule lets you predict the gap, which matters when an editor sets a hard limit measured in their tool rather than yours.'
+    },
+    {
+        question: 'Does the Characters box include spaces?',
+        answer: 'Yes, spaces, tabs and line breaks are all included, which is what publishers, meta description limits and CMS fields mean by a character budget. Typesetters and per-character translation quotes want the figure with whitespace stripped, which is not shown as a separate box here. To approximate it, subtract the number of spaces, which in single-spaced prose is about one less than the word count.'
+    },
+    {
+        question: 'Is my text uploaded, logged or saved?',
+        answer: 'None of those. Typing triggers no network request, and nothing is written to localStorage or a cookie, so refreshing the tab discards the text. One caveat worth knowing: the Copy button writes to the system clipboard, which other applications on your machine can read.'
+    }
 ]
 
 const StatBox = ({ label, value }) => (
@@ -145,7 +179,55 @@ const WordCounter = () => {
                     <div className="about-section" style={{ background: 'var(--bg-card)', padding: '2rem', borderRadius: '1rem', border: '1px solid var(--border)', marginBottom: '2rem' }}>
                         <h2 style={{ fontSize: '1.8rem', marginBottom: '1.5rem' }}>About Word Counter</h2>
                         <p style={{ lineHeight: '1.6', color: 'var(--text-secondary)', marginBottom: '1rem' }}>
-                            Free online word counter and character counter. Count words, characters, sentences, and paragraphs in real-time. checks reading time.
+                            Type or paste into the box and five figures above it update on the same keystroke: words,
+                            characters, sentences, paragraphs and an estimated reading time. There is nothing to
+                            submit and no result to wait for, which makes the page useful for the thing people
+                            actually do with a counter, which is edit text down to a limit and watch the number fall.
+                        </p>
+
+                        <h3 style={{ fontSize: '1.15rem', fontWeight: '600', margin: '1.75rem 0 0.75rem' }}>How each figure is worked out</h3>
+                        <p style={{ lineHeight: '1.6', color: 'var(--text-secondary)', marginBottom: '1rem' }}>
+                            Knowing the rule matters more than the number, because it tells you when to trust it.
+                            The <strong>word</strong> count trims the text and splits on every run of whitespace, so
+                            anything with a space on each side is one word; hyphenated compounds stay whole and a dash
+                            typed without surrounding spaces fuses two words into one.
+                            The <strong>character</strong> count is the raw length of the string in UTF-16 code units,
+                            identical to what you see for Latin text but counting an emoji as two units and a flag
+                            emoji as four.
+                        </p>
+                        <p style={{ lineHeight: '1.6', color: 'var(--text-secondary)', marginBottom: '1rem' }}>
+                            <strong>Sentences</strong> split on runs of full stops, exclamation marks and question
+                            marks, so ellipses and combinations such as ?! register as one break and a passage with no
+                            closing punctuation still counts as one. The known weakness is abbreviations and decimals,
+                            which add phantom sentences.
+                            <strong> Paragraphs</strong> split on runs of newlines, so each press of Enter starts
+                            another and stacked blank lines collapse into a single break.
+                        </p>
+
+                        <h3 style={{ fontSize: '1.15rem', fontWeight: '600', margin: '1.75rem 0 0.75rem' }}>Reading time, and what it is good for</h3>
+                        <p style={{ lineHeight: '1.6', color: 'var(--text-secondary)', marginBottom: '1rem' }}>
+                            Reading time is the word count divided by 200 and rounded up, so 1 word and 199 words both
+                            show one minute while 201 tips over to two. Two hundred words per minute is a cautious
+                            figure for silent adult reading; the same words read aloud take noticeably longer, so a
+                            script for a two-minute video needs to be shorter than this estimate suggests. Treat it as
+                            a badge for readers rather than a rehearsal timer.
+                        </p>
+
+                        <h3 style={{ fontSize: '1.15rem', fontWeight: '600', margin: '1.75rem 0 0.75rem' }}>Where the text goes</h3>
+                        <p style={{ lineHeight: '1.6', color: 'var(--text-secondary)', marginBottom: '1rem' }}>
+                            Nowhere. Every figure is computed from the string held in the page, so typing triggers no
+                            network request and nothing is written to localStorage or cookies. Once the page has
+                            loaded the counter keeps working with the connection off, and closing the tab discards the
+                            text, which makes it safe for unpublished drafts and work under embargo.
+                        </p>
+
+                        <h3 style={{ fontSize: '1.15rem', fontWeight: '600', margin: '1.75rem 0 0.75rem' }}>When a different tool fits better</h3>
+                        <p style={{ lineHeight: '1.6', color: 'var(--text-secondary)', marginBottom: '1rem' }}>
+                            This page measures text, it does not change it. If a draft came out of a chat assistant
+                            and is peppered with curly quotes and non-breaking spaces, clean it with Humanize AI Text
+                            first. To see which words changed between two revisions rather than how many there are,
+                            use the Diff Viewer. To count words inside a PDF, extract them with PDF to Text and paste
+                            the result here.
                         </p>
                     </div>
                     <div className="features-section" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))', gap: '2rem' }}>

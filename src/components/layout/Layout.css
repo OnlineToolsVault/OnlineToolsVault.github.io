@@ -12,7 +12,10 @@
 
 .header-container {
     display: flex;
-    height: 3rem;
+    /* index.css reserves calc(100vh - var(--header-height)) for <main> so the footer starts below
+       the fold while the lazy route chunk loads. Read the height from the same variable so a
+       change here cannot silently un-reserve that space and bring the CLS back. */
+    height: var(--header-height, 3rem);
     align-items: center;
     justify-content: space-between;
 }

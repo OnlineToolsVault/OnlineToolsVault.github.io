@@ -141,3 +141,6 @@ LOCAL_CHANGELOGS.MD
 public/tesseract/
 public/imgly/
 .imgly-cache/
+
+# Monaco editor is staged from node_modules at build time (scripts/copy-monaco-assets.js)
+public/monaco/

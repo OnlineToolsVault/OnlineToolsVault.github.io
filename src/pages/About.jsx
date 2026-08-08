@@ -6,15 +6,15 @@ const About = () => {
     return (
         <>
             <Helmet>
-                <title>About Us - FreeTools | Our Mission & Vision</title>
-                <meta name="description" content="Learn about FreeTools, our mission to provide high-quality, privacy-focused online tools for everyone." />
+                <title>About | OnlineToolsVault</title>
+                <meta name="description" content="Learn about OnlineToolsVault — free, private, browser-based tools for PDF, images, text and more." />
                 <link rel="canonical" href="https://onlinetoolsvault.com/about/" />
             </Helmet>
 
             <div className="standard-page">
                 <div className="standard-container">
                     <header className="standard-header">
-                        <h1>About FreeTools</h1>
+                        <h1>About OnlineToolsVault</h1>
                         <p>Empowering creators with premium, free-to-use digital tools.</p>
                     </header>
 
@@ -22,7 +22,7 @@ const About = () => {
                         <section className="about-section">
                             <h2>Our Mission</h2>
                             <p>
-                                <strong>FreeTools</strong> (OnlineToolsVault.com) was founded with a simple yet ambitious goal: to make premium-quality digital utilities accessible to everyone, everywhere, for free.
+                                <strong>OnlineToolsVault</strong> (OnlineToolsVault.com) was founded with a simple yet ambitious goal: to make premium-quality digital utilities accessible to everyone, everywhere, for free.
                             </p>
                             <p>
                                 In an internet filled with paywalls, watermarks, and invasive data collection, we stand apart. We provide a comprehensive suite of PDF, Image, and Developer tools that are fast, reliable, and respectful of your privacy.
@@ -49,7 +49,7 @@ const About = () => {
                             <div className="developer-profile">
                                 <p>
                                     <strong>Source Strong AI</strong> builds practical, privacy-first software for developers, creators, and everyday users.
-                                    FreeTools is our take on the daily friction people face when working with PDFs, images, and other files — fast, free, and entirely client-side.
+                                    OnlineToolsVault is our take on the daily friction people face when working with PDFs, images, and other files — fast, free, and entirely client-side.
                                 </p>
                                 <p>
                                     "The best tools get out of your way and just work. No sign-ups, no credit cards, no nonsense."

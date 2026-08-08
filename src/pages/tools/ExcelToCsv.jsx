@@ -7,15 +7,52 @@ import * as XLSX from 'xlsx'
 import { saveAs } from 'file-saver'
 
 const features = [
-    { title: 'Excel to CSV', desc: 'Convert spreadsheets (XLSX, XLS) to standard Comma Separated Values (CSV) format.' },
-    { title: 'Fast Rendering', desc: 'Process conversion locally in your browser for immediate results without waiting.' },
-    { title: 'Secure Processing', desc: 'Your financial or personal spreadsheets remain private and are never uploaded to a server.' }
+    { title: 'Formulas Become Their Results', desc: 'Every formula is replaced by the value it last calculated to, which is what a CSV can hold and what almost every downstream importer actually wants. No dependency chains, no broken references at the far end.' },
+    { title: 'UTF-8 With A Byte-Order Mark', desc: 'The output leads with a BOM specifically so Excel opens it as UTF-8 rather than falling back to your system code page — the one change that stops accented names arriving as mojibake when the file is reopened.' },
+    { title: 'Spreadsheet Never Leaves The Tab', desc: 'Workbooks are parsed and re-emitted locally. Payroll, pricing and customer sheets are exactly the files you should not be uploading to a converter, and here there is no upload step to worry about.' }
 ]
 
 const faqs = [
-    { question: 'Is my data verified?', answer: 'We process the file locally in your browser. We never see or store your data.' },
-    { question: 'Does it support multiple sheets?', answer: 'Currently, it converts the first sheet of the Excel workbook.' },
-    { question: 'Are formulas preserved?', answer: 'No, only the calculated values are exported to the CSV file.' }
+    {
+        question: 'Which sheet gets converted?',
+        answer: 'The first one in the workbook, and only that one. A CSV is a single table by definition, so a multi-sheet workbook cannot be represented in one file. There is no sheet picker here, so if the data you want is on a later tab, move or copy it to the front in your spreadsheet application first, then convert. Note that "first" means first in tab order, which is not necessarily the sheet that was open when the file was saved.'
+    },
+    {
+        question: 'What happens to my formulas?',
+        answer: 'They are replaced by their cached results — the values Excel calculated the last time it recalculated and saved. That is the right behaviour for CSV, which has no concept of a formula, and it means a lookup or a SUM arrives at the far end as a plain number rather than as a reference that would break. The one caveat is that the values come from the file, not from a fresh calculation, so a workbook saved with automatic calculation turned off can export stale results.'
+    },
+    {
+        question: 'Why does the file start with an odd invisible character?',
+        answer: 'That is a byte-order mark, and it is added deliberately. Without it, Excel opens a CSV using your system code page rather than UTF-8, which turns accented letters and any non-Latin text into mojibake. The BOM tells it to decode as UTF-8. Most other tools ignore it, but if you are feeding the file into a strict parser and the first column name has a stray character in front of it, that is what you are seeing — strip the first three bytes.'
+    },
+    {
+        question: 'How are commas and line breaks inside my cells handled?',
+        answer: 'Correctly, following the usual CSV convention: any value containing a comma, a double quote or a newline is wrapped in double quotes, and quotes inside it are doubled. So a free-text notes column with commas and paragraph breaks in it survives as a single field. Any standards-compliant reader will reconstruct it exactly.'
+    },
+    {
+        question: 'What about formatting, colours and merged cells?',
+        answer: 'All lost, and unavoidably so — CSV is plain text with separators and has no way to express bold, fills, borders, column widths, conditional formatting, charts, images or data validation. Merged cells are the one worth planning for: the value lands in the first cell of the merge and the rest come through empty, which can knock a header row out of alignment. Flatten merges before converting if the header matters.'
+    },
+    {
+        question: 'How are dates and currency exported?',
+        answer: 'Using the cell\'s displayed text rather than its underlying serial number, so a date shown as 15/03/2024 exports in that form. This keeps the file readable, but it means the output inherits whatever format the workbook was using — including day-first or month-first ordering, which the receiving system may then reinterpret differently. When a CSV is feeding an import, reformat the date columns to ISO year-month-day in the spreadsheet before converting.'
+    },
+    {
+        question: 'Which file types can I drop in?',
+        answer: 'The picker accepts .xlsx and the older binary .xls. Macro-enabled .xlsm and binary .xlsb workbooks are not offered by the picker. If you have one of those, save a copy as .xlsx first — macros cannot survive a CSV conversion in any case, since the output is just data.'
+    },
+    {
+        question: 'Are empty rows and columns preserved?',
+        answer: 'Yes, within the sheet\'s used range: a blank row produces a line of empty fields, keeping row numbers aligned with the original. This is worth knowing if a stray space was once typed in a far-off cell, because the used range stretches to include it and you can end up with a long tail of empty rows and columns in the output.'
+    },
+    {
+        question: 'How large a workbook can it handle?',
+        answer: 'The entire file is read into memory, parsed into a workbook object and rendered to a string, so peak memory is a multiple of the file size and the work runs on the main thread. Workbooks up to a few tens of megabytes convert without trouble; much larger ones will freeze the tab. Very large exports are better handled by a script or by your database\'s own export function.'
+    },
+    {
+        question: 'Is anything uploaded?',
+        answer: 'No. The spreadsheet is read from disk by your browser, parsed by a JavaScript library in this tab, and the resulting CSV is handed to your downloads. No request is made and nothing is stored, which is precisely the property you want for the financial, HR and customer data that lives in spreadsheets.'
+    }
 ]
 
 
@@ -101,7 +138,68 @@ const ExcelToCsv = () => {
                     <div className="about-section" style={{ background: 'var(--bg-card)', padding: '2rem', borderRadius: '1rem', border: '1px solid var(--border)', marginBottom: '2rem' }}>
                         <h2 style={{ fontSize: '1.8rem', marginBottom: '1.5rem' }}>About Excel to CSV Converter</h2>
                         <p style={{ lineHeight: '1.6', color: 'var(--text-secondary)', marginBottom: '1rem' }}>
-                            Convert Excel to CSV online. Extract data from spreadsheets into delimited text files.
+                            Drop an <code>.xlsx</code> or <code>.xls</code> workbook and the first worksheet comes back as a
+                            comma-separated text file. Formulas are exported as their calculated values, fields containing
+                            commas or line breaks are quoted properly, and the file is written as UTF-8 with a byte-order
+                            mark so Excel reopens it without mangling accented characters. The workbook is parsed in this
+                            browser tab and never uploaded.
+                        </p>
+
+                        <h3 style={{ fontSize: '1.15rem', fontWeight: '600', margin: '1.75rem 0 0.75rem' }}>Why anything still wants CSV</h3>
+                        <p style={{ lineHeight: '1.6', color: 'var(--text-secondary)', marginBottom: '1rem' }}>
+                            XLSX is a zipped bundle of XML describing sheets, styles, formulas and relationships — rich, and
+                            awkward for anything that is not a spreadsheet application. CSV is one table in plain text, which
+                            is why it remains the lingua franca for bulk imports: database loaders, CRM and mailing-list
+                            importers, analytics pipelines, and command-line tools all take CSV and most take nothing else.
+                            Converting is about reducing a document to the data inside it so another system can read it
+                            without understanding Excel.
+                        </p>
+
+                        <h3 style={{ fontSize: '1.15rem', fontWeight: '600', margin: '1.75rem 0 0.75rem' }}>Exactly what survives the conversion</h3>
+                        <p style={{ lineHeight: '1.6', color: 'var(--text-secondary)', marginBottom: '1rem' }}>
+                            <strong>Kept:</strong> every cell value in the first sheet, in its original row and column
+                            position; the results of formulas, taken from the values stored in the workbook; text exactly as
+                            displayed, including dates and currency in whatever format the cell was using; and blank rows,
+                            which are emitted as empty lines so row alignment matches the original.
+                        </p>
+                        <p style={{ lineHeight: '1.6', color: 'var(--text-secondary)', marginBottom: '1rem' }}>
+                            <strong>Lost, necessarily:</strong> every other sheet, since a CSV holds one table; all
+                            formatting — fonts, fills, borders, number formats as formats rather than as text, conditional
+                            rules, column widths; charts, images, pivot tables, comments, data validation and macros; and the
+                            formulas themselves, which become their answers. Merged cells deserve a specific warning: the
+                            value appears in the first cell of the merge and the remainder come out empty, which is a common
+                            way for a title row to end up misaligned against the data beneath it.
+                        </p>
+
+                        <h3 style={{ fontSize: '1.15rem', fontWeight: '600', margin: '1.75rem 0 0.75rem' }}>The first-sheet rule, and how to work with it</h3>
+                        <p style={{ lineHeight: '1.6', color: 'var(--text-secondary)', marginBottom: '1rem' }}>
+                            Only the sheet in the first tab position is converted, regardless of which one was active when the
+                            workbook was saved, and there is no picker. For a multi-sheet workbook you therefore either
+                            reorder the tabs before converting, or run the conversion once per sheet, moving each to the front
+                            in turn. It is a real limitation rather than an oversight — CSV genuinely cannot express more than
+                            one table — but it does mean a monthly report split across twelve tabs takes twelve passes.
+                        </p>
+
+                        <h3 style={{ fontSize: '1.15rem', fontWeight: '600', margin: '1.75rem 0 0.75rem' }}>Two encoding details that save an afternoon</h3>
+                        <p style={{ lineHeight: '1.6', color: 'var(--text-secondary)', marginBottom: '1rem' }}>
+                            The output begins with a byte-order mark. That single invisible marker is what makes Excel open
+                            the file as UTF-8 instead of guessing your system code page and turning every accented surname
+                            into nonsense. Nearly every consumer ignores it harmlessly, but a strict parser may hand you a
+                            first column name with an extra character glued to the front — if you see that, drop the first
+                            three bytes. Second, dates export as the text the cell was displaying, so a workbook formatted
+                            day-first produces day-first text that a month-first importer will happily misread. Reformatting
+                            date columns to ISO order before converting removes the ambiguity for good.
+                        </p>
+
+                        <h3 style={{ fontSize: '1.15rem', fontWeight: '600', margin: '1.75rem 0 0.75rem' }}>Scale and privacy</h3>
+                        <p style={{ lineHeight: '1.6', color: 'var(--text-secondary)' }}>
+                            The whole workbook is loaded into memory, parsed and rendered to a string on the page&apos;s main
+                            thread, so files in the low tens of megabytes are comfortable and considerably larger ones will
+                            make the tab unresponsive. Macro-enabled and binary workbook formats are not accepted by the
+                            picker; save a copy as <code>.xlsx</code> first. Everything runs locally with no request at any
+                            point — which matters, because the spreadsheets people most often need converted are exactly the
+                            payroll, pricing and customer files that should never be uploaded to a stranger&apos;s server. To
+                            go the other way, use the CSV to Excel converter.
                         </p>
                     </div>
                     <div className="features-section" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))', gap: '2rem' }}>

@@ -9,7 +9,7 @@ const Footer = () => {
         <footer className="site-footer">
             <div className="container footer-content">
                 <div className="footer-brand">
-                    <h3>FreeTools</h3>
+                    <h3>OnlineToolsVault</h3>
                     <p>
                         Premium, free-to-use online tools for everyone. Free, Fast, Secure and Privacy Focused
                         <br />
@@ -21,20 +21,20 @@ const Footer = () => {
                     <div className="footer-col">
                         <h4>Popular Tools</h4>
                         <ul>
-                            <li><Link to="/merge-pdf">Merge PDF</Link></li>
-                            <li><Link to="/compress-pdf">Compress PDF</Link></li>
-                            <li><Link to="/image-compressor">Image Compressor</Link></li>
-                            <li><Link to="/qr-generator">QR Generator</Link></li>
+                            <li><Link to="/merge-pdf/">Merge PDF</Link></li>
+                            <li><Link to="/compress-pdf/">Compress PDF</Link></li>
+                            <li><Link to="/image-compressor/">Image Compressor</Link></li>
+                            <li><Link to="/qr-generator/">QR Generator</Link></li>
                         </ul>
                     </div>
 
                     <div className="footer-col">
                         <h4>Company</h4>
                         <ul>
-                            <li><Link to="/about">About Us</Link></li>
-                            <li><Link to="/contact">Contact</Link></li>
-                            <li><Link to="/privacy">Privacy Policy</Link></li>
-                            <li><Link to="/terms">Terms of Service</Link></li>
+                            <li><Link to="/about/">About Us</Link></li>
+                            <li><Link to="/contact/">Contact</Link></li>
+                            <li><Link to="/privacy/">Privacy Policy</Link></li>
+                            <li><Link to="/terms/">Terms of Service</Link></li>
                         </ul>
                     </div>
 
@@ -50,7 +50,7 @@ const Footer = () => {
             </div>
 
             <div className="container footer-bottom">
-                <p>&copy; {currentYear} Source Strong AI. All Rights Reserved. Managed under <Link to="/terms" style={{ color: 'inherit', textDecoration: 'underline' }}>Proprietary License</Link>.</p>
+                <p>&copy; {currentYear} Source Strong AI. All Rights Reserved. Managed under <Link to="/terms/" style={{ color: 'inherit', textDecoration: 'underline' }}>Proprietary License</Link>.</p>
                 <p style={{ display: 'flex', alignItems: 'center', gap: '0.25rem' }}>
                     Made with <Heart size={14} fill="currentColor" /> for the web
                 </p>

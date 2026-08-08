@@ -4,34 +4,34 @@ import ToolLayout from '../../components/tools/ToolLayout'
 import { Copy, Check, Shield, Lock, Sliders } from 'lucide-react'
 import bcrypt from 'bcryptjs'
 const features = [
-    { title: 'Secure Hashing', desc: 'Generate industry-standard bcrypt hashes to securely protect passwords.' },
-    { title: 'Adjustable Cost', desc: 'Customize salt rounds (work factor) to balance security and performance.' },
-    { title: 'Client-Side', desc: 'Hashing runs entirely in your browser. Passwords are never sent to any server.' }
+    { title: 'Cost 4 To 15, On A Slider', desc: 'The work factor is exposed directly rather than fixed. Each step up doubles the number of key-setup iterations, so cost 12 costs four times what cost 10 does — for you and for anyone attacking the hash.' },
+    { title: 'Reads Like Your Database Column', desc: 'Output is the familiar 60-character modular crypt string: $2b$, the two-digit cost, then a 22-character salt and a 31-character digest, ready to paste straight into a seed script or fixture.' },
+    { title: 'The Password Stays In The Tab', desc: 'bcryptjs is a pure-JavaScript implementation running on this page. No request is made when you press Generate, so the value never reaches a log, a proxy or a server.' }
 ]
 const faqs = [
     {
-        question: "Is it safe to type my password here?",
-        answer: "Yes. This tool runs 100% on your device (Client-Side) using JavaScript. Your password is NOT sent to any server, so it cannot be intercepted or logged by us."
+        question: "What do the parts of the hash mean?",
+        answer: "A result such as $2b$10$WDr99h.TmEHl8zdvtsPWbOUeFUYelZHAiZZWZKdw7xYEvYLP4gGe6 is four fields separated by dollar signs. $2b$ names the algorithm revision, 10 is the cost, and the remaining 53 characters are a 22-character salt followed by the 31-character digest. Everything a verifier needs is inside that one string, which is why the column in your database only has to store 60 characters and never a separate salt."
     },
     {
-        question: "What are Salt Rounds (Cost Factor)?",
-        answer: "The cost factor controls how much time it takes to calculate the hash. A higher number means more processing time. This is good because it makes brute-force attacks by hackers prohibitively slow. The standard default is 10."
+        question: "Why do I get a different hash every time for the same password?",
+        answer: "Because a fresh random salt is drawn on every click. Two hashes of the same password share only the seven-character $2b$nn$ prefix and differ from the eighth character onwards, and neither one is more correct than the other. This is what makes precomputed rainbow tables useless, and it is also why you must never compare hashes with a string equality check — pass the candidate password and the stored hash to your library's compare function and let it re-derive the digest using the salt it finds inside."
     },
     {
-        question: "Can I decrypt a Bcrypt hash?",
-        answer: "No. Bcrypt is a 'one-way' hash function. You cannot retrieve the original password from the hash. To verify a password, you must hash the input and compare it to the stored hash."
+        question: "Which cost should I pick?",
+        answer: "Choose the highest value your login endpoint can absorb at peak, then revisit it every couple of years as hardware improves; 10 to 12 is the usual range on server hardware. Do not calibrate from the timing you see here. This page uses a pure-JavaScript bcrypt, which is several times slower than the native builds used by Node, Python or PHP, so a cost that feels sluggish in this tab may be comfortably fast in production."
     },
     {
-        question: "Why does the hash change every time?",
-        answer: "Bcrypt automatically generates a random 'salt' for every hash. This means even if you hash the exact same password twice, the output will look completely different both times. This prevents 'Rainbow Table' attacks."
+        question: "Why is my long passphrase not getting any stronger?",
+        answer: "bcrypt only reads the first 72 bytes of the input and silently ignores everything after. That is bytes, not characters, so a passphrase of accented or CJK text hits the ceiling sooner than its length suggests. Anything beyond the cut-off contributes nothing, which means two different 100-character passphrases sharing a 72-byte prefix will validate against each other. Where long passphrases matter, pre-hash with SHA-256 before bcrypt, or use Argon2id instead."
     },
     {
-        question: "What is the maximum password length?",
-        answer: "Bcrypt has a limitation where it only uses the first 72 bytes of a password. Any characters beyond that are ignored. This is a known characteristic of the algorithm."
+        question: "Will these hashes work with my framework?",
+        answer: "Yes, for anything that speaks the modular crypt format: Node's bcrypt and bcryptjs, PHP's password_verify, Python's bcrypt and passlib, Go's golang.org/x/crypto/bcrypt, and Spring Security's BCryptPasswordEncoder all accept the $2b$ prefix produced here. Some older stores hold $2a$ or $2y$ hashes; those remain verifiable and do not need regenerating, since the prefix records how the implementation handled a historical edge case rather than a different algorithm."
     },
     {
-        question: "Can I use this for production passwords?",
-        answer: "Yes, the hashes generated here are fully compatible with any system using standard Bcrypt (like Node.js bcrypt, Python bcrypt, or PHP's password_hash)."
+        question: "Can I check an existing hash against a password here?",
+        answer: "No — this page only generates. Verification needs both the candidate password and the stored hash, and it belongs in your application code where a constant-time comparison and a rate limit are already in place. Nothing on this page reverses a hash either; bcrypt is one-way by design, and a tool claiming to decrypt one is really just guessing from a wordlist."
     }
 ]
 const BcryptGenerator = () => {
@@ -136,13 +136,27 @@ const BcryptGenerator = () => {
                     <div className="about-section" style={{ background: 'var(--bg-card)', padding: '2rem', borderRadius: '1rem', border: '1px solid var(--border)', marginBottom: '2rem' }}>
                         <h2 style={{ fontSize: '1.8rem', marginBottom: '1.5rem' }}>About Bcrypt Generator</h2>
                         <p style={{ lineHeight: '1.6', color: 'var(--text-secondary)', marginBottom: '1rem' }}>
-                            <strong>Bcrypt</strong> is a password-hashing function designed by Niels Provos and David Mazières. It is the gold standard for password security in modern web applications.
+                            <strong>bcrypt</strong>, published by Niels Provos and David Mazières in 1999, is a password hash built on the Blowfish key schedule. Its defining trick is that the expensive key-setup step is repeated a configurable number of times, so the algorithm can be made slower on purpose as hardware gets faster. Type a password above, choose a cost, and this page produces the same 60-character string your backend would store.
                         </p>
+
+                        <h3 style={{ fontSize: '1.15rem', fontWeight: '600', margin: '1.75rem 0 0.75rem' }}>Why slow is the point</h3>
                         <p style={{ lineHeight: '1.6', color: 'var(--text-secondary)', marginBottom: '1rem' }}>
-                            Unlike older algorithms like MD5 or SHA1 which are fast (and thus vulnerable to brute-force attacks), Bcrypt is <strong>intentionally slow</strong>. It uses a configurable "Cost Factor" (Salt Rounds) to make cracking passwords computationally expensive for attackers.
+                            A general-purpose digest such as SHA-256 is designed to be fast, and commodity GPUs will compute billions of them per second — which is exactly the wrong property for a stolen password table. The cost factor here runs 4 to 15, and each increment doubles the work. Moving from 10 to 12 makes one login take four times longer, an amount of time a user will not notice, while multiplying an offline cracking run from days into weeks.
                         </p>
-                        <p style={{ lineHeight: '1.6', color: 'var(--text-secondary)' }}>
-                            Our tool allows you to generate these secure hashes directly in your browser. This is perfect for developers seeding a database, testing authentication flows, or just learning about password security.
+
+                        <h3 style={{ fontSize: '1.15rem', fontWeight: '600', margin: '1.75rem 0 0.75rem' }}>Everything travels in one string</h3>
+                        <p style={{ lineHeight: '1.6', color: 'var(--text-secondary)', marginBottom: '1rem' }}>
+                            The salt is not a separate column. It is generated fresh for every hash, base64-encoded into the middle of the output, and read back out at verification time. That self-describing layout is why a stored bcrypt hash remains verifiable after you raise the cost for new sign-ups: old records carry their own, lower cost, and you re-hash them opportunistically the next time each user logs in.
+                        </p>
+
+                        <h3 style={{ fontSize: '1.15rem', fontWeight: '600', margin: '1.75rem 0 0.75rem' }}>Practical cautions</h3>
+                        <p style={{ lineHeight: '1.6', color: 'var(--text-secondary)', marginBottom: '1rem' }}>
+                            The password box on this page is a plain text field, not a masked one, so what you type is visible to anyone looking at the screen or watching a recording. At cost 14 or 15 the hash takes a noticeable moment and the tab stops responding while it runs, because the underlying library is synchronous — that is the algorithm working, not a hang. The intended uses are seeding a development database, building a fixture, reproducing a login bug, or seeing for yourself what a work factor change costs.
+                        </p>
+
+                        <h3 style={{ fontSize: '1.15rem', fontWeight: '600', margin: '1.75rem 0 0.75rem' }}>When to reach for something else</h3>
+                        <p style={{ lineHeight: '1.6', color: 'var(--text-secondary)', marginBottom: '1rem' }}>
+                            bcrypt is tuned against CPU time only, so a well-funded attacker with custom hardware gains more against it than against a memory-hard design; for a greenfield system, Argon2id is the current recommendation. For file integrity or a content fingerprint you want the <strong>Hash Generator</strong>, not a password hash. To judge whether a password is worth protecting in the first place, try the <strong>Password Strength Checker</strong>.
                         </p>
                     </div>
                     <div className="features-section" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))', gap: '2rem' }}>

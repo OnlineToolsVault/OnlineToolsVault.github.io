@@ -1,14 +1,91 @@
 import CodeFormatter from './CodeFormatter'
 
+const aboutExtra = [
+    'The layout it produces is the "standard" sql-formatter style: every clause keyword — SELECT, ' +
+    'FROM, WHERE, GROUP BY, HAVING, ORDER BY — starts a line at column zero, and the things it acts on ' +
+    'are indented two spaces underneath. Sub-selects, CTE bodies, CASE expressions and window functions ' +
+    'nest a further level, so a query with an OVER clause containing PARTITION BY and ORDER BY comes out ' +
+    'as a readable block rather than a run-on line. Multiple statements separated by semicolons are kept ' +
+    'apart with a blank line.',
+
+    'Keyword casing is applied by the tokeniser, not by search and replace, which is the important ' +
+    'difference from a regex-based beautifier. A row whose value happens to be the text "select from ' +
+    'where" is left in lower case, because the tokeniser knows it is inside a string literal. Comments ' +
+    'behave the same way: a leading double-dash comment stays on its own line and an inline slash-star ' +
+    'comment stays attached to the token it followed.',
+
+    'The dialect setting here is generic Standard SQL, and that is the constraint most likely to bite ' +
+    'you — in two different ways. Most vendor-specific syntax is rejected outright, with a parse error ' +
+    'naming the exact column: PostgreSQL casts written with a double colon, the JSONB containment ' +
+    'operator, SQL Server bracket-quoted identifiers and named bind parameters written with a leading ' +
+    'colon or at-sign all stop the run. Plain question-mark placeholders are fine. The second failure ' +
+    'mode is quieter and matters more. The JSON arrow operators are not in the Standard SQL token list, ' +
+    'so instead of raising an error the tokeniser reads an arrow as separate characters and spaces them ' +
+    "apart: data->>'name' comes back as data - > > 'name', which is no longer valid SQL. Nothing warns " +
+    'you, so check any output containing an arrow before you run it. MySQL backtick identifiers, common ' +
+    'table expressions, UNION ALL, INSERT with multiple value rows and UPDATE ... SET all parse without ' +
+    'trouble.',
+
+    'Two things it deliberately does not do. It is not a validator: a query with a misspelled keyword ' +
+    'is not recognised as SQL at all, so it passes through almost unchanged rather than raising an ' +
+    'error — never read "it formatted" as "it is correct". And it is not an optimiser: no clause is ' +
+    'reordered, no join is rewritten, no index is suggested. Use your database\'s own EXPLAIN for that. ' +
+    'Everything here runs in your browser, so production queries and schema names never leave the machine.'
+]
+
+const features = [
+    { title: 'Clause-Per-Line Layout', desc: 'Keywords anchor at the left margin with their operands indented two spaces beneath, and nested constructs step in a further level. A four-join query with a HAVING clause becomes something you can read top to bottom.' },
+    { title: 'Token-Aware Uppercasing', desc: 'Keywords are uppercased by a real tokeniser, so words that merely look like keywords inside a quoted string or a comment are left exactly as written — the classic failure of regex-based SQL beautifiers.' },
+    { title: 'No Query Ever Transmitted', desc: 'The formatter is a JavaScript module running in this tab. Queries containing production table names, customer identifiers or credentials are processed locally and never sent anywhere.' }
+]
+
+const faqs = [
+    {
+        question: 'What happens to my PostgreSQL syntax?',
+        answer: "Two different things, and the difference matters. A double-colon cast, a JSONB containment operator or a named bind parameter stops the run with a parse error giving the exact column — loud and easy to spot, and rewriting the cast as CAST(expression AS type) usually clears it. The JSON arrow operators are the dangerous case, because Standard SQL does not define them: rather than failing, the tokeniser splits the arrow into separate characters and spaces them out. SELECT data->>'name' FROM events becomes SELECT data - > > 'name' FROM events, which will not run. There is no error message, so if your query uses arrows, either restore them by hand after formatting or format it somewhere you can select the PostgreSQL dialect."
+    },
+    {
+        question: 'What about SQL Server and MySQL?',
+        answer: 'MySQL is largely fine — backtick-quoted identifiers, LIMIT and multi-row INSERT all parse. SQL Server is the harder case: bracket-quoted identifiers such as square brackets around a column name are rejected, so you will need to strip them or use double-quoted identifiers before formatting.'
+    },
+    {
+        question: 'My query has bind parameters and it will not parse.',
+        answer: 'Positional question-mark placeholders are accepted. Named parameters written with a leading colon or at-sign are not, because those are driver conventions rather than standard SQL. Substitute a literal value or a question mark, format, then put the named parameters back.'
+    },
+    {
+        question: 'Does formatting tell me whether my SQL is valid?',
+        answer: 'No, and this is the most important caveat on the page. An unrecognised statement is not necessarily an error to the tokeniser — it simply has no clause structure to lay out, so it passes through looking almost unchanged. Successful formatting means the text tokenised, not that the query will run. Only your database can tell you that.'
+    },
+    {
+        question: 'Are my comments and string contents preserved?',
+        answer: 'Yes. Line comments starting with a double dash and block comments in slash-star form are both carried through and kept next to the code they annotate. String literals are copied verbatim, including any keywords, semicolons or newlines inside them.'
+    },
+    {
+        question: 'Will it rewrite my query to make it faster?',
+        answer: 'No. Nothing is reordered, no join strategy is changed, and no subquery is turned into a common table expression. The output is your query with different whitespace and keyword casing. Any tool that rewrote SQL semantics without seeing your schema and statistics would be guessing.'
+    },
+    {
+        question: 'Why format SQL at all if the database does not care?',
+        answer: 'Because reviewers do, and because diffs do. A query written as one long line changes entirely when a single condition is added, so version control shows one modified line and hides what actually changed. Clause-per-line layout turns the same edit into a one-line diff you can review at a glance. It also makes join conditions and WHERE predicates line up vertically, which is where missing join keys and accidental cross joins become visible.'
+    },
+    {
+        question: 'Can I format a whole migration file with many statements?',
+        answer: 'Yes. Statements separated by semicolons are each formatted and separated with a blank line. If one statement in the file uses syntax outside Standard SQL, the parse error stops the whole run — the error position tells you which statement to fix or split out.'
+    }
+]
+
 const SqlFormatter = () => {
     return (
         <CodeFormatter
             initialLanguage="sql"
             seoTitle="SQL Formatter - Prettify SQL Queries"
-            seoDescription="Format SQL queries online. Specific support for MySQL, PostgreSQL, and SQL Server syntax. Beautify complex queries instantly."
+            seoDescription="Format SQL queries online. Standard SQL dialect with keywords uppercased and clause-per-line indentation. Handles CTEs, window functions and MySQL backticks."
 
             aboutTitle="About SQL Formatter"
-            aboutContent="Optimize your database workflow with our **SQL Formatter**. Turn unreadable query strings into structured, easy-to-read SQL."
+            aboutContent="Queries on this page are tokenised and re-laid-out by **sql-formatter**, configured for the generic Standard SQL dialect with keywords uppercased and a two-space indent. It runs in your browser — nothing about the query, its table names or its literal values is sent to a server."
+            aboutExtra={aboutExtra}
+            features={features}
+            faqs={faqs}
         />
     )
 }

@@ -7,35 +7,43 @@ import { PDFDocument } from '@cantoo/pdf-lib'
 import { saveAs } from 'file-saver'
 
 const features = [
-    { title: 'Remove Password Security', desc: 'Instantly unlock PDF files by removing their owner password and editing restrictions.', icon: <Unlock color="var(--primary)" size={24} /> },
-    { title: 'Regain Full Access', desc: 'Enable printing, copying, and editing on documents that were previously locked.', icon: <Key color="var(--primary)" size={24} /> },
-    { title: 'Private & Secure Decryption', desc: 'The decryption process happens strictly in your browser. We never see your file or your password.', icon: <ShieldCheck color="var(--primary)" size={24} /> }
+    { title: 'Decrypt with the password you have', desc: 'Enter the password the document asks for and the file is decrypted in memory, then written back out with no encryption dictionary at all. RC4, AES-128 and AES-256 protected files are all handled.', icon: <Unlock color="var(--primary)" size={24} /> },
+    { title: 'Restrictions lifted with a blank box', desc: 'If the PDF opens freely but refuses printing or copying, it carries an owner password only. Leave the password field empty and press Unlock — the permission flags go with the encryption dictionary.', icon: <Key color="var(--primary)" size={24} /> },
+    { title: 'Document properties preserved', desc: 'Decrypting a file can strand its Info dictionary, leaving the output with blank title and author. That reference is deliberately recovered so the unlocked copy keeps the metadata the original had.', icon: <ShieldCheck color="var(--primary)" size={24} /> }
 ]
 
 const faqs = [
     {
-        question: "Can it unlock a file without the password?",
-        answer: "No. You must know the password to unlock the file initially. This tool removes the password permanently so you don't need it next time."
+        question: "Can this open a PDF whose password I do not know?",
+        answer: "No, and it does not try. There is no cracking, no dictionary attack and no bypass — if the document requires a password to open, you must supply it. What the tool does is remove the need to type it every time afterwards, by writing out a decrypted copy."
     },
     {
-        question: "Is it safe?",
-        answer: "Yes. Your file and password stay on your computer. They are processed by your browser's local JavaScript, not sent to a remote server."
+        question: "The file opens fine but will not let me print or copy. What do I enter?",
+        answer: "Nothing. That document has an owner password but no user password, which is why it opens freely, and the restrictions are just flags a compliant reader chooses to obey. Leave the field blank and press Unlock: the decrypted copy has no encryption dictionary, so there are no flags left to enforce."
     },
     {
-        question: "Is there a limit on file size?",
-        answer: "Because it works offline in your browser, you can unlock typically sized files instantly. Very large files depend on your computer's RAM."
+        question: "Which kinds of encryption are supported?",
+        answer: "The standard security handler in all its common forms: 40-bit and 128-bit RC4 from older files, AES-128 as used since Acrobat 7, and AES-256 as used since Acrobat 9. Files protected by a certificate rather than a password, or by a third-party digital-rights plug-in, are not supported — those need the software that applied them."
     },
     {
-        question: "What if I forgot the owner password?",
-        answer: "PDFs often have two passwords: User (open) and Owner (permissions). If you can open the file but not print/edit, this tool can often remove those restrictions without the owner password."
+        question: "It says the password is incorrect and I am sure it is right.",
+        answer: "Passwords are case-sensitive and whitespace counts, including a trailing space copied along with the text. Check the keyboard layout if the password was set on a different machine, and watch for characters that look alike in the font you copied from — capital I, lowercase l and the digit 1 cause most of these. Older files encode passwords in Latin-1, so a password containing characters outside that range may simply not be representable."
     },
     {
-        question: "Does it support AES-256 encryption?",
-        answer: "Yes, we support modern PDF encryption standards including AES-128 and AES-256, provided you have the current password."
+        question: "Does the content change at all?",
+        answer: "No. Text stays text, images keep their original resolution and encoding, and pages keep their size and rotation. Annotations, bookmarks and form fields survive, and the document metadata is carried across deliberately. The only thing removed is the encryption layer itself."
     },
     {
-        question: "Will the quality decrease?",
-        answer: "No. Unlocking only removes the encryption layer, so the text, images, and formatting stay exactly as they were in the original document."
+        question: "Why is the unlocked file a different size?",
+        answer: "Encrypted streams are padded to the cipher block size, so removing encryption usually shaves a little. The file is also rewritten from scratch, which regenerates the cross-reference table and object layout. A few percent either way is normal and nothing has been lost."
+    },
+    {
+        question: "Is my password sent anywhere?",
+        answer: "No. Both the file and the password stay in this browser tab; decryption runs in JavaScript on your machine and the result is written straight to your downloads folder as unlocked-yourfile.pdf. Nothing is uploaded, so there is no server log with your password in it — which is exactly the reason not to use a service that asks you to upload a protected document."
+    },
+    {
+        question: "What should I do after unlocking?",
+        answer: "Whatever the encryption was preventing. The editing tools — **Merge PDF**, **Split PDF**, **Compress PDF**, **Rotate PDF**, **Organize PDF**, **Add Watermark to PDF** and the rest — refuse any encrypted file, even one that opens without a password, so unlocking is usually step one of a longer job. The rendering converters (**PDF to JPG**, **PDF to PNG**, **PDF to Text**, **PDF to Word**, **PDF to Excel**) are more forgiving: they will read an owner-restricted file that needs no password to open, and only fail when a user password is required. When you are finished, re-apply protection with **Protect PDF**. Be aware that decrypting invalidates any digital signature on the document, and only remove protection from files you own or are authorised to modify."
     }
 ]
 
@@ -204,10 +212,36 @@ const UnlockPdf = () => {
                     <div className="about-section" style={{ background: 'var(--bg-card)', padding: '2rem', borderRadius: '1rem', border: '1px solid var(--border)', marginBottom: '2rem' }}>
                         <h2 style={{ fontSize: '1.8rem', marginBottom: '1.5rem' }}>About Unlock PDF</h2>
                         <p style={{ lineHeight: '1.6', color: 'var(--text-secondary)', marginBottom: '1rem' }}>
-                            Tired of typing a password every time you open a PDF? Our Unlock PDF tool permanently removes security restrictions, giving you an unsecured, fully accessible version of your file.
+                            Give this tool an encrypted PDF and the password it wants, and it hands back the same document with the encryption removed. If the file opens without a password but blocks printing or copying, leave the password box empty — that case needs no password at all. Decryption runs in this browser tab, so neither the file nor the password leaves your machine.
                         </p>
+
+                        <h3 style={{ fontSize: '1.15rem', marginTop: '1.75rem', marginBottom: '0.75rem' }}>The two kinds of locked PDF</h3>
+                        <p style={{ lineHeight: '1.6', color: 'var(--text-secondary)', marginBottom: '1rem' }}>
+                            Almost every complaint about a locked PDF comes down to not distinguishing these. A <strong>user password</strong> is required to open the document; without it the content is genuinely inaccessible, because the file key is derived from the password itself. An <strong>owner password</strong> leaves the document readable by anyone but marks it as restricted — no printing, no copying, no editing — and those restrictions are flags in the encryption dictionary that readers voluntarily respect.
+                        </p>
+                        <p style={{ lineHeight: '1.6', color: 'var(--text-secondary)', marginBottom: '1rem' }}>
+                            The second kind is trivially removable and this tool removes it with an empty password field, because a document encrypted with an owner password only is, by design, decryptable using the empty user password. The first kind is not removable without the password, and no honest tool will tell you otherwise. If you can open a file in a reader and it is asking you for nothing, you are in the second case.
+                        </p>
+
+                        <h3 style={{ fontSize: '1.15rem', marginTop: '1.75rem', marginBottom: '0.75rem' }}>What happens to the file</h3>
+                        <p style={{ lineHeight: '1.6', color: 'var(--text-secondary)', marginBottom: '1rem' }}>
+                            The document is parsed with the password supplied, every encrypted string and stream is decrypted in memory, and the whole thing is written back out with no encryption dictionary. Page content is not re-encoded, so text, vectors and image resolution are exactly as they were. One subtlety is handled explicitly: decrypting the cross-reference stream can lose the trailer pointer to the document information dictionary, which would leave the unlocked copy with an empty Title and Author. That reference is recovered from a second, non-decrypting parse of the same bytes, so your metadata survives the round trip.
+                        </p>
+                        <ul style={{ lineHeight: '1.7', color: 'var(--text-secondary)', marginBottom: '1rem', paddingLeft: '1.25rem' }}>
+                            <li><strong>Handled:</strong> RC4 40-bit and 128-bit, AES-128, AES-256 — the standard security handler in every version you are likely to meet.</li>
+                            <li><strong>Not handled:</strong> certificate-based encryption and proprietary rights-management plug-ins, which need the issuing software.</li>
+                            <li><strong>Unchanged:</strong> pages, fonts, images, annotations, bookmarks, form fields and metadata.</li>
+                            <li><strong>Removed:</strong> the encryption dictionary and every permission flag it carried.</li>
+                        </ul>
+
+                        <h3 style={{ fontSize: '1.15rem', marginTop: '1.75rem', marginBottom: '0.75rem' }}>When the password will not take</h3>
+                        <p style={{ lineHeight: '1.6', color: 'var(--text-secondary)', marginBottom: '1rem' }}>
+                            Nearly always a transcription problem rather than a wrong password. Watch for a trailing space picked up when copying, a different keyboard layout on the machine where the password was set, and lookalike characters — capital I against lowercase l against the digit 1 is the classic. Passwords are case-sensitive throughout. Files produced by older software encode the password in Latin-1, so a passphrase containing characters outside that range may not be representable at all, whatever you type.
+                        </p>
+
+                        <h3 style={{ fontSize: '1.15rem', marginTop: '1.75rem', marginBottom: '0.75rem' }}>Where unlocking fits in a workflow</h3>
                         <p style={{ lineHeight: '1.6', color: 'var(--text-secondary)' }}>
-                            We respect your privacy. All decryption is performed locally on your device, ensuring your sensitive data remains yours alone.
+                            The tools that rewrite a document — <strong>Merge PDF</strong>, <strong>Split PDF</strong>, <strong>Compress PDF</strong>, <strong>Rotate PDF</strong>, <strong>Organize PDF</strong>, <strong>Add Page Numbers</strong>, <strong>Add Watermark</strong>, <strong>Flatten PDF</strong>, the metadata tools — all stop dead on an encrypted file, whether or not it needs a password to open, because their parser will not touch an encryption dictionary at all. The converters that only render pages are less strict and will happily read an owner-restricted file. So unlocking is usually the first step: unlock, edit, then re-apply security with <strong>Protect PDF</strong> if the finished file still needs it. Two cautions worth repeating: decrypting rewrites the byte layout and therefore invalidates any digital signature, and removing protection is something to do only on documents you own or have permission to modify.
                         </p>
                     </div>
                     <div className="features-section" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))', gap: '2rem' }}>

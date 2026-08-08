@@ -3,6 +3,8 @@ import RelatedTools from '../../components/tools/RelatedTools'
 import { useState, useEffect, useRef } from 'react'
 import ToolLayout from '../../components/tools/ToolLayout'
 import Editor from '@monaco-editor/react'
+// Side-effect import: repoints Monaco at the copy this site hosts instead of cdn.jsdelivr.net.
+import '../../utils/monacoLoader'
 import { Copy, Trash2, Check, AlertCircle, Upload, Code, Zap, Shield } from 'lucide-react'
 
 // Every formatter below is loaded on demand. Prettier plus its language plugins is several
@@ -226,7 +228,12 @@ const CodeFormatter = ({
     seoTitle = "Code Formatter - Free Online Multi-Language Beautifier",
     seoDescription = "Free online code formatter. Support for C, C++, Java, Python, SQL, XML, JSON, and more. Beautify your code instantly.",
     aboutTitle,
-    aboutContent,
+    aboutContent = DEFAULT_ABOUT_CONTENT,
+    // Extra about-section paragraphs. Each language wrapper supplies its own so the six pages
+    // built on this component do not ship identical body copy.
+    aboutExtra = DEFAULT_ABOUT_EXTRA,
+    features = DEFAULT_FEATURES,
+    faqs = DEFAULT_FAQS,
 }) => {
     const [code, setCode] = useState(EXAMPLES[initialLanguage] || EXAMPLES['html'])
     const [language, setLanguage] = useState(initialLanguage)
@@ -483,6 +490,11 @@ const CodeFormatter = ({
                         <p style={{ lineHeight: '1.6', color: 'var(--text-secondary)', marginBottom: '1rem' }}>
                             {renderStyledText(aboutContent || seoDescription)}
                         </p>
+                        {aboutExtra.map((paragraph, i) => (
+                            <p key={i} style={{ lineHeight: '1.6', color: 'var(--text-secondary)', marginBottom: '1rem' }}>
+                                {renderStyledText(paragraph)}
+                            </p>
+                        ))}
                     </div>
                     <div className="features-section" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))', gap: '2rem' }}>
                         {features.map((f, i) => (
@@ -520,16 +532,71 @@ const CodeFormatter = ({
     )
 }
 
-const features = [
-    { title: 'Multi-Language Support', desc: 'Supports 20+ programming languages including HTML, CSS, JavaScript, Python, and SQL.' },
-    { title: 'Intelligent Formatting', desc: 'Automatically fixes indentation, spacing, and bracket alignment for maximum readability.' },
-    { title: 'Privacy Focused', desc: 'All code formatting happens locally in your browser. Your code is never sent to any server.' }
+const DEFAULT_ABOUT_CONTENT =
+    'The language picker offers nineteen entries, and each one is routed to the printer that language ' +
+    'actually deserves rather than to a single generic indenter. **Prettier** parses HTML, CSS, ' +
+    'JavaScript, TypeScript, JSON, XML, YAML, Markdown, PHP and Java. SQL goes through **sql-formatter**. ' +
+    'Python is reformatted by **Ruff** compiled to WebAssembly, which produces the same output as Black. ' +
+    'All of it is JavaScript and WASM running inside this tab: the code you paste is never uploaded, and ' +
+    'the page keeps working if you go offline after it has loaded.'
+
+const DEFAULT_ABOUT_EXTRA = [
+    'Seven languages have no browser-capable parser here — C, C++, C#, Kotlin, Objective-C, Swift and ' +
+    'Protobuf. Those fall back to a built-in brace indenter that walks the source character by character, ' +
+    'breaks a line at every {, } and ;, and indents four spaces per nesting level. String literals and ' +
+    'comments are copied through verbatim so a semicolon inside a string cannot trigger a spurious break. ' +
+    'It makes minified or single-line input readable, but it is a layout pass, not a syntax check: it will ' +
+    'indent code that does not compile, and it can mis-handle constructs that depend on staying on one ' +
+    'line, such as a C macro continued with a backslash.',
+
+    'Parser bundles load on demand. Prettier plus every plugin is several megabytes, so the page ships ' +
+    'none of it up front and fetches only the bundle for the language you select. The first format in a ' +
+    'new language pauses while that bundle downloads; every format after it is instant. Output refreshes ' +
+    '800 milliseconds after you stop typing, so you can edit the left pane and watch the right pane settle ' +
+    'rather than hunting for a Format button.',
+
+    'When a parser rejects the input, the message it produced is shown above the editors instead of a ' +
+    'generic failure. Prettier reports a line and column, which makes this a serviceable syntax checker: ' +
+    'if a JSON document or a Java class refuses to format, the position in the error is usually the real ' +
+    'mistake. Switching languages swaps in that language’s sample snippet only while the editor still ' +
+    'holds a sample or is empty, so pasted work is never silently replaced.'
 ]
 
-const faqs = [
-    { question: 'Is my code safe?', answer: 'Yes, absolutely. The formatting happens entirely in your browser using JavaScript. Your code is never sent to our servers.' },
-    { question: 'What languages are supported?', answer: 'We support over 20 languages including HTML, CSS, JavaScript, JSON, SQL, Python, Java, C++, and XML.' },
-    { question: 'Can I format minified code?', answer: 'Yes! Paste your minified or obfuscated code, and our tool will instantly beautify it with proper indentation and spacing.' }
+const DEFAULT_FEATURES = [
+    { title: 'Nineteen Languages, Real Grammars', desc: 'Twelve of them are re-printed from a parsed syntax tree, so nesting, comments and string contents survive the round trip exactly. The remaining seven use a brace-and-semicolon indenter that still handles minified input.' },
+    { title: 'Nothing Loads Until You Ask', desc: 'Choose SQL and the page fetches sql-formatter; choose Python and it fetches the Ruff WebAssembly build. No other parser is downloaded, which keeps the first paint fast on a page that could otherwise ship megabytes.' },
+    { title: 'Source Never Leaves The Tab', desc: 'Editors, parsers and the clipboard copy all run locally. There is no upload step and no server round trip, so proprietary source, production queries and API payloads stay on your machine.' }
+]
+
+const DEFAULT_FAQS = [
+    {
+        question: 'Which languages get a real parser, and which get the fallback?',
+        answer: 'Prettier parses HTML, CSS, JavaScript, TypeScript, JSON, XML, YAML, Markdown, PHP and Java. SQL is handled by sql-formatter and Python by Ruff compiled to WebAssembly. C, C++, C#, Kotlin, Objective-C, Swift and Protobuf go through the built-in brace indenter, which adds four spaces per nesting level and leaves strings and comments untouched.'
+    },
+    {
+        question: 'Can formatting change what my code does?',
+        answer: 'For the parser-backed languages, no: the code is re-printed from a syntax tree, so quote style, line breaks and indentation change but behaviour does not. The brace fallback is the exception. It treats braces and semicolons as layout boundaries, so anything that relies on staying on a single line can be broken apart. Read the diff before committing output that came from a fallback language.'
+    },
+    {
+        question: 'Why did the first format take a few seconds?',
+        answer: 'That was the parser bundle downloading. Prettier and its plugins are large, so nothing is fetched until you pick a language and format once. The bundle is then cached by the browser and every subsequent format in that language is immediate. On a slow connection the very first run can take several seconds; the editors stay usable while it loads.'
+    },
+    {
+        question: 'Will it un-minify a bundled JavaScript file?',
+        answer: 'It will re-break and re-indent it, because every path rebuilds the line structure instead of tidying the newlines already there. What it cannot do is reverse minification: mangled identifiers such as a, b and n stay mangled, inlined helpers stay inlined, and dead code that the minifier folded away is simply gone. Use a source map if you need the original.'
+    },
+    {
+        question: 'What style settings are applied?',
+        answer: 'HTML, CSS and XML print at an 80-column width with two-space indentation. JavaScript and TypeScript use single quotes and always add semicolons. SQL uppercases keywords and indents two spaces. Python uses Ruff defaults. The brace fallback uses four spaces. There is no options panel, so if your team enforces a different style, treat this as a reading aid and run your own Prettier or gofmt config before you commit.'
+    },
+    {
+        question: 'When should I use a single-language page instead of this one?',
+        answer: 'When you want the caveats that apply to your language spelled out. The dedicated HTML, CSS, JavaScript, SQL, XML and JSON pages open on that language and document its specific failure modes — which SQL dialects the parser rejects, why embedded CSS inside an HTML page is not reformatted, what happens to mixed-content XML. This page is the right one when you are moving between languages in a single session, or when the language you need has no page of its own.'
+    },
+    {
+        question: 'Is there a file size limit on Load File?',
+        answer: 'No hard cap is coded in, but the file is read as UTF-8 text into memory and handed to the Monaco editor and the parser, so multi-megabyte files feel sluggish and very large ones can stall the tab. Binary files and text saved in a legacy single-byte encoding arrive with replacement characters; re-save them as UTF-8 first.'
+    }
 ]
 
 export default CodeFormatter

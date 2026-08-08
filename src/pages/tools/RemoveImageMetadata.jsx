@@ -262,10 +262,21 @@ const RemoveImageMetadata = () => {
                     <div className="about-section" style={{ background: 'var(--bg-card)', padding: '2rem', borderRadius: '1rem', border: '1px solid var(--border)', marginBottom: '2rem' }}>
                         <h2 style={{ fontSize: '1.8rem', marginBottom: '1.5rem' }}>About EXIF Remover</h2>
                         <p style={{ lineHeight: '1.6', color: 'var(--text-secondary)', marginBottom: '1rem' }}>
-                            Digital photos often contain hidden information called <strong>metadata</strong> or <strong>EXIF data</strong>. This can include the <strong>GPS coordinates</strong> of where the photo was taken, the exact date and time, and details about the camera used.
+                            A photograph taken on a phone carries far more than the picture. Alongside the pixels sit <strong>EXIF</strong>, <strong>IPTC</strong> and <strong>XMP</strong> records holding the coordinates where the shutter was pressed, the exact second it happened, the make and model of the device, the lens and exposure settings, sometimes a serial number, and a trail of whatever software has touched the file since. Some platforms strip all of it on upload. Messaging apps, email attachments, forum posts and shared drives frequently do not.
+                        </p>
+                        <h3 style={{ fontSize: '1.15rem', margin: '1.5rem 0 0.75rem' }}>Three paths, chosen automatically</h3>
+                        <p style={{ lineHeight: '1.6', color: 'var(--text-secondary)', marginBottom: '1rem' }}>
+                            Stripping metadata well is not one operation, so the tool inspects the file and picks the right one. An <strong>upright JPEG</strong> is rewritten at the byte level: the file is walked segment by segment, the APP and comment blocks are dropped, and the compressed scan data is copied through verbatim. That result is genuinely lossless — the pixels are identical, not merely similar. A <strong>rotated JPEG</strong> cannot be treated that way, because the orientation lives in the very tag being deleted; those files are decoded with the rotation physically applied and re-encoded at 95%, which is invisible in practice and leaves a photo that displays upright everywhere. <strong>PNG and WebP</strong> files are redrawn through a canvas, which discards every ancillary chunk by definition, and saved as PNG so nothing is re-compressed lossily.
+                        </p>
+                        <h3 style={{ fontSize: '1.15rem', margin: '1.5rem 0 0.75rem' }}>What is deliberately kept</h3>
+                        <p style={{ lineHeight: '1.6', color: 'var(--text-secondary)', marginBottom: '1rem' }}>
+                            One block survives the lossless JPEG path on purpose: the <strong>ICC colour profile</strong>. It is stored in the same family of segments as the metadata, but it is not personal information — it tells viewers how to interpret the colour values. Throwing it away would leave a wide-gamut photo looking visibly washed out or oversaturated, so it is treated as part of the image rather than part of the record. Everything else in those segments goes.
+                        </p>
+                        <p style={{ lineHeight: '1.6', color: 'var(--text-secondary)', marginBottom: '1rem' }}>
+                            The dropzone takes JPG, JPEG, PNG and WebP, one file per run, and the cleaned copy is saved as clean- plus your filename. A WebP will come back with a .png extension, which is the honest consequence of the canvas path rather than a mislabelling. HEIC photos from an iPhone cannot be decoded by a browser at all and should go through the HEIC to JPG converter first. It is worth verifying the result once on a file you care about: Windows shows what is left under <strong>Properties &gt; Details</strong>, and macOS under <strong>Preview &gt; Tools &gt; Show Inspector</strong>.
                         </p>
                         <p style={{ lineHeight: '1.6', color: 'var(--text-secondary)' }}>
-                            Our <strong>Metadata Removal</strong> tool allows you to strip this private information from your images before sharing them online. It processes everything <strong>locally in your browser</strong>, so your files are never uploaded to a server, guaranteeing your privacy.
+                            All of it runs inside this browser tab. The bytes are read, rewritten and handed back without a single network request, which is the only sensible arrangement for this particular job — uploading a photograph to somebody else&rsquo;s server in order to have its location removed would be a strange way to protect your address. If you would rather correct individual fields than delete everything, the Image Metadata Editor exposes six EXIF tags on a JPEG and writes them back without re-encoding the picture.
                         </p>
                     </div>
 
@@ -289,28 +300,40 @@ const RemoveImageMetadata = () => {
 RemoveImageMetadata.defaultProps = {
     faqs: [
         {
-            question: "What metadata is removed?",
-            answer: "This tool removes all standard EXIF, IPTC, and XMP metadata, including GPS location, camera settings, date/time taken, and copyright information."
+            question: "What exactly is removed?",
+            answer: "Every EXIF, IPTC, XMP and comment block the file carries: GPS coordinates, capture date and time, camera make and model, lens, exposure settings, serial numbers, editing software and any author or copyright fields. What survives is the picture and — on the lossless JPEG path — the ICC colour profile, because dropping that would visibly shift the colours."
         },
         {
-            question: "Does this affect image quality?",
-            answer: "No, the visual quality of your image remains exactly the same. Only the hidden text data is removed."
+            question: "Does the image quality change?",
+            answer: "It depends which path your file takes, and the tool chooses automatically. **An upright JPEG is rewritten losslessly** — the compressed data is copied byte for byte and only the metadata segments are dropped, so the pixels are identical. **A rotated JPEG has to be re-encoded** at 95% quality, because the rotation lives in the tag being deleted. **PNG and WebP are redrawn and saved as PNG**, which is lossless in pixel terms but changes the format."
         },
         {
-            question: "Is it completely private?",
-            answer: "Yes. The process runs entirely in your web browser. Your images are never sent to our servers."
+            question: "Why does my rotated phone photo get re-encoded?",
+            answer: "Phones usually store the picture in the sensor's orientation and add an EXIF Orientation tag telling viewers how to turn it. Deleting that tag without touching the pixels would leave the photo displayed sideways. So when a rotation tag is present, the image is decoded with the rotation physically applied, then written back upright at 95% quality — a tiny, invisible cost in exchange for a file that looks right everywhere."
         },
         {
-            question: "Why should I remove metadata?",
-            answer: "Removing metadata protects your privacy by ensuring you don't accidentally share your **home address** (via GPS headers) or personal habits when posting photos on social media."
+            question: "Why did my WebP come back as a PNG?",
+            answer: "PNG and WebP metadata cannot be stripped by rewriting segments the way JPEG can, so those files are decoded and redrawn through a canvas, which discards every ancillary chunk by definition. PNG is chosen for the output because it is lossless — re-encoding as WebP would apply a fresh round of lossy compression. Transparency survives; an animated WebP is reduced to its first frame."
         },
         {
-            question: "Is it free?",
-            answer: "Yes, our EXIF remover is completely free to use with no hidden costs."
+            question: "How do I check it worked?",
+            answer: "On Windows, right-click the file, open **Properties > Details** and use *Remove Properties and Personal Information* to see what is left. On macOS, open it in Preview and check **Tools > Show Inspector**. Verifying on a file you actually care about is worth the thirty seconds, with any tool including this one."
         },
         {
-            question: "Does it work on Mac and Windows?",
-            answer: "It works on all modern operating systems including Windows, Mac, Linux, iOS, and Android."
+            question: "Which files can I load?",
+            answer: "JPG, JPEG, PNG and WebP, one at a time. HEIC photos straight from an iPhone are not accepted because the browser cannot decode them — run them through the HEIC to JPG converter first and clean the resulting JPEG."
+        },
+        {
+            question: "Why does this matter for photos I post online?",
+            answer: "A phone photo taken at home usually carries the coordinates of your home to within a few metres, along with the exact time. Some platforms strip that on upload and some do not, and messaging apps, email attachments, forum posts and cloud shares frequently pass the file through untouched. Stripping it yourself before sharing removes the guesswork."
+        },
+        {
+            question: "Can I keep some tags and remove others?",
+            answer: "Not here — this is deliberately all or nothing. If you want to change individual fields instead, such as correcting a capture date or adding a copyright line, the Image Metadata Editor exposes six EXIF fields on a JPEG and writes them back without re-encoding the picture."
+        },
+        {
+            question: "Is the photo uploaded to be cleaned?",
+            answer: "No. The file is read into memory, the byte-level rewrite or the canvas redraw happens on your own machine, and the cleaned copy is saved straight to your downloads as clean- plus the filename. Uploading a photo to a stranger's server in order to remove its location data would rather defeat the purpose."
         }
     ]
 }
@@ -318,7 +341,9 @@ RemoveImageMetadata.defaultProps = {
 export default RemoveImageMetadata
 
 RemoveImageMetadata.features = [
-    { title: 'Protect Privacy', desc: 'Remove GPS location and other sensitive tracking data from your photos.', icon: <ShieldCheck color="var(--primary)" size={24} /> },
-    { title: 'Instant & Local', desc: 'Processing happens instantly on your device. No uploads needed.', icon: <Zap color="var(--primary)" size={24} /> },
-    { title: 'Secure', desc: 'Your photos remain private and secure on your own device.', icon: <Lock color="var(--primary)" size={24} /> }
+    { title: 'Lossless where it can be', desc: 'An upright JPEG is rewritten at the byte level: the metadata segments are dropped and the compressed image data is copied through untouched, so the pixels are identical to the original.', icon: <ShieldCheck color="var(--primary)" size={24} /> },
+    { title: 'Rotation handled correctly', desc: 'When a photo relies on an EXIF Orientation tag, the rotation is baked into the pixels before the tag is deleted, so the cleaned file is not left lying on its side.', icon: <Zap color="var(--primary)" size={24} /> },
+    { title: 'Colour profile kept', desc: 'The ICC profile is treated as image data rather than metadata on the lossless path, because discarding it would visibly shift the colours of a wide-gamut photo.', icon: <ShieldCheck color="var(--primary)" size={24} /> },
+    { title: 'Everything else goes', desc: 'GPS coordinates, capture time, camera and lens, serial numbers, editing history, IPTC and XMP blocks and JPEG comments are all removed in one pass.', icon: <Lock color="var(--primary)" size={24} /> },
+    { title: 'Cleaned without being uploaded', desc: 'The rewrite happens in this browser tab. Sending a photo to someone else in order to have its location data deleted would rather miss the point.', icon: <Lock color="var(--primary)" size={24} /> }
 ]

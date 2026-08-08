@@ -14,35 +14,43 @@ import { Download, FileText, Image as ImageIcon, Loader2, Shield } from 'lucide-
 PDFJS.GlobalWorkerOptions.workerSrc = pdfWorkerUrl
 
 const features = [
-  { title: 'High-Fidelity Extraction', desc: 'Convert every PDF page into a high-quality JPG image. Choose from screen resolution up to professional 600 DPI print quality.', icon: <ImageIcon color="var(--primary)" size={24} /> },
-  { title: 'Batch Download', desc: 'Save time by downloading all extracted images at once in a convenient ZIP file, or save individual pages as needed.', icon: <Download color="var(--primary)" size={24} /> },
-  { title: 'Private & Secure', desc: 'Your confidential documents are processed entirely in your browser. We never see, store, or upload your files.', icon: <Shield color="var(--primary)" size={24} /> }
+  { title: 'Five resolution steps, honestly labelled', desc: 'Pages are rendered at 1x, 1.5x, 2x, 3x or 6x the PDF page size. A point is 1/72 inch, so those multipliers are 72, 108, 144, 216 and 432 DPI — an A4 page at 3x comes out 1786 by 2526 pixels.', icon: <ImageIcon color="var(--primary)" size={24} /> },
+  { title: 'A real JPEG quality slider', desc: 'Set compression anywhere from 10% to 100% in ten steps, default 80%. The whole document re-renders as you change it and the estimated ZIP size updates, so you can find the smallest setting that still looks right before downloading anything.', icon: <Download color="var(--primary)" size={24} /> },
+  { title: 'One ZIP or one page at a time', desc: 'Each page appears as a thumbnail with its own download button, or take the lot as converted-images.zip containing page-1.jpg, page-2.jpg and so on. Nothing is uploaded — rendering happens in this tab.', icon: <Shield color="var(--primary)" size={24} /> }
 ]
 
 const faqs = [
   {
-    question: "Is it free to use?",
-    answer: "Yes, our PDF to JPG converter is 100% free with no file size limits or watermarks."
+    question: "How do the resolution settings translate to pixels?",
+    answer: "Multiply the page size in points by the scale. PDF measures in points at 72 to the inch, so 2x is 144 DPI and 6x is 432 DPI. A standard A4 page is 595 by 842 points, giving 1190 by 1684 pixels at 2x and 3570 by 5052 at 6x. Pick the setting by the pixel size you need rather than by the label — 2x is ample for screen use, 3x is the sensible ceiling for anything printed small."
   },
   {
-    question: "Does it support high resolution?",
-    answer: "Absolutely. You can select 'Ultra' or 'Max' quality settings to get images up to 600 DPI, perfect for printing."
+    question: "What quality setting should I use?",
+    answer: "Start at 80% and go down until you can see the difference. JPEG throws away high-frequency detail, and the first thing to suffer is the sharp edge between black text and white paper, which picks up a faint grey halo. On a page of body text, 90% is nearly indistinguishable from lossless and roughly a third of the size; below about 60% the fringing around small type becomes obvious. Photographic pages tolerate far more compression than text ones."
   },
   {
-    question: "Is my data secure?",
-    answer: "Yes. We use client-side processing, meaning your PDF never leaves your computer. It's the most secure way to convert documents."
+    question: "Why does it re-render every time I touch a control?",
+    answer: "Because the JPEG is produced at the moment of rendering, not converted afterwards — changing the scale or the quality means every page has to be drawn again. On a long document that takes a few seconds, so nudge the slider once and let it settle rather than sweeping it across the range."
   },
   {
-    question: "Can I convert multiple PDFs at once?",
-    answer: "Currently, we process one PDF file at a time to ensure maximum browser performance and stability."
+    question: "Should I use JPG or PNG for this document?",
+    answer: "JPG when the pages are photographic, when you need small files, or when a system will only accept JPEG — scanned documents, brochures, anything image-heavy. **PDF to PNG** when the pages are text, diagrams, tables or line art, because lossless compression handles large flat areas of white extremely well and leaves type perfectly crisp. For a page of black text on white, PNG is often both smaller and better than a high-quality JPEG."
   },
   {
-    question: "Do I need to install software?",
-    answer: "No, everything runs in your web browser. It works on Windows, Mac, Linux, and even mobile devices."
+    question: "Are comments and filled form fields included in the image?",
+    answer: "Yes. The renderer paints annotations that carry an appearance stream, so highlights, sticky-note icons, stamps and the values typed into form fields all appear exactly as a reader displays them. That makes this a practical way to freeze a marked-up document: what you see in the thumbnail is what the JPEG contains."
   },
   {
-    question: "What image formats are extracted?",
-    answer: "This tool extracts images as JPG (JPEG) files. If you need PNG, please use our PDF to PNG converter."
+    question: "Will the text still be searchable?",
+    answer: "No — a JPEG is pixels and nothing else. Text selection, search, copy-paste, links and screen-reader access are all gone, which is sometimes exactly the point and sometimes a serious loss. If you want the words rather than the picture, use **PDF to Text**, **PDF to Word** or **PDF to Excel**, all of which read the text layer directly."
+  },
+  {
+    question: "The page came out blank, or the tab crashed on a big file.",
+    answer: "Almost always memory. Every page is drawn onto a canvas at four bytes per pixel and the finished images are all held in the tab until you download, so a 40-page document at 6x can run into gigabytes. Browsers also cap how large a single canvas may be, and an oversized page — A0 artwork, a wide engineering drawing — can exceed that at high scales and come back empty. Drop to 2x or 3x, or split the file first with **Split PDF** and convert in chunks."
+  },
+  {
+    question: "Can I convert several PDFs in one go?",
+    answer: "No, one document at a time. Everything runs inside this browser tab, so a queue would multiply peak memory without making anything faster. The file you drop in is read locally with the File API, rendered locally, and never transmitted — which is the reason to use a browser-based converter for anything confidential in the first place."
   }
 ]
 
@@ -58,11 +66,11 @@ const PdfToJpg = () => {
   const [jpgQuality, setJpgQuality] = useState(0.8)
 
   const SCALES = {
-    low: 1,      // 72 DPI approx
-    medium: 1.5, // 150 DPI approx
-    high: 2,     // 200 DPI approx (Default)
-    ultra: 3,    // 300 DPI approx
-    max: 6       // 600 DPI approx
+    low: 1,      // 72 DPI (a PDF point is 1/72 inch, so DPI == scale * 72)
+    medium: 1.5, // 108 DPI
+    high: 2,     // 144 DPI (default)
+    ultra: 3,    // 216 DPI
+    max: 6       // 432 DPI
   }
 
   useEffect(() => {
@@ -162,7 +170,7 @@ const PdfToJpg = () => {
       title="PDF to JPG Converter"
       description="Convert PDF pages to high-quality JPG images instantly."
       seoTitle="PDF to JPG Converter - Free Online Tool"
-      seoDescription="Convert PDF pages to high-quality JPG images instantly. Free, secure, and client-side via browser. Choose resolution (up to 600 DPI) and download as ZIP."
+      seoDescription="Convert PDF pages to JPG in your browser. Five resolutions from 72 to 432 DPI, an adjustable JPEG quality slider, per-page downloads or one ZIP. Nothing is uploaded."
       faqs={faqs}
     >
       <div className="tool-workspace" style={{ maxWidth: '1000px', margin: '0 auto' }}>
@@ -218,11 +226,11 @@ const PdfToJpg = () => {
                     style={{ padding: '0.5rem', borderRadius: '0.5rem', border: '1px solid var(--border)', fontSize: '0.875rem', cursor: 'pointer' }}
                     disabled={isProcessing}
                   >
-                    <option value="low">Screen (72 DPI)</option>
-                    <option value="medium">Medium (150 DPI)</option>
-                    <option value="high">High (200 DPI)</option>
-                    <option value="ultra">Print (300 DPI)</option>
-                    <option value="max">Ultra (600 DPI)</option>
+                    <option value="low">Screen — 1x (72 DPI)</option>
+                    <option value="medium">Medium — 1.5x (108 DPI)</option>
+                    <option value="high">High — 2x (144 DPI)</option>
+                    <option value="ultra">Print — 3x (216 DPI)</option>
+                    <option value="max">Maximum — 6x (432 DPI)</option>
                   </select>
 
                   <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', fontSize: '0.875rem', color: '#64748b', background: '#f1f5f9', padding: '0.5rem', borderRadius: '0.5rem' }}>
@@ -311,10 +319,36 @@ const PdfToJpg = () => {
           <div className="about-section" style={{ background: 'var(--bg-card)', padding: '2rem', borderRadius: '1rem', border: '1px solid var(--border)', marginBottom: '2rem' }}>
             <h2 style={{ fontSize: '1.8rem', marginBottom: '1.5rem' }}>About PDF to JPG Converter</h2>
             <p style={{ lineHeight: '1.6', color: 'var(--text-secondary)', marginBottom: '1rem' }}>
-              Extract high-quality images from your PDF documents instantly. Our PDF to JPG converter transforms every page of your PDF into a separate JPG file, perfect for sharing, editing, or archiving.
+              Every page of the document is drawn onto a canvas at a resolution you choose and encoded as a JPEG. You get a thumbnail grid you can check before committing, per-page downloads, and a converted-images.zip for the whole set. The PDF is read and rendered inside this browser tab and is never uploaded.
             </p>
+
+            <h3 style={{ fontSize: '1.15rem', marginTop: '1.75rem', marginBottom: '0.75rem' }}>Resolution is a multiplier, not a magic number</h3>
+            <p style={{ lineHeight: '1.6', color: 'var(--text-secondary)', marginBottom: '1rem' }}>
+              A PDF page has no resolution of its own — it is a set of drawing instructions in points, where a point is one seventy-second of an inch. Rasterising it means picking a scale, and the resulting DPI is simply that scale times 72. The five settings here are 1x, 1.5x, 2x, 3x and 6x, which is 72, 108, 144, 216 and 432 DPI. On A4 (595 by 842 points) that produces images from 595 by 842 pixels up to 3570 by 5052.
+            </p>
+            <p style={{ lineHeight: '1.6', color: 'var(--text-secondary)', marginBottom: '1rem' }}>
+              Choose by what the image is for. Screen and web use rarely benefit from more than 2x. Anything that will be printed small — a thumbnail in a catalogue, an image placed in a report — is fine at 3x. The 6x setting exists for cases where you intend to crop into a region of the page, and it is expensive: an A4 page at 6x is an 18-megapixel image occupying around 72 MB as an uncompressed canvas before it is encoded.
+            </p>
+
+            <h3 style={{ fontSize: '1.15rem', marginTop: '1.75rem', marginBottom: '0.75rem' }}>What the quality slider is really doing</h3>
+            <p style={{ lineHeight: '1.6', color: 'var(--text-secondary)', marginBottom: '1rem' }}>
+              JPEG divides the image into 8-by-8 blocks and discards the high-frequency components of each one, which is why it is superb on photographs and awkward on documents. Photographs are mostly gentle gradients; a page of text is nothing but hard edges, exactly the detail JPEG throws away first. Drop the slider too far and black type on white paper develops a soft grey halo, a defect known as ringing, and thin table rules start to smear.
+            </p>
+            <p style={{ lineHeight: '1.6', color: 'var(--text-secondary)', marginBottom: '1rem' }}>
+              In practice: 90% for text you may need to read closely, 80% as a general default, 60% or below only for pages that are essentially photographs. The estimated archive size shown on the download button updates as you change the setting, so the honest way to choose is to nudge the slider, look at a thumbnail at full size, and stop at the first point where it still looks right.
+            </p>
+
+            <h3 style={{ fontSize: '1.15rem', marginTop: '1.75rem', marginBottom: '0.75rem' }}>What you gain and what you give up</h3>
+            <ul style={{ lineHeight: '1.7', color: 'var(--text-secondary)', marginBottom: '1rem', paddingLeft: '1.25rem' }}>
+              <li><strong>Gained:</strong> a file every system accepts — image uploads, messaging apps, slide decks, photo editors, forms that will only take a JPEG.</li>
+              <li><strong>Gained:</strong> a frozen visual record. Annotations and filled form values are rendered in, and pages are drawn on white, so what you see is what the recipient sees.</li>
+              <li><strong>Lost:</strong> selectable and searchable text, links, bookmarks and screen-reader access. A JPEG of a document is a picture of a document.</li>
+              <li><strong>Lost:</strong> vector sharpness. Zooming past your chosen resolution shows pixels, where the original would have stayed crisp.</li>
+            </ul>
+
+            <h3 style={{ fontSize: '1.15rem', marginTop: '1.75rem', marginBottom: '0.75rem' }}>Reaching for a different tool</h3>
             <p style={{ lineHeight: '1.6', color: 'var(--text-secondary)' }}>
-              We've optimized this tool for speed and privacy. There's no need to upload your sensitive files to a cloud server—everything happens directly in your browser.
+              If the pages are text, tables or line art, <strong>PDF to PNG</strong> usually wins on both quality and size, because lossless compression is very efficient on large flat areas of white. If what you actually want is the words, <strong>PDF to Text</strong> pulls out the text layer directly, and <strong>PDF to Word</strong> or <strong>PDF to Excel</strong> put it into an editable document. If you want the photographs that were placed inside the PDF rather than pictures of the pages containing them, <strong>Extract Images from PDF</strong> pulls the embedded image objects out at their native resolution. And if a very long document defeats your browser, cut it into pieces with <strong>Split PDF</strong> first.
             </p>
           </div>
           <div className="features-section" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))', gap: '2rem' }}>

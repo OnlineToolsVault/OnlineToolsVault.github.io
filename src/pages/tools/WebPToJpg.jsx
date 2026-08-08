@@ -5,35 +5,44 @@ import { useDropzone } from 'react-dropzone'
 import { Image as ImageIcon, Download, Loader2, Zap, ShieldCheck } from 'lucide-react'
 import { saveAs } from 'file-saver'
 const features = [
-    { title: 'Convert WebP to JPG', desc: 'Transform modern WebP images into widely compatible JPG format.', icon: <ImageIcon color="var(--primary)" size={24} /> },
-    { title: 'High Quality', desc: 'Maintains visual fidelity during conversion. Supports transparency (converted to white).', icon: <Zap color="var(--primary)" size={24} /> },
-    { title: 'Privacy First', desc: '100% client-side conversion ensures your photos remain private.', icon: <ShieldCheck color="var(--primary)" size={24} /> }
+    { title: 'Encoded at 95% quality', desc: 'A deliberately high fixed setting. Since the source is already lossy, a low re-encode would stack a second generation of artefacts on top of the first for very little size saving.', icon: <Zap color="var(--primary)" size={24} /> },
+    { title: 'Original dimensions kept', desc: 'The pixel grid is untouched — a 3000 x 2000 WebP becomes a 3000 x 2000 JPG. Nothing is downscaled behind your back to make the file look smaller.', icon: <ImageIcon color="var(--primary)" size={24} /> },
+    { title: 'Transparency handled predictably', desc: 'A white background is painted before the image is drawn, so transparent areas come out white instead of the black they would default to in a JPEG.', icon: <ImageIcon color="var(--primary)" size={24} /> },
+    { title: 'Uses the decoder already built in', desc: 'Your browser has native WebP support, so decoding is instant and needs no library download. Conversion is a canvas draw and a re-encode, nothing more.', icon: <ShieldCheck color="var(--primary)" size={24} /> }
 ]
 
 const faqs = [
     {
-        question: "Is this tool free?",
-        answer: "Yes, our WebP to JPG converter is 100% free to use. Convert as many images as you like."
+        question: "Why would I convert away from WebP at all?",
+        answer: "Because compatibility beats efficiency when something refuses the file. WebP is smaller than JPG at matched quality, but plenty of desktop photo software, print labs, older CMS uploaders, some email clients and various embedded systems still only accept JPEG. Converting is about getting past that gate, not about improving the image."
+    },
+    {
+        question: "What happens to transparent areas?",
+        answer: "They become **white**. JPEG has no alpha channel, so transparency has to be resolved into some colour before encoding, and the canvas is filled with white first. If you need the transparency kept, convert to PNG with the Image Converter instead — PNG and WebP both support alpha."
+    },
+    {
+        question: "How much quality is lost?",
+        answer: "Very little. The JPEG is written at 95%, which is a high setting chosen precisely because the source is already a lossy file. Re-encoding at a low quality would layer new artefacts on top of the WebP compression artefacts already present. The file will usually be larger than the WebP was, which is the honest cost of the format change."
+    },
+    {
+        question: "Why is my JPG bigger than the WebP it came from?",
+        answer: "That is expected. WebP typically achieves the same visual quality in 25-35% fewer bytes than JPEG, so converting in this direction almost always grows the file. If size matters more than compatibility, keep the WebP. If you need a JPEG that is also small, run the result through the Image Compressor afterwards."
+    },
+    {
+        question: "My WebP is animated. Can I convert it?",
+        answer: "Only the first frame. An animated WebP is closer to a short video than a photo, and JPEG has no concept of frames — a canvas holds one still image. You will get a clean JPG of the opening frame, and the animation is gone. Convert to an animated GIF with dedicated software if the motion matters."
+    },
+    {
+        question: "Can I resize or set the quality myself?",
+        answer: "Not here — this page is deliberately a single button. The Image Converter covers the same conversion with a scale slider from 20% to 700% and a quality slider from 10% to 100%, and can also output PNG, BMP or SVG. Use this page when you just want the format changed and nothing else."
+    },
+    {
+        question: "Can I do a whole folder at once?",
+        answer: "Not on this page; it takes one file per run. For batches, convert each file here, or use the Bulk Image Compressor if what you actually need is a folder of smaller files rather than a format change."
     },
     {
         question: "Does it work offline?",
-        answer: "Yes! Since it runs in your browser, once the page loads, you don't need an internet connection to process files."
-    },
-    {
-        question: "What about transparency?",
-        answer: "JPG format does not support transparency. Our tool automatically converts transparent backgrounds to **white**."
-    },
-    {
-        question: "Is it safe?",
-        answer: "Absolutely. Your photos are converted locally on your device and are never uploaded to any server."
-    },
-    {
-        question: "Why use JPG over WebP?",
-        answer: "While WebP is smaller, JPG is supported by every single device and image viewer, making it better for sharing."
-    },
-    {
-        question: "Can I convert multiple images?",
-        answer: "Currently we support single file conversion to ensure the best performance in your browser."
+        answer: "Yes. WebP decoding is built into your browser and the JPEG encoder is the browser canvas, so no library has to be fetched. Load the page once, disconnect, and conversions keep working. Nothing is uploaded and no copy of your image is stored anywhere."
     }
 ]
 
@@ -201,13 +210,21 @@ const WebPToJpg = () => {
                     <div className="about-section" style={{ background: 'var(--bg-card)', padding: '2rem', borderRadius: '1rem', border: '1px solid var(--border)', marginBottom: '2rem' }}>
                         <h2 style={{ fontSize: '1.8rem', marginBottom: '1.5rem' }}>About WebP to JPG Converter</h2>
                         <p style={{ lineHeight: '1.6', color: 'var(--text-secondary)', marginBottom: '1rem' }}>
-                            <strong>WebP</strong> is a modern image format that offers superior compression, but it's not supported by all apps and websites. Our <strong>WebP to JPG Converter</strong> lets you easily change your images into the universally accepted JPEG format.
+                            <strong>WebP</strong> was designed by Google to replace JPEG on the web, and by the numbers it succeeds: the same picture usually lands in about a third fewer bytes, and unlike JPEG it can carry transparency and animation. What it still lacks is universal acceptance. Save an image from a website today and there is a good chance you end up with a .webp that your photo editor, your print lab, a client&rsquo;s upload form or an older phone simply will not open.
+                        </p>
+                        <h3 style={{ fontSize: '1.15rem', margin: '1.5rem 0 0.75rem' }}>What this page actually does</h3>
+                        <p style={{ lineHeight: '1.6', color: 'var(--text-secondary)', marginBottom: '1rem' }}>
+                            Your browser already decodes WebP natively, so there is no library to download and nothing to install. The image is drawn onto a canvas at its original pixel dimensions — a 3000 x 2000 source produces a 3000 x 2000 JPG — and encoded as JPEG at <strong>95% quality</strong>. That setting is high on purpose. The source is already a lossy file, so re-encoding it at a low quality would stack a fresh generation of artefacts on top of the ones already baked in, for a saving you can get more cleanly elsewhere.
+                        </p>
+                        <h3 style={{ fontSize: '1.15rem', margin: '1.5rem 0 0.75rem' }}>Two things you will notice</h3>
+                        <p style={{ lineHeight: '1.6', color: 'var(--text-secondary)', marginBottom: '1rem' }}>
+                            First, the JPG is usually <em>bigger</em> than the WebP it came from. That is the format change working as intended and not a fault of the conversion; you are trading bytes for compatibility. If you need a small JPEG, follow up with the Image Compressor. Second, JPEG has no alpha channel. The canvas is filled with white before your image is drawn, so any transparent region comes out white rather than the black it would otherwise default to. When transparency has to survive, convert to PNG with the Image Converter instead.
                         </p>
                         <p style={{ lineHeight: '1.6', color: 'var(--text-secondary)', marginBottom: '1rem' }}>
-                            Just drag and drop your WebP file, and we'll instantly convert it. Since the conversion happens <strong>on your device</strong>, it's incredibly fast and completely secure.
+                            Animated WebP files are accepted but flattened: JPEG has no notion of frames, so you get a still of the first one. The dropzone only takes .webp files, which keeps you from converting something that was never WebP to begin with, and the download reuses your filename with the extension changed to .jpg. If you want control over the output size or quality rather than a single fixed button, the Image Converter offers a 20%-700% scale slider and a 10%-100% quality slider on the same conversion.
                         </p>
                         <p style={{ lineHeight: '1.6', color: 'var(--text-secondary)' }}>
-                            Note: JPGs don't support transparency, so any transparent areas in your WebP image will be filled with white.
+                            Everything runs inside this browser tab. The file is never uploaded, no copy is written to a server, and there is nothing to expire or delete afterwards. Load the page once and you can convert with the network disconnected.
                         </p>
                     </div>
                     <div className="features-section" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))', gap: '2rem' }}>

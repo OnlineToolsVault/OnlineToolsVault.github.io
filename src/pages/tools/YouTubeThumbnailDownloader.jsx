@@ -4,27 +4,48 @@ import ToolLayout from '../../components/tools/ToolLayout'
 import { Download, Search, Youtube, Zap, Shield } from 'lucide-react'
 import { saveAs } from 'file-saver'
 const features = [
-    { title: 'Any Video', desc: 'Works with any public YouTube video URL, including Shorts and Live streams.', icon: <Youtube color="var(--primary)" size={24} /> },
-    { title: 'Instant Extraction', desc: 'Get direct download links immediately for HD, HQ, and SD resolutions.', icon: <Zap color="var(--primary)" size={24} /> },
-    { title: 'Safe & Free', desc: '100% free to use. No registration, no ads, and no software installation needed.', icon: <Shield color="var(--primary)" size={24} /> }
+    { title: 'Every URL shape YouTube uses', desc: 'Watch links, youtu.be short links, /shorts/, /live/, /embed/, the privacy-enhanced nocookie domain, and a bare 11-character video ID are all parsed to the same result.', icon: <Youtube color="var(--primary)" size={24} /> },
+    { title: 'Missing sizes are hidden, not broken', desc: 'YouTube answers with a grey placeholder for resolutions a video was never published at, so each one is checked before its card is offered. If the check itself is blocked by your network, the card appears anyway and pressing Download reports the resolution as unavailable.', icon: <Zap color="var(--primary)" size={24} /> },
+    { title: 'Three resolutions, described honestly', desc: '1280 x 720 is true widescreen. The 640 x 480 and 480 x 360 versions are 4:3 canvases with black bars above and below the picture — useful to know before you use one.', icon: <Zap color="var(--primary)" size={24} /> },
+    { title: 'Fetched straight from YouTube', desc: 'The image request goes from your browser to YouTube directly. It is not proxied through this site, and no video ID, URL or download is recorded here.', icon: <Shield color="var(--primary)" size={24} /> }
 ]
 
 const faqs = [
     {
-        question: "Is it legal to download thumbnails?",
-        answer: "Yes, downloading thumbnails for personal use (like inspiration or reference) is generally acceptable. However, you should respect copyright and not use the images as your own."
+        question: "Which resolutions do I get?",
+        answer: "Up to three, all of them JPEG. Max (HD) at 1280 x 720 is the full-quality widescreen image and typically runs from about 60 KB to 200 KB depending on how busy the picture is; the smaller HQ at 480 x 360 is usually 15 KB to 55 KB. Standard (SD) at 640 x 480 sits between them. HQ exists for every public video; HD and SD only appear when YouTube actually holds them, which is why the number of cards varies from video to video."
     },
     {
-        question: "What quality are the thumbnails?",
-        answer: "We fetch the highest quality available, typically **HD (1280x720)**. If the video was uploaded in lower quality, we provide HQ and SD versions too."
+        question: "Why do the SD and HQ images have black bars?",
+        answer: "Because they are 4:3 canvases holding a 16:9 picture. YouTube pads the frame rather than cropping it, so inside the 640 x 480 file the real image is 640 x 360, and inside the 480 x 360 file it is 480 x 270. Only the 1280 x 720 version is bar-free. If you need a clean widescreen image from a 4:3 download, crop it with the Image Cropper using the 16:9 preset."
     },
     {
-        question: "Does it work with Shorts?",
-        answer: "Yes! Paste the link to any YouTube Short, and our tool will grab the thumbnail just like a regular video."
+        question: "The HD option did not appear.",
+        answer: "Then YouTube does not have one for that video. The 1280 x 720 file is only generated when the source was published at 720p or above, so low-resolution uploads and old phone recordings never get one — it is the resolution of the video that decides, not its age, and plenty of videos from 2009 do have it. Rather than showing a card that downloads a grey placeholder, each size is checked first and the unavailable ones are left out."
     },
     {
-        question: "Is this tool free?",
-        answer: "Yes, completely free. No ads, no signups, and no limits on how many thumbnails you can download."
+        question: "Does it work with Shorts and live streams?",
+        answer: "Yes. A /shorts/ link, a /live/ link, an /embed/ link, a youtu.be short link, a link on the youtube-nocookie.com domain, and an ordinary watch URL are all reduced to the same 11-character video ID. So are links from the m.youtube.com mobile site and music.youtube.com, and links carrying a timestamp or a playlist parameter. You can paste the bare ID on its own if you already have it."
+    },
+    {
+        question: "Can I download a Short in its tall 9:16 shape?",
+        answer: "No. YouTube generates thumbnails in landscape for everything, including Shorts, so what you get back is the widescreen still rather than the vertical frame you see in the Shorts feed. There is no vertical version to fetch."
+    },
+    {
+        question: "Is it legal to download a thumbnail?",
+        answer: "The image is the copyrighted work of whoever uploaded the video, and downloading it does not transfer any rights. Referencing it, studying it or discussing it is one thing; republishing it as your own artwork or as the face of your own video is another. If in doubt, ask the creator or use it only as reference."
+    },
+    {
+        question: "Nothing downloads, but the picture opened in a new tab.",
+        answer: "That is the deliberate fallback. The tool fetches the image and saves it as a file, but if the browser blocks reading the response the image is opened in a tab instead so you can right-click and save it manually. It is an inconvenience rather than a failure."
+    },
+    {
+        question: "Does this site see which videos I look up?",
+        answer: "No. The image request goes from your browser straight to YouTube's image servers, exactly as it would if you typed the image address into the address bar yourself. Nothing is proxied through this site and no ID, URL or history is stored. YouTube itself will see the request, as it always does."
+    },
+    {
+        question: "I want a thumbnail for my own video instead.",
+        answer: "Then you want a 1280 x 720 image at 16:9 under 2 MB, which is what YouTube asks for. Build it at that size with the Image Resizer, crop an existing photo to 16:9 with the Image Cropper, or use the Social Media Resizer preset — its Twitter Post 16:9 ratio is exactly the shape a YouTube thumbnail needs."
     }
 ]
 
@@ -257,13 +278,21 @@ const YouTubeThumbnailDownloader = () => {
                         <div className="about-section" style={{ background: 'var(--bg-card)', padding: '2rem', borderRadius: '1rem', border: '1px solid var(--border)', marginBottom: '2rem' }}>
                             <h2 style={{ fontSize: '1.8rem', marginBottom: '1.5rem' }}>About YouTube Thumbnail Downloader</h2>
                             <p style={{ lineHeight: '1.6', color: 'var(--text-secondary)', marginBottom: '1rem' }}>
-                                Found a YouTube video with a great thumbnail? Our <strong>YouTube Thumbnail Downloader</strong> lets you save it in full high-definition (HD).
+                                Every YouTube video has its thumbnail stored at a predictable address, keyed on the 11-character video ID buried in the link. This page pulls that ID out of whatever form of URL you paste, checks which sizes actually exist for that video, and offers each one as a direct download.
+                            </p>
+                            <h3 style={{ fontSize: '1.15rem', margin: '1.5rem 0 0.75rem' }}>Which links work</h3>
+                            <p style={{ lineHeight: '1.6', color: 'var(--text-secondary)', marginBottom: '1rem' }}>
+                                Ordinary watch URLs, <strong>youtu.be</strong> short links, <strong>/shorts/</strong> and <strong>/live/</strong> links, <strong>/embed/</strong> URLs copied out of a page source, links on the privacy-enhanced <strong>youtube-nocookie.com</strong> domain, and URLs carrying extra tracking parameters are all reduced to the same video ID. If you already have the ID, paste those eleven characters on their own. Anything that does not resolve to a valid ID is rejected with a message rather than quietly returning the wrong picture.
+                            </p>
+                            <h3 style={{ fontSize: '1.15rem', margin: '1.5rem 0 0.75rem' }}>The three sizes are not the same shape</h3>
+                            <p style={{ lineHeight: '1.6', color: 'var(--text-secondary)', marginBottom: '1rem' }}>
+                                <strong>Max (HD)</strong> is 1280 x 720 and is genuinely widescreen — the whole file is picture. <strong>Standard (SD)</strong> at 640 x 480 and <strong>High Quality (HQ)</strong> at 480 x 360 are 4:3 canvases with the 16:9 frame letterboxed inside them, so the real content in the SD file is 640 x 360 and in the HQ file 480 x 270, with solid black bars above and below. That is YouTube&rsquo;s doing, not a fault of the download. If you need one of the smaller files without the bars, crop it to 16:9 with the Image Cropper.
                             </p>
                             <p style={{ lineHeight: '1.6', color: 'var(--text-secondary)', marginBottom: '1rem' }}>
-                                Simply paste the YouTube video URL (works for standard videos and <strong>Shorts</strong>), and we'll extract the thumbnail in multiple resolutions: <strong>Max (HD)</strong>, <strong>High Quality (HQ)</strong>, and <strong>Standard (SD)</strong>.
+                                HQ exists for every public video. HD and SD do not — they are only generated when the source was published at a high enough resolution, so a 240p upload has neither while a 1080p upload from 2009 has both. YouTube answers a request for a missing size with a 120 x 90 grey placeholder rather than an error page, which is exactly the kind of thing that produces a useless download. Each size is therefore checked before it is shown, and cards for missing resolutions never appear.
                             </p>
                             <p style={{ lineHeight: '1.6', color: 'var(--text-secondary)' }}>
-                                It's the perfect tool for creators, designers, or anyone who needs to grab a thumbnail for reference or inspiration.
+                                Nothing here is proxied. Your browser requests the image from YouTube&rsquo;s image servers directly, the same way it would if you opened the image address yourself, and no video ID, link or download is logged by this site. Worth remembering on the way out: a thumbnail is the uploader&rsquo;s copyrighted work. Saving one for reference or study is ordinary practice; republishing it as your own is not.
                             </p>
                         </div>
                         <div className="features-section" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(250px, 100%), 1fr))', gap: '2rem' }}>

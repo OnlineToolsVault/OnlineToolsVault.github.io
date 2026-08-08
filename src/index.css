@@ -39,6 +39,12 @@
 
   --radius: 0.75rem;
 
+  /* Height of the sticky header's inner row. The header's own 1px bottom border sits on top of
+     this, so the full banner is calc(var(--header-height) + 1px).
+     Layout.css sizes .header-container from this, and .main-content below reserves the rest of
+     the viewport from it — keep them reading the same variable so they cannot drift apart. */
+  --header-height: 3rem;
+
   /* Typography */
   --font-sans: 'Inter', system-ui, -apple-system, sans-serif;
   --font-mono: ui-monospace, SFMono-Regular, 'SF Mono', Menlo, Consolas, 'Liberation Mono', monospace;
@@ -65,6 +71,40 @@ body {
   min-height: 100vh;
   display: flex;
   flex-direction: column;
+}
+
+/* -------------------------------------------------------------------------- */
+/*                    Layout stability: reserve the first screen               */
+/* -------------------------------------------------------------------------- */
+/*
+   Every route in App.jsx is React.lazy, behind one Suspense boundary whose fallback is a
+   60vh spinner. So the first thing that paints is a page barely taller than the viewport:
+   header (49px) + spinner (60vh) puts the footer at y=510 in a 768px-tall window — visible,
+   about a third of the screen. A moment later the route chunk arrives, main grows to its real
+   ~3800px and the footer leaves for y=3850.
+
+   That one move was the site's entire Cumulative Layout Shift: impact fraction 258/768 = 0.336
+   with the distance fraction pinned at 1.0, measured at 0.309 averaged over routes — "poor" by
+   Core Web Vitals, and identical on every page because the fallback is identical on every page.
+   It is not caused by the prerendered markup (an A/B with #root emptied shifts by exactly the
+   same 0.3359) and not by the web font (delaying the woff2 by 3s costs 0.0006 — Inter and the
+   system-ui fallback are close enough in metrics that the swap moves text by a pixel).
+
+   Reserving the rest of the first screen for <main> keeps the footer strictly below the fold
+   while the chunk loads, so when the real content lands the footer travels from off-screen to
+   further off-screen and the shift has no visible impact region at all.
+
+   Anything that lets React adopt the prerendered markup instead of rebuilding it (hydration)
+   avoids the collapse too, but only on the loads where that succeeds — the dev server, a
+   snapshot the build did not mark hydratable and a hydration mismatch all fall back to mounting
+   fresh, and this reservation is what holds CLS at zero on those.
+
+   This is free in practice: at 1366x768 the reservation is 720px and the shortest route on the
+   site (/about/) renders a 1124px main, so all 89 routes already exceed it and nothing about the
+   loaded page moves. It only ever fills the gap in the loading state.
+*/
+.main-content {
+  min-height: calc(100vh - var(--header-height));
 }
 
 a {

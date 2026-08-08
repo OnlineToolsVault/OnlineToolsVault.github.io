@@ -54,27 +54,49 @@ const getCroppedImgHelper = async (imageSrc, pixelCrop, backgroundColor) => {
 
 
 const features = [
-    { title: 'Global Standards', desc: 'Pre-set templates for US, UK, EU, India, and China passport & visa requirements.', icon: <Globe color="var(--primary)" size={24} /> },
-    { title: 'Smart Cropping', desc: 'Intuitive guides and zoom tools ensure your face is perfectly centered and sized.', icon: <Crop color="var(--primary)" size={24} /> },
-    { title: 'Print-Ready Export', desc: 'Download high-resolution JPGs formatted correctly for online submission or printing.', icon: <Download color="var(--primary)" size={24} /> }
+    { title: 'Five locked aspect ratios', desc: 'UK, EU and India at 35 x 45 mm, the United States at a square 2 x 2 inches, and China at 33 x 48 mm. The selection cannot drift off-ratio while you drag it.', icon: <Globe color="var(--primary)" size={24} /> },
+    { title: 'Zoom and reposition', desc: 'Magnify up to 3x and drag the photo under the fixed frame, which is how you get the head sitting at the right height rather than merely centred.', icon: <ZoomIn color="var(--primary)" size={24} /> },
+    { title: 'Colour fill behind the crop', desc: 'A colour picker fills the canvas before your photo is drawn, so a transparent cutout or a crop that runs past the photo edge lands on a clean backdrop instead of black.', icon: <Crop color="var(--primary)" size={24} /> },
+    { title: 'Maximum-quality JPEG', desc: 'Written at the encoder’s highest quality setting and at your source resolution, so nothing is thrown away beyond what JPEG itself costs — which leaves the headroom a print lab needs.', icon: <Download color="var(--primary)" size={24} /> },
+    { title: 'Your face stays on your device', desc: 'Cropping happens in this browser tab. A portrait for an official document is not uploaded, stored or seen by anyone but you.', icon: <Globe color="var(--primary)" size={24} /> }
 ]
 
 const faqs = [
     {
-        question: "Is this passport photo maker free?",
-        answer: "Yes, our Passport Photo Maker is 100% free to use. There are no hidden fees, and you can generate as many photos as you need."
+        question: "Will a photo cropped here be accepted?",
+        answer: "The **proportions** will be right. Acceptance depends on much more than that — head height within the frame, a neutral expression, open eyes facing the camera, no shadows on the face or background, rules about glasses and head coverings, and a plain background of the required colour. This tool crops; it does not inspect. Read the current specification from the issuing authority before you submit."
     },
     {
-        question: "Which countries are supported?",
-        answer: "We support standards for the **United States (2x2 inch)**, **United Kingdom (35x45mm)**, **European Union (35x45mm)**, **India (35x45mm)**, and **China (33x48mm)**."
+        question: "Which sizes are built in?",
+        answer: "**United Kingdom, European Union and India** at 35 x 45 mm, the **United States** at 2 x 2 inches (a square), and **China** at 33 x 48 mm. Those are aspect ratios, so a crop for the UK and one for the EU come out identically shaped even though the two authorities publish separate rules about everything else."
     },
     {
-        question: "Is my photo uploaded to a server?",
-        answer: "No, all processing happens locally in your browser. Your photos are never uploaded to our servers, ensuring your privacy."
+        question: "Does the background colour replace what is behind me?",
+        answer: "No. The colour is painted onto the canvas first and your photo is drawn on top of it, so it only shows where the photo does not cover — past the edges of the picture, or wherever the source is transparent. To actually change the backdrop, run your photo through the Background Remover to get a transparent PNG, then bring that PNG here and pick the fill colour."
     },
     {
-        question: "Can I print the downloaded photo?",
-        answer: "Yes, the downloaded image is in high-quality JPG format, suitable for printing at home or at any photo lab (CVS, Walgreens, Boots, etc)."
+        question: "How many pixels do I need?",
+        answer: "For a 300 dpi print, a 35 x 45 mm photo works out at roughly **413 x 531 pixels** and a 2 x 2 inch US photo at **600 x 600 pixels**. The crop is taken at your source resolution, so start from a full-size photo rather than a messaging-app copy, and check the output is comfortably above those figures before printing."
+    },
+    {
+        question: "How high should my head sit in the frame?",
+        answer: "That is exactly the part the specifications are strict about and this tool cannot verify. As a rough orientation, most authorities want the head to occupy something between half and three quarters of the frame height with a small margin above the hair — but the exact band differs by country and changes over time, so use the zoom control to match the diagram in the official guidance rather than a number from a web page."
+    },
+    {
+        question: "Can I print several copies on one sheet?",
+        answer: "Not from this page — it produces one photo per download. Most print labs will lay out multiple copies on a 6 x 4 inch sheet for you if you ask, which is cheaper than printing one at a time. Alternatively, place several copies of the downloaded file in a document and print that."
+    },
+    {
+        question: "Can I use a phone selfie?",
+        answer: "Technically yes, and it is often rejected. Phone front cameras use a wide lens held close to the face, which distorts the nose and jaw noticeably. Have someone else photograph you from about two metres away with the rear camera against a plain wall in even daylight, then crop that here — the result is far more likely to pass."
+    },
+    {
+        question: "What format is the download?",
+        answer: "A JPEG at maximum quality, named after the country you chose. JPEG is what online application forms and photo labs both expect. No DPI value is embedded in the file, so specify the physical print size when you order rather than relying on the file to carry it."
+    },
+    {
+        question: "Is my photo uploaded anywhere?",
+        answer: "No. The file is read, cropped and encoded entirely inside this browser tab, and the result goes straight to your downloads folder. Nothing is transmitted, nothing is stored, and there is no account or retention period involved."
     }
 ]
 
@@ -177,7 +199,7 @@ const PassportPhotoMaker = () => {
                             {isDragActive ? 'Drop photo here...' : 'Drag & Drop Photo'}
                         </h3>
                         <p style={{ color: 'var(--text-secondary)', fontSize: '1.1rem' }}>
-                            or click to browse checks
+                            or click to browse files
                         </p>
                         <p style={{ marginTop: '1rem', fontSize: '0.9rem', color: 'var(--text-tertiary)' }}>
                             Use a photo with good lighting and neutral background
@@ -295,13 +317,22 @@ const PassportPhotoMaker = () => {
                         <div className="about-section" style={{ background: 'var(--bg-card)', padding: '2rem', borderRadius: '1rem', border: '1px solid var(--border)', marginBottom: '2rem' }}>
                             <h2 style={{ fontSize: '1.8rem', marginBottom: '1.5rem' }}>About Passport Photo Maker</h2>
                             <p style={{ lineHeight: '1.6', color: 'var(--text-secondary)', marginBottom: '1rem' }}>
-                                Need a <strong>Passport</strong> or <strong>Visa</strong> photo? Don't pay for expensive studio shots. Our <strong>Passport Photo Maker</strong> lets you create professional-quality ID photos from the comfort of your home.
+                                This crops a photograph you already have to the <strong>exact proportions</strong> an ID photo requires, with a zoom control for framing the head and a colour fill behind the crop. Pick a country and the selection rectangle is locked to that shape: <strong>35 x 45 mm</strong> for the United Kingdom, the European Union and India, <strong>2 x 2 inches</strong> (a perfect square) for the United States, and <strong>33 x 48 mm</strong> for China.
                             </p>
+                            <h3 style={{ fontSize: '1.15rem', margin: '1.5rem 0 0.75rem' }}>What it does and does not guarantee</h3>
                             <p style={{ lineHeight: '1.6', color: 'var(--text-secondary)', marginBottom: '1rem' }}>
-                                Simply upload a photo, select your country (US, UK, EU, India, China), and use our smart cropping tool to frame your face correctly. You can even choose a background color if needed.
+                                It gets the aspect ratio right. It does not check that your photograph is <em>compliant</em>, and no browser tool can. Official specifications also govern how much of the frame the head occupies, the expression, whether the eyes are open and looking forward, glasses, head coverings, shadows on the face and behind it, and the plainness and colour of the background. Those are your responsibility. Treat this as a precise cropping tool for a photo that already meets the rules, and check the current specification published by the issuing authority before you submit — the numbers change, and a rejected application costs far more than the effort of reading them.
+                            </p>
+                            <h3 style={{ fontSize: '1.15rem', margin: '1.5rem 0 0.75rem' }}>The background fill is a fill, not a removal</h3>
+                            <p style={{ lineHeight: '1.6', color: 'var(--text-secondary)', marginBottom: '1rem' }}>
+                                The colour you choose is painted onto the canvas before your photo is drawn on top of it. That means it shows through where the crop extends past the edge of your picture, and where the source image is transparent — it does not replace whatever is actually behind you in the photograph. If you need a plain white or light grey backdrop and your photo has a room in it, run the picture through the Background Remover first to get a transparent PNG, then bring that PNG here and set the fill colour. That order works; expecting this tool to erase a background on its own does not.
+                            </p>
+                            <h3 style={{ fontSize: '1.15rem', margin: '1.5rem 0 0.75rem' }}>Resolution and printing</h3>
+                            <p style={{ lineHeight: '1.6', color: 'var(--text-secondary)', marginBottom: '1rem' }}>
+                                The crop is taken at the resolution of your source photo, so the pixel count depends entirely on what you started with — a tight crop from a small image produces a small file. Photo labs generally print at 300 dots per inch, which puts a 35 x 45 mm print at roughly <strong>413 x 531 pixels</strong> and a 2 x 2 inch US photo at <strong>600 x 600 pixels</strong>. Aim comfortably above those numbers. No DPI value is written into the file, so if you take it to a print shop, tell them the physical size you want rather than assuming the file will say.
                             </p>
                             <p style={{ lineHeight: '1.6', color: 'var(--text-secondary)' }}>
-                                The tool generates a high-resolution, print-ready JPG file that meets official requirements. It's fast, free, and secure—your photos are processed locally on your device.
+                                The output is a JPEG at maximum quality, named after the country you selected. Everything runs inside this browser tab — the photo is decoded, cropped and encoded locally, and it is never uploaded. A picture of your own face is exactly the sort of file that is worth not handing to a stranger&rsquo;s server, and here there is no server to hand it to.
                             </p>
                         </div>
                         <div className="features-section" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))', gap: '2rem' }}>

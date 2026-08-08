@@ -5,8 +5,8 @@ const PrivacyPolicy = () => {
     return (
         <>
             <Helmet>
-                <title>Privacy Policy - FreeTools | Your Data is Safe</title>
-                <meta name="description" content="Read our privacy policy. We prioritize your privacy and do not store your files on our servers." />
+                <title>Privacy Policy | OnlineToolsVault</title>
+                <meta name="description" content="Privacy policy for OnlineToolsVault. Your files never leave your device." />
                 <link rel="canonical" href="https://onlinetoolsvault.com/privacy/" />
             </Helmet>
 
@@ -21,7 +21,7 @@ const PrivacyPolicy = () => {
                         <section className="legal-section">
                             <h2>1. Introduction</h2>
                             <p>
-                                Welcome to FreeTools ("we," "our," or "us"). We are committed to protecting your privacy.
+                                Welcome to OnlineToolsVault ("we," "our," or "us"). We are committed to protecting your privacy.
                                 This Privacy Policy explains how we collect, use, and safeguard your information when you visit our website
                                 <strong>onlinetoolsvault.com</strong>. By using our Service, you agree to the collection and use of information in accordance with this policy.
                             </p>
@@ -101,7 +101,7 @@ const PrivacyPolicy = () => {
                             </p>
                             <ul>
                                 <li>By email: hi@sourcestrongai.com</li>
-                                <li>By visiting the <a href="/contact">Contact Page</a> on our website.</li>
+                                <li>By visiting the <a href="/contact/">Contact Page</a> on our website.</li>
                             </ul>
                         </section>
                     </div>

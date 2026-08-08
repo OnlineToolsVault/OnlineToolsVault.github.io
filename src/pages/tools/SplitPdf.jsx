@@ -7,18 +7,44 @@ import { PDFDocument } from 'pdf-lib'
 import { saveAs } from 'file-saver'
 import JSZip from 'jszip'
 const features = [
-    { title: 'Extract Every Page', desc: 'Explode your PDF into individual files. Get each page as a separate PDF document automatically.', icon: <Files color="var(--primary)" size={24} /> },
-    { title: 'Custom Page Ranges', desc: 'Extract specific sections (e.g., "1-3, 5, 10") to create new documents containing only what you need.', icon: <ListOrdered color="var(--primary)" size={24} /> },
-    { title: 'Organized ZIP Download', desc: 'Download all your split files in a cleanly organized ZIP archive for easy management.', icon: <FolderArchive color="var(--primary)" size={24} /> }
+    { title: 'Burst into single pages', desc: 'Extract every page mode reads the page count off the file and writes one PDF per page, named page-1.pdf, page-2.pdf and so on, then bundles them into a DEFLATE-compressed ZIP.', icon: <Files color="var(--primary)" size={24} /> },
+    { title: 'Ranges that mean what they say', desc: 'Type 1-3, 5, 8-10 and you get three files: a three-page one, a one-page one, and another three-page one. Each comma-separated entry becomes its own document rather than being flattened together.', icon: <ListOrdered color="var(--primary)" size={24} /> },
+    { title: 'One file or an archive, automatically', desc: 'Ask for a single range and you get a plain PDF. Ask for more than one and the pieces are zipped so the browser only has to trigger one download instead of fighting a pop-up blocker.', icon: <FolderArchive color="var(--primary)" size={24} /> }
 ]
 
 const faqs = [
-    { question: "How do I split by page range?", answer: "Select 'Custom Range' and enter the page numbers (e.g., '1-5') or specific pages (e.g., '2, 4, 9') you want to extract." },
-    { question: "Is the quality preserved?", answer: "Yes, the split files retain 100% of the original quality, formatting, and resolution." },
-    { question: "Is it secure?", answer: "Absolutely. We process the split locally on your device, so your sensitive documents are never uploaded." },
-    { question: "Can I split password protected files?", answer: "You must remove the password first using our 'Unlock PDF' tool before splitting." },
-    { question: "Is there a page limit?", answer: "No fixed limit, but extremely large files (1000+ pages) may be slower depending on your device." },
-    { question: "Does it work on mobile?", answer: "Yes, our tool is fully responsive and runs in any mobile browser." }
+    {
+        question: "How exactly do I write the page ranges?",
+        answer: "Comma-separated, one-based, spaces ignored: 1-3, 5, 8-10 is valid. A hyphen means an inclusive span, so 8-10 gives pages 8, 9 and 10. Each entry produces its own file — 1-3, 5 yields a three-page PDF and a one-page PDF, not one four-page document. Backwards spans such as 9-4 are rejected rather than silently reversed."
+    },
+    {
+        question: "When do I get a single PDF and when do I get a ZIP?",
+        answer: "One group means one download. If your range list resolves to exactly one entry, the result is a plain PDF called something like report-pages-2-7.pdf. Anything that produces two or more pieces — including every page mode — comes back as report-split.zip, with the individual PDFs inside."
+    },
+    {
+        question: "It refused my range and told me it cannot use an entry. Why?",
+        answer: "An entry is rejected if it is not a number, if it runs backwards, or if it lands entirely outside the document — a bare 50 or a span of 50-60 on a 42-page file. The whole job stops rather than the bad entry being quietly dropped, so you never download a set that is missing pages you asked for. One case is treated more leniently: a span that starts inside the document and runs past the end, such as 1-50 on 42 pages, is clamped to the last page and succeeds. You get all 42 pages, in a file still named after the numbers you typed."
+    },
+    {
+        question: "How do I pull several scattered pages into one document?",
+        answer: "This tool always writes one file per entry, so it cannot do that in a single step. Load the PDF into **Organize PDF** and delete the pages you do not want — that leaves one document containing exactly the pages you kept. Alternatively split first, then recombine the pieces with **Merge PDF**."
+    },
+    {
+        question: "Do bookmarks and fillable fields survive the split?",
+        answer: "Page content, embedded fonts, images and per-page annotations are copied intact. Bookmarks are not: the outline lives on the document catalogue rather than on any page, so each piece comes out without one. Interactive form fields keep their appearance but lose their registration in the form dictionary, so they stop being fillable — flatten the form first if the values matter."
+    },
+    {
+        question: "Why are the pieces bigger than a proportional share of the original?",
+        answer: "Every output document must carry the resources its pages reference. If one embedded font is used throughout a 100-page report, splitting into 100 single-page PDFs embeds that font 100 times. The total across the ZIP can therefore exceed the original file, even though no page has been re-encoded. Running the pieces through **Compress PDF** trims the metadata but will not undo the duplication."
+    },
+    {
+        question: "Can I split a password-protected PDF?",
+        answer: "No. The parser refuses encrypted documents, and because that happens the moment the file is read, you get an Invalid PDF file alert and the tool returns to the drop zone rather than showing you a page count. Remove the password with **Unlock PDF** (you need to know it) and split the unlocked copy."
+    },
+    {
+        question: "Is there a page limit, and does it work on a phone?",
+        answer: "No fixed limit — the constraint is memory. Bursting a 1,000-page file means building 1,000 documents and holding a ZIP of all of them in RAM at once, which a desktop handles and a budget phone may not. On mobile, prefer targeted ranges over every page mode; the interface itself works in any modern mobile browser."
+    }
 ]
 
 const SplitPdf = () => {
@@ -263,7 +289,32 @@ const SplitPdf = () => {
                     <div className="about-section" style={{ background: 'var(--bg-card)', padding: '2rem', borderRadius: '1rem', border: '1px solid var(--border)', marginBottom: '2rem' }}>
                         <h2 style={{ fontSize: '1.8rem', marginBottom: '1.5rem' }}>About Split PDF</h2>
                         <p style={{ lineHeight: '1.6', color: 'var(--text-secondary)', marginBottom: '1rem' }}>
-                            Our <strong>Split PDF</strong> tool allows you to easily extract specific pages or split a large PDF document into smaller, separate files. Whether you need just one page or want to divide a report into chapters, this tool handles it securely in your browser.
+                            Splitting takes one PDF apart into smaller PDFs. Drop a file in and the page count appears beside its name, then pick one of two modes: <strong>extract every page</strong>, which writes one document per page, or <strong>custom range</strong>, where you type the pages you want. Everything happens in this tab — the file is read with the browser File API and never uploaded.
+                        </p>
+
+                        <h3 style={{ fontSize: '1.15rem', marginTop: '1.75rem', marginBottom: '0.75rem' }}>The range syntax, in full</h3>
+                        <p style={{ lineHeight: '1.6', color: 'var(--text-secondary)', marginBottom: '1rem' }}>
+                            Entries are separated by commas and counted from 1, the way the page numbers appear in a reader. A bare number extracts that single page; two numbers joined by a hyphen extract an inclusive span. Whitespace is ignored, so <strong>1-3,5</strong> and <strong>1 - 3, 5</strong> behave identically. The important thing to internalise is that each entry becomes a separate output file. <strong>2-4, 9</strong> gives you a three-page document and a one-page document, not one four-page document; if you wanted the latter, ask for the span you actually want or delete the surplus pages in Organize PDF instead.
+                        </p>
+                        <p style={{ lineHeight: '1.6', color: 'var(--text-secondary)', marginBottom: '1rem' }}>
+                            Bad entries stop the whole job rather than being dropped. A reversed span such as <strong>9-4</strong>, anything that is not a number, or an entry that falls entirely outside the document — a bare <strong>50</strong> or a span of <strong>50-60</strong> on a 42-page file — produces a message naming the offending entry and reminding you how many pages the file has. That is deliberate: silently skipping an entry is how people end up emailing a set of extracts with a chapter missing. The one exception is a span that begins inside the document and overshoots the end: <strong>1-50</strong> on a 42-page file is clamped to page 42 and goes through, so check the page count shown beside the file name if you want the number in the filename to match what is inside.
+                        </p>
+
+                        <h3 style={{ fontSize: '1.15rem', marginTop: '1.75rem', marginBottom: '0.75rem' }}>What you get back</h3>
+                        <ul style={{ lineHeight: '1.7', color: 'var(--text-secondary)', marginBottom: '1rem', paddingLeft: '1.25rem' }}>
+                            <li>A single range produces a plain PDF named after the source, for example <strong>contract-pages-4-9.pdf</strong> or <strong>contract-page-3.pdf</strong>.</li>
+                            <li>Two or more pieces are collected into <strong>contract-split.zip</strong>, DEFLATE-compressed, with each piece inside under the same naming scheme.</li>
+                            <li>Every page mode always produces a ZIP unless the document is genuinely one page long.</li>
+                        </ul>
+
+                        <h3 style={{ fontSize: '1.15rem', marginTop: '1.75rem', marginBottom: '0.75rem' }}>How the pages are moved</h3>
+                        <p style={{ lineHeight: '1.6', color: 'var(--text-secondary)', marginBottom: '1rem' }}>
+                            A new empty document is created for each output, and the requested page objects are deep-copied into it along with everything they reference — content streams, embedded font programs, image XObjects, annotations. Nothing is rasterised or re-encoded, so text remains selectable and searchable and a scan keeps its original DPI. The side effect is duplication: shared resources are copied into every piece that needs them, which is why a hundred single-page files can add up to more bytes than the document they came from.
+                        </p>
+
+                        <h3 style={{ fontSize: '1.15rem', marginTop: '1.75rem', marginBottom: '0.75rem' }}>When a different tool is the right one</h3>
+                        <p style={{ lineHeight: '1.6', color: 'var(--text-secondary)' }}>
+                            Reach for <strong>Organize PDF</strong> when you want one document with some pages removed or reordered, since it shows page thumbnails and saves a single file. Reach for <strong>Merge PDF</strong> to go the other way and glue documents together. If what you actually want is a picture of each page rather than a PDF of each page, use <strong>PDF to JPG</strong> or <strong>PDF to PNG</strong>, which render pages at one of five fixed scales from 1x to 6x. And if dropping the file here only produces an <em>Invalid PDF file</em> alert and sends you back to the drop zone, it is probably encrypted — <strong>Unlock PDF</strong> first.
                         </p>
                     </div>
                     <div className="features-section" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))', gap: '2rem' }}>

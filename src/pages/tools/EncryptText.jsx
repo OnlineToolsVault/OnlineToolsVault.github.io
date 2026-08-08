@@ -5,15 +5,48 @@ import { Lock, Copy, Check, Shield, Zap } from 'lucide-react'
 import CryptoJS from 'crypto-js'
 
 const features = [
-    { title: 'AES Encryption', desc: 'Secure your text with the industry-standard AES algorithm using a custom password.' },
-    { title: 'Client-Side Security', desc: 'Encryption happens entirely in your browser. Your text and password never leave your device.' },
-    { title: 'Universal Compatibility', desc: 'Generate encrypted text that can be safely shared and decrypted on any device.' }
+    { title: 'AES-256 In OpenSSL Format', desc: 'Output is the familiar Salted__ envelope: an eight-byte random salt followed by AES-256-CBC ciphertext, the whole thing Base64 encoded. The same string decrypts with the OpenSSL command line, not only with this site.' },
+    { title: 'A Fresh Salt Every Time', desc: 'Encrypting identical text with the same password twice produces two completely different strings, because a new random salt is drawn each run. An observer cannot tell that you sent the same message twice.' },
+    { title: 'Password Never Transmitted', desc: 'The key is derived and the cipher runs inside this tab. No request is made, nothing is logged, and re-encrypting after editing the text or password is forced by clearing the stale output.' }
 ]
 
 const faqs = [
-    { question: 'Is the password stored?', answer: 'No. The password is used to generate the key in your browser and is never sent to our servers.' },
-    { question: 'Can I recover my text if I forget the password?', answer: 'No. AES encryption is extremely secure. Without the correct password, the text cannot be recovered.' },
-    { question: 'Is it compatible with other tools?', answer: 'This tool uses standard AES encryption. You need to use a compatible AES decryption tool (like our Decrypt Text tool) with the same password.' }
+    {
+        question: 'What exactly is the output string?',
+        answer: 'Base64 of an OpenSSL-style envelope. Decode it and the first eight bytes read Salted__, the next eight are the random salt, and the rest is AES-256 ciphertext in CBC mode with PKCS#7 padding. That is why every result begins U2FsdGVkX1 — it is simply the Base64 of that magic word, not a marker this site adds.'
+    },
+    {
+        question: 'How is my password turned into a key?',
+        answer: 'Through OpenSSL\'s legacy EVP derivation: the password and salt are hashed with MD5, repeatedly, to fill a 256-bit key and a 128-bit initialisation vector. Crucially it uses a single iteration. That is fast, which is exactly the problem — a modern password-based scheme deliberately uses hundreds of thousands of iterations, or a memory-hard function like Argon2, to make each guess expensive. Here each guess is cheap.'
+    },
+    {
+        question: 'So how strong is this really?',
+        answer: 'The cipher is not the weak point; AES-256 is not going to be broken. The key derivation is. Because deriving a key costs one MD5 pass, an attacker with the ciphertext can test passwords at an enormous rate on ordinary hardware, so the security of your message is entirely the strength of the passphrase you chose. A dictionary word or a short password offers close to no protection. Use a long random passphrase from a password manager, and treat this as protection against a casual reader rather than against a determined, well-resourced attacker.'
+    },
+    {
+        question: 'Does it prove the message was not tampered with?',
+        answer: 'No, and this is the sharpest limitation. CBC mode without a message authentication code provides confidentiality but no integrity: someone who intercepts the string can alter bytes, and decryption will produce different plaintext rather than an error. There is no signature and no way to verify who created it. If you need to know a message is authentic as well as private, you need an authenticated mode such as AES-GCM, or a separate signature.'
+    },
+    {
+        question: 'Can I decrypt this somewhere other than here?',
+        answer: 'Yes. The format is the one OpenSSL has produced for decades, so the equivalent command-line decryption works provided you tell it to use the legacy MD5 digest, because modern OpenSSL defaults to SHA-256 and would derive a different key. Most languages have a CryptoJS-compatible library too. The matching Decrypt Text page on this site is the simplest route.'
+    },
+    {
+        question: 'Why did my encrypted output disappear?',
+        answer: 'Editing either the message or the password clears it deliberately. A stale ciphertext sitting under changed inputs is dangerous — you could copy a string that encrypts an earlier draft, or that was made with a different password, and only discover it when the recipient cannot open it. Press Encrypt again to produce output matching what is currently in the boxes.'
+    },
+    {
+        question: 'Why is the same text different every time I encrypt it?',
+        answer: 'A new random salt is generated on each run, so the derived key and the resulting ciphertext differ completely even for identical inputs. This is a desirable property: it stops anyone comparing two ciphertexts and concluding they contain the same message. All three decrypt back to the same plaintext with the right password.'
+    },
+    {
+        question: 'What if I lose the password?',
+        answer: 'The text is gone. Nothing is stored here — no copy of your message, no key escrow, no reset. That is inherent to the design rather than a policy, so save the passphrase somewhere durable before you rely on the ciphertext, and remember that sending the passphrase alongside the encrypted message in the same channel defeats the entire exercise.'
+    },
+    {
+        question: 'When should I use something else?',
+        answer: 'For files rather than text, use the File Encryption Tool, which wraps the same cipher around a whole document. For sharing a secret with a specific person, public-key tools such as GPG or age are a better fit, because they remove the problem of getting a shared password to the other end safely. And if you only need to obscure text from casual glances, note that Base64 is not encryption at all — anyone can reverse it in one step.'
+    }
 ]
 
 
@@ -120,7 +153,68 @@ const EncryptText = () => {
                     <div className="about-section" style={{ background: 'var(--bg-card)', padding: '2rem', borderRadius: '1rem', border: '1px solid var(--border)', marginBottom: '2rem' }}>
                         <h2 style={{ fontSize: '1.8rem', marginBottom: '1.5rem' }}>About Encrypt Text Online</h2>
                         <p style={{ lineHeight: '1.6', color: 'var(--text-secondary)', marginBottom: '1rem' }}>
-                            Free online AES encryption tool. Securely encrypt text with a password directly in your browser.
+                            Type a message, choose a passphrase, and get back a Base64 string that only someone with the
+                            same passphrase can read. The cipher is <strong>AES-256 in CBC mode</strong> and everything —
+                            key derivation, encryption, encoding — happens inside this browser tab. No request is made, so
+                            neither the message nor the passphrase is ever transmitted.
+                        </p>
+
+                        <h3 style={{ fontSize: '1.15rem', fontWeight: '600', margin: '1.75rem 0 0.75rem' }}>What the output string contains</h3>
+                        <p style={{ lineHeight: '1.6', color: 'var(--text-secondary)', marginBottom: '1rem' }}>
+                            Every result starts with the characters <code>U2FsdGVkX1</code>, which surprises people until
+                            they decode it: that is Base64 for the word <code>Salted__</code>. The format is OpenSSL&apos;s
+                            long-standing envelope — the magic word, then eight random salt bytes, then the ciphertext, all
+                            Base64 encoded together. Because the salt is drawn fresh on every run, encrypting the same
+                            sentence with the same passphrase twice gives two entirely different strings. That is a feature:
+                            it prevents anyone from noticing that you sent an identical message before.
+                        </p>
+
+                        <h3 style={{ fontSize: '1.15rem', fontWeight: '600', margin: '1.75rem 0 0.75rem' }}>How the passphrase becomes a key — and why it matters</h3>
+                        <p style={{ lineHeight: '1.6', color: 'var(--text-secondary)', marginBottom: '1rem' }}>
+                            AES needs a 256-bit key, and your passphrase is not one, so it has to be stretched into one. The
+                            method used here is OpenSSL&apos;s legacy EVP derivation: MD5 applied over the passphrase and salt
+                            to produce the key and the initialisation vector, with <strong>a single iteration</strong>. It is
+                            worth being blunt about the consequence. Modern password-based encryption deliberately makes this
+                            step slow — PBKDF2 with hundreds of thousands of rounds, or a memory-hard function like scrypt or
+                            Argon2 — precisely so that an attacker testing millions of candidate passwords pays that cost
+                            every single time. One MD5 pass costs essentially nothing, so an attacker holding your ciphertext
+                            can grind through password guesses extremely quickly.
+                        </p>
+                        <p style={{ lineHeight: '1.6', color: 'var(--text-secondary)', marginBottom: '1rem' }}>
+                            AES-256 itself is sound and is not the weak link. Your security here rests almost entirely on the
+                            passphrase being long and genuinely unpredictable. A dictionary word, a name with a number after
+                            it, or anything you would plausibly invent is not adequate against someone who wants the contents.
+                            Generate a long random passphrase with a password manager and the arithmetic swings back in your
+                            favour.
+                        </p>
+
+                        <h3 style={{ fontSize: '1.15rem', fontWeight: '600', margin: '1.75rem 0 0.75rem' }}>Confidentiality without integrity</h3>
+                        <p style={{ lineHeight: '1.6', color: 'var(--text-secondary)', marginBottom: '1rem' }}>
+                            CBC mode hides the contents but carries no authentication tag, so nothing about the ciphertext
+                            proves it arrived unmodified or that it came from you. An attacker who intercepts the string can
+                            change bytes in it; the recipient will simply get different plaintext, not a warning. Where
+                            tampering is part of your threat model you want an authenticated mode such as AES-GCM, or a
+                            separate signature over the message.
+                        </p>
+
+                        <h3 style={{ fontSize: '1.15rem', fontWeight: '600', margin: '1.75rem 0 0.75rem' }}>Sensible uses, and the key-exchange problem</h3>
+                        <p style={{ lineHeight: '1.6', color: 'var(--text-secondary)', marginBottom: '1rem' }}>
+                            This is well suited to keeping a note out of plain sight: a snippet pasted into a shared document,
+                            a value in a file that gets backed up somewhere you do not fully control, something you want to
+                            store rather than transmit. It is poorly suited to sending a secret to another person, for the
+                            reason every symmetric scheme shares — they need the passphrase, and sending it through the same
+                            channel as the ciphertext protects nothing. If that is your problem, a public-key tool such as GPG
+                            or age solves it properly, because the recipient&apos;s key is already published.
+                        </p>
+
+                        <h3 style={{ fontSize: '1.15rem', fontWeight: '600', margin: '1.75rem 0 0.75rem' }}>Practical notes</h3>
+                        <p style={{ lineHeight: '1.6', color: 'var(--text-secondary)' }}>
+                            Editing the message or the passphrase clears the output on purpose, so you can never copy a
+                            ciphertext that no longer matches what is on screen. There is no recovery if the passphrase is
+                            lost — nothing is stored, so there is nothing to reset. To read a string back, use the Decrypt
+                            Text page, or the OpenSSL command line with the legacy MD5 digest selected, since current OpenSSL
+                            defaults to SHA-256 and would derive a different key. For whole files rather than text, the File
+                            Encryption Tool applies the same cipher to a document.
                         </p>
                     </div>
                     <div className="features-section" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))', gap: '2rem' }}>

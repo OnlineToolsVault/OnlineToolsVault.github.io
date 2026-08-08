@@ -11,31 +11,51 @@ import RelatedTools from '../../components/tools/RelatedTools'
 
 const features = [
     {
-        title: "Extract Any Audio",
-        desc: "Pull high-quality audio tracks directly from your video files."
+        title: "Fixed 192 kbit/s MP3",
+        desc: "Every extraction is encoded with LAME at 192 kbit/s constant bitrate, in stereo, at whatever sample rate the video already used. Roughly 1.4 MB of audio per minute."
     },
     {
-        title: "100% Client-Side",
-        desc: "Secure processing using FFmpeg WASM. Your video never leaves your browser."
+        title: "FFmpeg running in the page",
+        desc: "A WebAssembly build of FFmpeg is downloaded once and then does the demuxing, decoding and encoding on your own CPU. The video is never sent anywhere."
     },
     {
-        title: "Fast Processing",
-        desc: "Direct stream copying or efficient transcoding for rapid results."
+        title: "Container detected from the bytes",
+        desc: "MP4, MOV, MKV, WEBM and AVI all work because FFmpeg probes the actual file header instead of trusting the extension — every upload is handed to it under the same internal name whatever you called it. The picker itself still filters to file types your system recognises as video."
     }
 ]
 
 const faqs = [
     {
-        question: "Is it free?",
-        answer: "Yes, this tool is 100% free to use with no limits."
+        question: "Which video files can I use?",
+        answer: "MP4, MOV, MKV, WEBM and AVI all work, as do most other containers FFmpeg can read. What matters more is the track inside: AAC, MP3, Opus, FLAC and raw PCM all have decoders built into the engine. The container is identified from the file header rather than the extension, so a mislabelled file still converts correctly. The one catch is the file picker, which filters to video types: something your system does not recognise as video — a file with no extension, say — may not be selectable until you rename it."
     },
     {
-        question: "Are my files uploaded?",
-        answer: "No. All processing happens locally in your browser using WebAssembly technology."
+        question: "What are the MP3 settings, and can I change them?",
+        answer: "They are fixed: MP3 at 192 kbit/s constant bitrate, two channels, at the source sample rate, which works out to about 1.4 MB per minute. There are no quality sliders. If you need a smaller file or a lossless one, convert the MP3 afterwards with the Audio Converter."
     },
     {
-        question: "What formats are supported?",
-        answer: "Input: MP4, MOV, AVI, MKV, WEBM. Output: MP3 (high quality)."
+        question: "Is the original audio copied out untouched?",
+        answer: "No. The track is decoded to raw samples and re-encoded with LAME every time, so there is one generation of lossy conversion. Going from a 128 kbit/s AAC track to a 192 kbit/s MP3 is usually indistinguishable on speakers or earbuds, but it is not a bit-exact copy. If you need the original AAC or Opus stream preserved exactly, use a desktop tool that supports stream copying."
+    },
+    {
+        question: "How large a video can I convert?",
+        answer: "The WebAssembly heap tops out at 2 GB and your whole video has to fit in it alongside the decoder's buffers. A few hundred megabytes is comfortable on a typical laptop; approaching a gigabyte gets unreliable. Running out of memory produces an error rather than a truncated MP3, so any download you do receive is a complete file."
+    },
+    {
+        question: "It says it could not extract audio. What went wrong?",
+        answer: "Usually the video has no audio track at all — screen recordings, exported animations and time-lapses often do not, and a silent file produces exactly this message. The other common causes are a partially downloaded file and DRM-protected content. Play the file locally first: if you hear nothing, there is nothing to pull out."
+    },
+    {
+        question: "Why is there a wait before I can choose a file?",
+        answer: "The FFmpeg engine is about 32 MB of WebAssembly and has to arrive before any conversion can start. It is served from this site rather than a third-party CDN, and your browser normally caches it, so later visits start much faster. If loading times out after 30 seconds, something on the network is blocking the request; Try Again re-requests it."
+    },
+    {
+        question: "Does my video get uploaded?",
+        answer: "No. The file is read straight into the FFmpeg instance running in this tab, and the finished MP3 exists only as a blob URL in your own browser until you download it. Closing the tab discards both."
+    },
+    {
+        question: "Can I paste a YouTube link instead, or extract only part of the audio?",
+        answer: "Neither. The page reads a file that is already on your device, and it always extracts the track from start to finish with no trim controls. Cut the MP3 afterwards in an audio editor, or shorten the video first and bring the trimmed clip back here."
     }
 ]
 
@@ -319,7 +339,45 @@ const VideoToAudio = () => {
             <div className="about-section" style={{ background: 'var(--card)', padding: '2rem', borderRadius: '1rem', border: '1px solid var(--border)', marginTop: '2rem' }}>
                 <h2 style={{ fontSize: '1.8rem', marginBottom: '1.5rem', fontWeight: '700' }}>About Video to Audio</h2>
                 <p style={{ lineHeight: '1.6', color: '#64748b', marginBottom: '1rem' }}>
-                    Extract high-quality audio tracks from your video files instantly. This tool utilizes advanced WebAssembly technology to process files locally on your device, ensuring maximum privacy and speed without uploading large video files to any server.
+                    This tool pulls the soundtrack out of a video file and writes it as an MP3. The entire job happens inside
+                    this browser tab: the file is handed to a WebAssembly build of FFmpeg that ships with the page, decoded,
+                    and re-encoded. No copy of your video is created anywhere except in your own memory, and there is no
+                    upload step to wait through before the work begins.
+                </p>
+
+                <h3 style={{ fontSize: '1.15rem', fontWeight: '600', margin: '1.75rem 0 0.75rem' }}>What you get, exactly</h3>
+                <p style={{ lineHeight: '1.6', color: '#64748b', marginBottom: '1rem' }}>
+                    The output is deliberately fixed rather than configurable: MP3, 192 kbit/s constant bitrate, two channels,
+                    at whatever sample rate the source already used. A mono soundtrack is written as two identical channels,
+                    because the extraction always asks for stereo. The picture is discarded rather than decoded, so file size
+                    depends only on running time — about 1.4 MB per minute — and a 4 GB movie and a 40 MB screen capture of
+                    the same length produce MP3s of the same size.
+                </p>
+
+                <h3 style={{ fontSize: '1.15rem', fontWeight: '600', margin: '1.75rem 0 0.75rem' }}>How the extraction works</h3>
+                <p style={{ lineHeight: '1.6', color: '#64748b', marginBottom: '1rem' }}>
+                    FFmpeg demuxes the container to locate the audio stream, decodes it with the matching decoder — AAC, MP3,
+                    Opus, FLAC and raw PCM are all built in — and re-encodes those samples with the LAME encoder. Because the
+                    container is recognised from the file header, an MP4 that someone renamed to .avi is still read correctly.
+                    The flip side is that this is always a re-encode and never a stream copy, so expect one generation of lossy
+                    conversion.
+                </p>
+
+                <h3 style={{ fontSize: '1.15rem', fontWeight: '600', margin: '1.75rem 0 0.75rem' }}>Limits worth knowing</h3>
+                <p style={{ lineHeight: '1.6', color: '#64748b', marginBottom: '1rem' }}>
+                    The WebAssembly heap tops out at 2 GB and the video has to fit in it alongside the decoder's buffers, so a
+                    few hundred megabytes is comfortable and files near a gigabyte become unreliable. Running out of memory
+                    produces an error, not a half-finished download. Conversion time tracks the length of the audio rather than
+                    the size of the video, and everything runs on a single thread.
+                </p>
+
+                <h3 style={{ fontSize: '1.15rem', fontWeight: '600', margin: '1.75rem 0 0.75rem' }}>When another tool fits better</h3>
+                <p style={{ lineHeight: '1.6', color: '#64748b' }}>
+                    If you already have an audio file and only want a different format, use the Audio Converter — it will not
+                    force everything through a 192 kbit/s MP3 encoder and can produce lossless FLAC or WAV. If your video has
+                    no audio track at all, nothing here will help, and the error message you see is accurate rather than a bug.
+                    And if the video lives on someone else's website, download it first: this page only reads files that are
+                    already on your device.
                 </p>
             </div>
 
