@@ -2,21 +2,20 @@
 <html lang="en">
 
 <head>
-  <script src="/coi-serviceworker.js"></script>
   <meta charset="UTF-8" />
   <link rel="icon" type="image/svg+xml" href="/vite.svg" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Split PDF | OnlineToolsVault</title>
-  <meta name="description" content="Split PDF files online. Extract specific pages or divide a large PDF document into smaller individual files easily." />
+  <title data-rh="true">Split PDF Online - Extract Pages Free</title>
+  <meta data-rh="true" name="description" content="Split a PDF into one file per page, or type ranges like 1-3, 5, 8-10 to get a document for each. A single range downloads as a PDF, several arrive as a ZIP." />
 
   <!-- SEO & Social Meta Tags -->
   <meta name="robots" content="index, follow" />
 
   <meta property="og:type" content="website" />
-  <meta property="og:title" content="Split PDF | OnlineToolsVault" />
-  <meta property="og:description" content="Split PDF files online. Extract specific pages or divide a large PDF document into smaller individual files easily." />
-  <meta property="og:url" content="https://onlinetoolsvault.com/split-pdf" />
-  <meta property="og:site_name" content="FreeTools" />
+  <meta property="og:title" content="Split PDF Online - Extract Pages Free" />
+  <meta property="og:description" content="Split a PDF into one file per page, or type ranges like 1-3, 5, 8-10 to get a document for each. A single range downloads as a PDF, several arrive as a ZIP." />
+  <meta property="og:url" content="https://onlinetoolsvault.com/split-pdf/" />
+  <meta property="og:site_name" content="OnlineToolsVault" />
   <meta property="og:image" content="https://onlinetoolsvault.com/og/split-pdf.png" />
   <meta property="og:image:width" content="1200" />
   <meta property="og:image:height" content="630" />
@@ -24,8 +23,8 @@
 
   <meta name="twitter:card" content="summary_large_image" />
   <meta name="twitter:site" content="@sourcestrongai" />
-  <meta name="twitter:title" content="Split PDF | OnlineToolsVault" />
-  <meta name="twitter:description" content="Split PDF files online. Extract specific pages or divide a large PDF document into smaller individual files easily." />
+  <meta name="twitter:title" content="Split PDF Online - Extract Pages Free" />
+  <meta name="twitter:description" content="Split a PDF into one file per page, or type ranges like 1-3, 5, 8-10 to get a document for each. A single range downloads as a PDF, several arrive as a ZIP." />
   <meta name="twitter:image" content="https://onlinetoolsvault.com/og/split-pdf.png" />
   <meta name="twitter:image:alt" content="Split PDF — OnlineToolsVault" />
   <meta name="twitter:creator" content="@sourcestrongai" />
@@ -35,7 +34,7 @@
     {
       "@context": "https://schema.org",
       "@type": "WebApplication",
-      "name": "FreeTools",
+      "name": "OnlineToolsVault",
       "url": "https://onlinetoolsvault.com/",
       "description": "Collection of free online client-side tools for PDF and image processing.",
       "applicationCategory": "Utility",
@@ -48,10 +47,48 @@
     }
   </script>
 
-  <!-- Preconnect to Google Fonts -->
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <!--
+    Inter, served from this origin.
+
+    This used to be a <link> to fonts.googleapis.com, which made every one of the 89 routes open a
+    connection to Google (and then a second one to fonts.gstatic.com) before it could paint text —
+    the last off-origin request common to all pages, and one that handed a third party the IP of
+    every visitor on a site whose whole pitch is that nothing leaves the browser.
+
+    scripts/copy-runtime-assets.js stages the two woff2 files into public/fonts at build time.
+    Change a filename or a unicode-range here and change it there; the script re-checks the ranges
+    against what Google serves and warns when they drift.
+
+    These are the *variable* faces (`font-weight: 100 900`), which is what Google was already
+    serving: css2 answers `wght@400;500;600;700;800` with the same single file declared five times,
+    so all five weights come out of one 48 KB download exactly as before.
+
+    Only latin is preloaded. latin-ext is a further 83 KB that the unicode-range below keeps unread
+    unless a page actually contains one of its characters, which no page currently does — preloading
+    it would cost every visitor 83 KB for nothing. `crossorigin` is required even though the file is
+    same-origin: fonts are always fetched in CORS mode, and without it the preload is discarded and
+    the file downloaded twice.
+  -->
+  <link rel="preload" href="/fonts/inter-latin.woff2" as="font" type="font/woff2" crossorigin>
+  <style>
+    @font-face {
+      font-family: 'Inter';
+      font-style: normal;
+      font-weight: 100 900;
+      font-display: swap;
+      src: url('/fonts/inter-latin.woff2') format('woff2');
+      unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+    }
+
+    @font-face {
+      font-family: 'Inter';
+      font-style: normal;
+      font-weight: 100 900;
+      font-display: swap;
+      src: url('/fonts/inter-latin-ext.woff2') format('woff2');
+      unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF;
+    }
+  </style>
 
   <!-- Analytics & Ads -->
   <script async src="https://www.googletagmanager.com/gtag/js?id=G-EVGNTG49J7"></script>
@@ -64,6 +101,55 @@
   <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-4988388949365963"
     crossorigin="anonymous"></script>
 
+  <!--
+    Retire the old COOP/COEP service worker.
+
+    It was added for SharedArrayBuffer, but the FFmpeg tools load the single-threaded
+    @ffmpeg/core build, which never touches SharedArrayBuffer — verified by running a
+    conversion with crossOriginIsolated === false. Meanwhile cross-origin isolation blocked
+    every third-party image a user pastes into the Markdown Previewer, and forced a full page
+    reload on each visitor's first page view.
+
+    Returning visitors still have the worker installed and would keep getting the COEP headers
+    forever, so unregister it once and reload to drop out of the isolated context.
+  -->
+  <script>
+    (function () {
+      if (!('serviceWorker' in navigator)) return;
+      navigator.serviceWorker.getRegistrations().then(function (registrations) {
+        var removed = false;
+        for (var i = 0; i < registrations.length; i++) {
+          var url = (registrations[i].active && registrations[i].active.scriptURL) || '';
+          if (url.indexOf('coi-serviceworker') !== -1) {
+            registrations[i].unregister();
+            removed = true;
+          }
+        }
+        if (removed && window.crossOriginIsolated) window.location.reload();
+      }).catch(function () { /* nothing to clean up */ });
+    })();
+  </script>
+
+  <!--
+    Restore the URL that 404.html forwarded here, before React Router reads location.
+    GitHub Pages cannot rewrite unknown paths itself, so 404.html bounces them to
+    /?notfound=<path>; putting the real path back lets the app's "*" route render NotFound
+    at the address the visitor actually typed.
+  -->
+  <script>
+    (function () {
+      try {
+        var params = new URLSearchParams(window.location.search);
+        var requested = params.get('notfound');
+        if (requested && requested.charAt(0) === '/' && requested.charAt(1) !== '/') {
+          window.history.replaceState(null, '', requested);
+        }
+      } catch (error) {
+        console.error('[NotFound Restore] Error:', error);
+      }
+    })();
+  </script>
+
   <!-- Smart Hash URL Redirect (handles legacy #/ URLs) -->
   <script>
     (function () {
@@ -74,6 +160,18 @@
         if (hash && hash.startsWith('#/')) {
           var path = hash.slice(2); // Remove '#/'
           var search = window.location.search || '';
+
+          // A legacy link can carry its own query or fragment inside the hash
+          // (#/word-counter?tab=2). Split that off before the path is touched, otherwise the
+          // trailing slash below lands after the query string and produces "word-counter?tab=2/".
+          var extra = '';
+          var cut = path.search(/[?#]/);
+          if (cut !== -1) {
+            extra = path.slice(cut);
+            path = path.slice(0, cut);
+          }
+          // Two query strings concatenated would give "?a=1?b=2"; the second '?' becomes '&'.
+          if (search && extra.charAt(0) === '?') extra = '&' + extra.slice(1);
 
           // Auto-detect base path (works in dev and production)
           // In dev: localhost:5173 → base = '/'
@@ -88,13 +186,20 @@
           // Clean up the path (remove trailing/leading slashes)
           path = path.replace(/^\/+|\/+$/g, '');
 
-          // Build redirect URL
+          // Build redirect URL.
+          //
+          // The trailing slash is not cosmetic. GitHub Pages serves each route from
+          // dist/<route>/index.html, so /word-counter answers with a 301 to /word-counter/ —
+          // meaning the slash-less form this used to emit turned every legacy hash link into two
+          // navigations, and any of them that ended up in a canonical, a sitemap or an inbound
+          // link pointed at the redirecting URL rather than the real one. Every other internal
+          // link on the site was normalised to the trailing-slash form; this was the last hole.
           var redirectUrl;
           if (path) {
-            redirectUrl = base + path + search;
+            redirectUrl = base + path + '/' + search + extra;
           } else {
             // Just '#/' with no path - go to home
-            redirectUrl = base;
+            redirectUrl = base + search + extra;
           }
 
           // Redirect using replace (doesn't add to history)
@@ -106,13 +211,16 @@
       }
     })();
   </script>
-  <script type="module" crossorigin src="/assets/index-kvHMSlMz.js"></script>
-  <link rel="stylesheet" crossorigin href="/assets/index-CZAylM9v.css">
-  <link rel="canonical" href="https://onlinetoolsvault.com/split-pdf" />
+  <script type="module" crossorigin src="/assets/index-BtmU1OS0.js"></script>
+  <link rel="stylesheet" crossorigin href="/assets/index-Cv0roaG_.css">
+  <link data-rh="true" rel="canonical" href="https://onlinetoolsvault.com/split-pdf/" />
+  <!-- prerender:head -->
+  <script type="application/ld+json" data-rh="true">{"@context":"https://schema.org","@type":"FAQPage","mainEntity":[{"@type":"Question","name":"How exactly do I write the page ranges?","acceptedAnswer":{"@type":"Answer","text":"Comma-separated, one-based, spaces ignored: 1-3, 5, 8-10 is valid. A hyphen means an inclusive span, so 8-10 gives pages 8, 9 and 10. Each entry produces its own file — 1-3, 5 yields a three-page PDF and a one-page PDF, not one four-page document. Backwards spans such as 9-4 are rejected rather than silently reversed."}},{"@type":"Question","name":"When do I get a single PDF and when do I get a ZIP?","acceptedAnswer":{"@type":"Answer","text":"One group means one download. If your range list resolves to exactly one entry, the result is a plain PDF called something like report-pages-2-7.pdf. Anything that produces two or more pieces — including every page mode — comes back as report-split.zip, with the individual PDFs inside."}},{"@type":"Question","name":"It refused my range and told me it cannot use an entry. Why?","acceptedAnswer":{"@type":"Answer","text":"An entry is rejected if it is not a number, if it runs backwards, or if it lands entirely outside the document — a bare 50 or a span of 50-60 on a 42-page file. The whole job stops rather than the bad entry being quietly dropped, so you never download a set that is missing pages you asked for. One case is treated more leniently: a span that starts inside the document and runs past the end, such as 1-50 on 42 pages, is clamped to the last page and succeeds. You get all 42 pages, in a file still named after the numbers you typed."}},{"@type":"Question","name":"How do I pull several scattered pages into one document?","acceptedAnswer":{"@type":"Answer","text":"This tool always writes one file per entry, so it cannot do that in a single step. Load the PDF into **Organize PDF** and delete the pages you do not want — that leaves one document containing exactly the pages you kept. Alternatively split first, then recombine the pieces with **Merge PDF**."}},{"@type":"Question","name":"Do bookmarks and fillable fields survive the split?","acceptedAnswer":{"@type":"Answer","text":"Page content, embedded fonts, images and per-page annotations are copied intact. Bookmarks are not: the outline lives on the document catalogue rather than on any page, so each piece comes out without one. Interactive form fields keep their appearance but lose their registration in the form dictionary, so they stop being fillable — flatten the form first if the values matter."}},{"@type":"Question","name":"Why are the pieces bigger than a proportional share of the original?","acceptedAnswer":{"@type":"Answer","text":"Every output document must carry the resources its pages reference. If one embedded font is used throughout a 100-page report, splitting into 100 single-page PDFs embeds that font 100 times. The total across the ZIP can therefore exceed the original file, even though no page has been re-encoded. Running the pieces through **Compress PDF** trims the metadata but will not undo the duplication."}},{"@type":"Question","name":"Can I split a password-protected PDF?","acceptedAnswer":{"@type":"Answer","text":"No. The parser refuses encrypted documents, and because that happens the moment the file is read, you get an Invalid PDF file alert and the tool returns to the drop zone rather than showing you a page count. Remove the password with **Unlock PDF** (you need to know it) and split the unlocked copy."}},{"@type":"Question","name":"Is there a page limit, and does it work on a phone?","acceptedAnswer":{"@type":"Answer","text":"No fixed limit — the constraint is memory. Bursting a 1,000-page file means building 1,000 documents and holding a ZIP of all of them in RAM at once, which a desktop handles and a budget phone may not. On mobile, prefer targeted ranges over every page mode; the interface itself works in any modern mobile browser."}}]}</script>
+  <!-- /prerender:head -->
 </head>
 
 <body>
-  <div id="root"></div>
+  <div id="root" data-prerendered="static"><div class="app-wrapper"><header class="site-header"><div class="container header-container"><a class="logo" href="/"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-rocket logo-icon"><path d="M4.5 16.5c-1.5 1.26-2 5-2 5s3.74-.5 5-2c.71-.84.7-2.13-.09-2.91a2.18 2.18 0 0 0-2.91-.09z"></path><path d="m12 15-3-3a22 22 0 0 1 2-3.95A12.88 12.88 0 0 1 22 2c0 2.72-.78 7.5-6 11a22.35 22.35 0 0 1-4 2z"></path><path d="M9 12H4s.55-3.03 2-4c1.62-1.08 5 0 5 0"></path><path d="M12 15v5s3.03-.55 4-2c1.08-1.62 0-5 0-5"></path></svg><span>OnlineToolsVault</span></a><nav class="nav-desktop"><a class="nav-link" href="/">Home</a><a class="nav-link" href="/about/">About</a><a class="nav-link" href="/contact/">Contact</a><div class="social-icons"><a href="https://x.com/sourcestrongai" target="_blank" rel="noopener noreferrer" class="social-icon" aria-label="Twitter"><svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-twitter "><path d="M22 4s-.7 2.1-2 3.4c1.6 10-9.4 17.3-18 11.6 2.2.1 4.4-.6 6-2C3 15.5.5 9.6 3 5c2.2 2.6 5.6 4.1 9 4-.9-4.2 4-6.6 7-3.8 1.1 0 3-1.2 3-1.2z"></path></svg></a><a href="https://www.linkedin.com/company/sourcestrongai" target="_blank" rel="noopener noreferrer" class="social-icon" aria-label="LinkedIn"><svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-linkedin "><path d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-2-2 2 2 0 0 0-2 2v7h-4v-7a6 6 0 0 1 6-6z"></path><rect width="4" height="12" x="2" y="9"></rect><circle cx="4" cy="4" r="2"></circle></svg></a></div></nav><button class="nav-mobile-btn" aria-label="Open menu" aria-expanded="false" aria-controls="mobile-menu"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-menu "><line x1="4" x2="20" y1="12" y2="12"></line><line x1="4" x2="20" y1="6" y2="6"></line><line x1="4" x2="20" y1="18" y2="18"></line></svg></button></div></header><main class="main-content"><!--$--><div class="container" style="padding: 3rem 1.5rem;"><div style="max-width: 1000px; margin: 0px auto;"><header style="margin-bottom: 3rem; text-align: center;"><h1 style="font-size: 2.5rem; font-weight: 800; margin-bottom: 0.5rem;">Split PDF Online</h1><p style="color: rgb(100, 116, 139);">Extract pages from your PDF or split it into multiple files instantly.</p></header><div class="tool-workspace" style="max-width: 1000px; margin: 0px auto;"><div style="background: white; border: 1px solid var(--border); border-radius: 1rem; padding: 2rem;"><div class="tool-upload-area" role="presentation" tabindex="0" style="border: 2px dashed var(--border); border-radius: 1rem; padding: 4rem 2rem; text-align: center; cursor: pointer; background: white; min-height: 300px; display: flex; flex-direction: column; align-items: center; justify-content: center; transition: 0.2s;"><input accept="application/pdf,.pdf" type="file" tabindex="-1" aria-label="Drop PDF to Split" style="border: 0px; clip: rect(0px, 0px, 0px, 0px); clip-path: inset(50%); height: 1px; margin: 0px -1px -1px 0px; overflow: hidden; padding: 0px; position: absolute; width: 1px; white-space: nowrap;"><div style="width: 64px; height: 64px; background: rgb(254, 226, 226); border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0px auto 1.5rem; color: rgb(220, 38, 38);"><svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-scissors "><circle cx="6" cy="6" r="3"></circle><path d="M8.12 8.12 12 12"></path><path d="M20 4 8.12 15.88"></path><circle cx="6" cy="18" r="3"></circle><path d="M14.8 14.8 20 20"></path></svg></div><h3 style="font-size: 1.25rem; font-weight: 600; margin-bottom: 0.5rem;">Drop PDF to Split</h3><p style="color: rgb(100, 116, 139);">or click to browse files</p></div></div><div class="tool-content" style="margin-top: 4rem;"><div class="related-tools-section" style="margin-top: 4rem; margin-bottom: 4rem;"><h2 style="font-size: 1.8rem; font-weight: 700; margin-bottom: 2rem; text-align: center; color: var(--text-primary);">More Useful Tools</h2><div class="tools-grid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(min(280px, 100%), 1fr)); gap: 1.5rem;"><a class="tool-card" href="/unlock-pdf/" style="text-decoration: none; color: inherit; background: var(--bg-card); border: 1px solid var(--border); border-radius: 1rem; padding: 1.5rem; transition: 0.2s; display: flex; flex-direction: column; gap: 1rem; cursor: pointer;"><div class="tool-card-header" style="display: flex; align-items: center; gap: 0.75rem;"><div class="tool-icon-wrapper" style="width: 40px; height: 40px; border-radius: 0.5rem; background: var(--primary-light); display: flex; align-items: center; justify-content: center; color: var(--primary);"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-unlock "><rect width="18" height="11" x="3" y="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 9.9-1"></path></svg></div><h3 class="tool-title" style="font-size: 1.1rem; font-weight: 600; margin: 0px;">Unlock PDF</h3></div><p class="tool-description" style="font-size: 0.85rem; color: var(--text-secondary); margin: 0px; line-height: 1.5; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;">Remove passwords from PDFs instantly.</p></a><a class="tool-card" href="/word-to-pdf/" style="text-decoration: none; color: inherit; background: var(--bg-card); border: 1px solid var(--border); border-radius: 1rem; padding: 1.5rem; transition: 0.2s; display: flex; flex-direction: column; gap: 1rem; cursor: pointer;"><div class="tool-card-header" style="display: flex; align-items: center; gap: 0.75rem;"><div class="tool-icon-wrapper" style="width: 40px; height: 40px; border-radius: 0.5rem; background: var(--primary-light); display: flex; align-items: center; justify-content: center; color: var(--primary);"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-file-text "><path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z"></path><path d="M14 2v4a2 2 0 0 0 2 2h4"></path><path d="M10 9H8"></path><path d="M16 13H8"></path><path d="M16 17H8"></path></svg></div><h3 class="tool-title" style="font-size: 1.1rem; font-weight: 600; margin: 0px;">Word to PDF</h3></div><p class="tool-description" style="font-size: 0.85rem; color: var(--text-secondary); margin: 0px; line-height: 1.5; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;">Convert Word documents to PDF with selectable text.</p></a><a class="tool-card" href="/add-page-numbers-pdf/" style="text-decoration: none; color: inherit; background: var(--bg-card); border: 1px solid var(--border); border-radius: 1rem; padding: 1.5rem; transition: 0.2s; display: flex; flex-direction: column; gap: 1rem; cursor: pointer;"><div class="tool-card-header" style="display: flex; align-items: center; gap: 0.75rem;"><div class="tool-icon-wrapper" style="width: 40px; height: 40px; border-radius: 0.5rem; background: var(--primary-light); display: flex; align-items: center; justify-content: center; color: var(--primary);"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-hash "><line x1="4" x2="20" y1="9" y2="9"></line><line x1="4" x2="20" y1="15" y2="15"></line><line x1="10" x2="8" y1="3" y2="21"></line><line x1="16" x2="14" y1="3" y2="21"></line></svg></div><h3 class="tool-title" style="font-size: 1.1rem; font-weight: 600; margin: 0px;">Page Numbers PDF</h3></div><p class="tool-description" style="font-size: 0.85rem; color: var(--text-secondary); margin: 0px; line-height: 1.5; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;">Insert page numbers into your document.</p></a><a class="tool-card" href="/add-watermark-pdf/" style="text-decoration: none; color: inherit; background: var(--bg-card); border: 1px solid var(--border); border-radius: 1rem; padding: 1.5rem; transition: 0.2s; display: flex; flex-direction: column; gap: 1rem; cursor: pointer;"><div class="tool-card-header" style="display: flex; align-items: center; gap: 0.75rem;"><div class="tool-icon-wrapper" style="width: 40px; height: 40px; border-radius: 0.5rem; background: var(--primary-light); display: flex; align-items: center; justify-content: center; color: var(--primary);"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-wand2 "><path d="m21.64 3.64-1.28-1.28a1.21 1.21 0 0 0-1.72 0L2.36 18.64a1.21 1.21 0 0 0 0 1.72l1.28 1.28a1.2 1.2 0 0 0 1.72 0L21.64 5.36a1.2 1.2 0 0 0 0-1.72Z"></path><path d="m14 7 3 3"></path><path d="M5 6v4"></path><path d="M19 14v4"></path><path d="M10 2v2"></path><path d="M7 8H3"></path><path d="M21 16h-4"></path><path d="M11 3H9"></path></svg></div><h3 class="tool-title" style="font-size: 1.1rem; font-weight: 600; margin: 0px;">Watermark PDF</h3></div><p class="tool-description" style="font-size: 0.85rem; color: var(--text-secondary); margin: 0px; line-height: 1.5; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;">Stamp text watermarks on your PDF pages.</p></a><a class="tool-card" href="/bulk-image-resizer/" style="text-decoration: none; color: inherit; background: var(--bg-card); border: 1px solid var(--border); border-radius: 1rem; padding: 1.5rem; transition: 0.2s; display: flex; flex-direction: column; gap: 1rem; cursor: pointer;"><div class="tool-card-header" style="display: flex; align-items: center; gap: 0.75rem;"><div class="tool-icon-wrapper" style="width: 40px; height: 40px; border-radius: 0.5rem; background: var(--primary-light); display: flex; align-items: center; justify-content: center; color: var(--primary);"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-maximize "><path d="M8 3H5a2 2 0 0 0-2 2v3"></path><path d="M21 8V5a2 2 0 0 0-2-2h-3"></path><path d="M3 16v3a2 2 0 0 0 2 2h3"></path><path d="M16 21h3a2 2 0 0 0 2-2v-3"></path></svg></div><h3 class="tool-title" style="font-size: 1.1rem; font-weight: 600; margin: 0px;">Bulk Image Resizer</h3></div><p class="tool-description" style="font-size: 0.85rem; color: var(--text-secondary); margin: 0px; line-height: 1.5; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;">Resize multiple images in one go.</p></a><a class="tool-card" href="/qr-generator/" style="text-decoration: none; color: inherit; background: var(--bg-card); border: 1px solid var(--border); border-radius: 1rem; padding: 1.5rem; transition: 0.2s; display: flex; flex-direction: column; gap: 1rem; cursor: pointer;"><div class="tool-card-header" style="display: flex; align-items: center; gap: 0.75rem;"><div class="tool-icon-wrapper" style="width: 40px; height: 40px; border-radius: 0.5rem; background: var(--primary-light); display: flex; align-items: center; justify-content: center; color: var(--primary);"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-qr-code "><rect width="5" height="5" x="3" y="3" rx="1"></rect><rect width="5" height="5" x="16" y="3" rx="1"></rect><rect width="5" height="5" x="3" y="16" rx="1"></rect><path d="M21 16h-3a2 2 0 0 0-2 2v3"></path><path d="M21 21v.01"></path><path d="M12 7v3a2 2 0 0 1-2 2H7"></path><path d="M3 12h.01"></path><path d="M12 3h.01"></path><path d="M12 16v.01"></path><path d="M16 12h1"></path><path d="M21 12v.01"></path><path d="M12 21v-1"></path></svg></div><h3 class="tool-title" style="font-size: 1.1rem; font-weight: 600; margin: 0px;">QR Generator</h3></div><p class="tool-description" style="font-size: 0.85rem; color: var(--text-secondary); margin: 0px; line-height: 1.5; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;">Create customizable QR codes for URLs and text.</p></a></div></div><div class="about-section" style="background: var(--bg-card); padding: 2rem; border-radius: 1rem; border: 1px solid var(--border); margin-bottom: 2rem;"><h2 style="font-size: 1.8rem; margin-bottom: 1.5rem;">About Split PDF</h2><p style="line-height: 1.6; color: var(--text-secondary); margin-bottom: 1rem;">Splitting takes one PDF apart into smaller PDFs. Drop a file in and the page count appears beside its name, then pick one of two modes: <strong>extract every page</strong>, which writes one document per page, or <strong>custom range</strong>, where you type the pages you want. Everything happens in this tab — the file is read with the browser File API and never uploaded.</p><h3 style="font-size: 1.15rem; margin-top: 1.75rem; margin-bottom: 0.75rem;">The range syntax, in full</h3><p style="line-height: 1.6; color: var(--text-secondary); margin-bottom: 1rem;">Entries are separated by commas and counted from 1, the way the page numbers appear in a reader. A bare number extracts that single page; two numbers joined by a hyphen extract an inclusive span. Whitespace is ignored, so <strong>1-3,5</strong> and <strong>1 - 3, 5</strong> behave identically. The important thing to internalise is that each entry becomes a separate output file. <strong>2-4, 9</strong> gives you a three-page document and a one-page document, not one four-page document; if you wanted the latter, ask for the span you actually want or delete the surplus pages in Organize PDF instead.</p><p style="line-height: 1.6; color: var(--text-secondary); margin-bottom: 1rem;">Bad entries stop the whole job rather than being dropped. A reversed span such as <strong>9-4</strong>, anything that is not a number, or an entry that falls entirely outside the document — a bare <strong>50</strong> or a span of <strong>50-60</strong> on a 42-page file — produces a message naming the offending entry and reminding you how many pages the file has. That is deliberate: silently skipping an entry is how people end up emailing a set of extracts with a chapter missing. The one exception is a span that begins inside the document and overshoots the end: <strong>1-50</strong> on a 42-page file is clamped to page 42 and goes through, so check the page count shown beside the file name if you want the number in the filename to match what is inside.</p><h3 style="font-size: 1.15rem; margin-top: 1.75rem; margin-bottom: 0.75rem;">What you get back</h3><ul style="line-height: 1.7; color: var(--text-secondary); margin-bottom: 1rem; padding-left: 1.25rem;"><li>A single range produces a plain PDF named after the source, for example <strong>contract-pages-4-9.pdf</strong> or <strong>contract-page-3.pdf</strong>.</li><li>Two or more pieces are collected into <strong>contract-split.zip</strong>, DEFLATE-compressed, with each piece inside under the same naming scheme.</li><li>Every page mode always produces a ZIP unless the document is genuinely one page long.</li></ul><h3 style="font-size: 1.15rem; margin-top: 1.75rem; margin-bottom: 0.75rem;">How the pages are moved</h3><p style="line-height: 1.6; color: var(--text-secondary); margin-bottom: 1rem;">A new empty document is created for each output, and the requested page objects are deep-copied into it along with everything they reference — content streams, embedded font programs, image XObjects, annotations. Nothing is rasterised or re-encoded, so text remains selectable and searchable and a scan keeps its original DPI. The side effect is duplication: shared resources are copied into every piece that needs them, which is why a hundred single-page files can add up to more bytes than the document they came from.</p><h3 style="font-size: 1.15rem; margin-top: 1.75rem; margin-bottom: 0.75rem;">When a different tool is the right one</h3><p style="line-height: 1.6; color: var(--text-secondary);">Reach for <strong>Organize PDF</strong> when you want one document with some pages removed or reordered, since it shows page thumbnails and saves a single file. Reach for <strong>Merge PDF</strong> to go the other way and glue documents together. If what you actually want is a picture of each page rather than a PDF of each page, use <strong>PDF to JPG</strong> or <strong>PDF to PNG</strong>, which render pages at one of five fixed scales from 1x to 6x. And if dropping the file here only produces an <em>Invalid PDF file</em> alert and sends you back to the drop zone, it is probably encrypted — <strong>Unlock PDF</strong> first.</p></div><div class="features-section" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 2rem;"><div class="tool-feature-block" style="padding: 1.5rem; border-radius: 1rem; border: 1px solid var(--border); background: var(--bg-card);"><div style="width: 48px; height: 48px; background: var(--primary-light); border-radius: 0.75rem; display: flex; align-items: center; justify-content: center; margin-bottom: 1rem;"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="var(--primary)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-files "><path d="M20 7h-3a2 2 0 0 1-2-2V2"></path><path d="M9 18a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h7l4 4v10a2 2 0 0 1-2 2Z"></path><path d="M3 7.6v12.8A1.6 1.6 0 0 0 4.6 22h9.8"></path></svg></div><h3 style="font-size: 1.25rem; margin-bottom: 0.5rem;">Burst into single pages</h3><p style="color: var(--text-secondary);">Extract every page mode reads the page count off the file and writes one PDF per page, named page-1.pdf, page-2.pdf and so on, then bundles them into a DEFLATE-compressed ZIP.</p></div><div class="tool-feature-block" style="padding: 1.5rem; border-radius: 1rem; border: 1px solid var(--border); background: var(--bg-card);"><div style="width: 48px; height: 48px; background: var(--primary-light); border-radius: 0.75rem; display: flex; align-items: center; justify-content: center; margin-bottom: 1rem;"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="var(--primary)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-list-ordered "><line x1="10" x2="21" y1="6" y2="6"></line><line x1="10" x2="21" y1="12" y2="12"></line><line x1="10" x2="21" y1="18" y2="18"></line><path d="M4 6h1v4"></path><path d="M4 10h2"></path><path d="M6 18H4c0-1 2-2 2-3s-1-1.5-2-1"></path></svg></div><h3 style="font-size: 1.25rem; margin-bottom: 0.5rem;">Ranges that mean what they say</h3><p style="color: var(--text-secondary);">Type 1-3, 5, 8-10 and you get three files: a three-page one, a one-page one, and another three-page one. Each comma-separated entry becomes its own document rather than being flattened together.</p></div><div class="tool-feature-block" style="padding: 1.5rem; border-radius: 1rem; border: 1px solid var(--border); background: var(--bg-card);"><div style="width: 48px; height: 48px; background: var(--primary-light); border-radius: 0.75rem; display: flex; align-items: center; justify-content: center; margin-bottom: 1rem;"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="var(--primary)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-folder-archive "><circle cx="15" cy="19" r="2"></circle><path d="M20.9 19.8A2 2 0 0 0 22 18V8a2 2 0 0 0-2-2h-7.9a2 2 0 0 1-1.69-.9L9.6 3.9A2 2 0 0 0 7.93 3H4a2 2 0 0 0-2 2v13a2 2 0 0 0 2 2h5.1"></path><path d="M15 11v-1"></path><path d="M15 17v-2"></path></svg></div><h3 style="font-size: 1.25rem; margin-bottom: 0.5rem;">One file or an archive, automatically</h3><p style="color: var(--text-secondary);">Ask for a single range and you get a plain PDF. Ask for more than one and the pieces are zipped so the browser only has to trigger one download instead of fighting a pop-up blocker.</p></div></div></div></div><div style="max-width: 1000px; margin: 4rem auto 0px; border-top: 1px solid var(--border); padding-top: 3rem;"><h2 style="font-size: 1.8rem; font-weight: 700; margin-bottom: 2rem; text-align: center;">Frequently Asked Questions</h2><div style="display: grid; gap: 2rem;"><div><h3 style="font-size: 1.2rem; font-weight: 600; margin-bottom: 0.5rem; color: rgb(30, 41, 59);">How exactly do I write the page ranges?</h3><p style="line-height: 1.6; color: rgb(71, 85, 105);">Comma-separated, one-based, spaces ignored: 1-3, 5, 8-10 is valid. A hyphen means an inclusive span, so 8-10 gives pages 8, 9 and 10. Each entry produces its own file — 1-3, 5 yields a three-page PDF and a one-page PDF, not one four-page document. Backwards spans such as 9-4 are rejected rather than silently reversed.</p></div><div><h3 style="font-size: 1.2rem; font-weight: 600; margin-bottom: 0.5rem; color: rgb(30, 41, 59);">When do I get a single PDF and when do I get a ZIP?</h3><p style="line-height: 1.6; color: rgb(71, 85, 105);">One group means one download. If your range list resolves to exactly one entry, the result is a plain PDF called something like report-pages-2-7.pdf. Anything that produces two or more pieces — including every page mode — comes back as report-split.zip, with the individual PDFs inside.</p></div><div><h3 style="font-size: 1.2rem; font-weight: 600; margin-bottom: 0.5rem; color: rgb(30, 41, 59);">It refused my range and told me it cannot use an entry. Why?</h3><p style="line-height: 1.6; color: rgb(71, 85, 105);">An entry is rejected if it is not a number, if it runs backwards, or if it lands entirely outside the document — a bare 50 or a span of 50-60 on a 42-page file. The whole job stops rather than the bad entry being quietly dropped, so you never download a set that is missing pages you asked for. One case is treated more leniently: a span that starts inside the document and runs past the end, such as 1-50 on 42 pages, is clamped to the last page and succeeds. You get all 42 pages, in a file still named after the numbers you typed.</p></div><div><h3 style="font-size: 1.2rem; font-weight: 600; margin-bottom: 0.5rem; color: rgb(30, 41, 59);">How do I pull several scattered pages into one document?</h3><p style="line-height: 1.6; color: rgb(71, 85, 105);">This tool always writes one file per entry, so it cannot do that in a single step. Load the PDF into <strong>Organize PDF</strong> and delete the pages you do not want — that leaves one document containing exactly the pages you kept. Alternatively split first, then recombine the pieces with <strong>Merge PDF</strong>.</p></div><div><h3 style="font-size: 1.2rem; font-weight: 600; margin-bottom: 0.5rem; color: rgb(30, 41, 59);">Do bookmarks and fillable fields survive the split?</h3><p style="line-height: 1.6; color: rgb(71, 85, 105);">Page content, embedded fonts, images and per-page annotations are copied intact. Bookmarks are not: the outline lives on the document catalogue rather than on any page, so each piece comes out without one. Interactive form fields keep their appearance but lose their registration in the form dictionary, so they stop being fillable — flatten the form first if the values matter.</p></div><div><h3 style="font-size: 1.2rem; font-weight: 600; margin-bottom: 0.5rem; color: rgb(30, 41, 59);">Why are the pieces bigger than a proportional share of the original?</h3><p style="line-height: 1.6; color: rgb(71, 85, 105);">Every output document must carry the resources its pages reference. If one embedded font is used throughout a 100-page report, splitting into 100 single-page PDFs embeds that font 100 times. The total across the ZIP can therefore exceed the original file, even though no page has been re-encoded. Running the pieces through <strong>Compress PDF</strong> trims the metadata but will not undo the duplication.</p></div><div><h3 style="font-size: 1.2rem; font-weight: 600; margin-bottom: 0.5rem; color: rgb(30, 41, 59);">Can I split a password-protected PDF?</h3><p style="line-height: 1.6; color: rgb(71, 85, 105);">No. The parser refuses encrypted documents, and because that happens the moment the file is read, you get an Invalid PDF file alert and the tool returns to the drop zone rather than showing you a page count. Remove the password with <strong>Unlock PDF</strong> (you need to know it) and split the unlocked copy.</p></div><div><h3 style="font-size: 1.2rem; font-weight: 600; margin-bottom: 0.5rem; color: rgb(30, 41, 59);">Is there a page limit, and does it work on a phone?</h3><p style="line-height: 1.6; color: rgb(71, 85, 105);">No fixed limit — the constraint is memory. Bursting a 1,000-page file means building 1,000 documents and holding a ZIP of all of them in RAM at once, which a desktop handles and a budget phone may not. On mobile, prefer targeted ranges over every page mode; the interface itself works in any modern mobile browser.</p></div></div></div></div></div><!--/$--></main><footer class="site-footer"><div class="container footer-content"><div class="footer-brand"><h3>OnlineToolsVault</h3><p>Premium, free-to-use online tools for everyone. Free, Fast, Secure and Privacy Focused<br>You can check the source code <a href="https://github.com/OnlineToolsVault/OnlineToolsVault.github.io" target="_blank" rel="noopener noreferrer" style="color: var(--primary); text-decoration: underline;">here</a>.</p></div><div class="footer-links"><div class="footer-col"><h4>Popular Tools</h4><ul><li><a href="/merge-pdf/">Merge PDF</a></li><li><a href="/compress-pdf/">Compress PDF</a></li><li><a href="/image-compressor/">Image Compressor</a></li><li><a href="/qr-generator/">QR Generator</a></li></ul></div><div class="footer-col"><h4>Company</h4><ul><li><a href="/about/">About Us</a></li><li><a href="/contact/">Contact</a></li><li><a href="/privacy/">Privacy Policy</a></li><li><a href="/terms/">Terms of Service</a></li></ul></div><div class="footer-col"><h4>Connect</h4><ul><li><a href="https://x.com/sourcestrongai" target="_blank" rel="noopener noreferrer">Twitter</a></li><li><a href="https://github.com/OnlineToolsVault" target="_blank" rel="noopener noreferrer">GitHub</a></li><li><a href="https://www.linkedin.com/company/sourcestrongai" target="_blank" rel="noopener noreferrer">LinkedIn</a></li></ul></div></div></div><div class="container footer-bottom"><p>© 2026 Source Strong AI. All Rights Reserved. Managed under <a href="/terms/" style="color: inherit; text-decoration: underline;">Proprietary License</a>.</p><p style="display: flex; align-items: center; gap: 0.25rem;">Made with <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-heart "><path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z"></path></svg> for the web</p></div></footer></div></div>
 </body>
 
 </html>

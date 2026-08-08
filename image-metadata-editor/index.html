@@ -2,21 +2,20 @@
 <html lang="en">
 
 <head>
-  <script src="/coi-serviceworker.js"></script>
   <meta charset="UTF-8" />
   <link rel="icon" type="image/svg+xml" href="/vite.svg" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Image Metadata | OnlineToolsVault</title>
-  <meta name="description" content="EXIF viewer and editor. Check and modify camera settings, GPS data, and dates embedded in image files." />
+  <title data-rh="true">Image Metadata Editor - Edit EXIF Online</title>
+  <meta data-rh="true" name="description" content="Read and rewrite six EXIF fields in a JPEG: Artist, Copyright, Date, Software, Camera Make and Model. GPS, exposure and the pixels are left untouched." />
 
   <!-- SEO & Social Meta Tags -->
   <meta name="robots" content="index, follow" />
 
   <meta property="og:type" content="website" />
-  <meta property="og:title" content="Image Metadata | OnlineToolsVault" />
-  <meta property="og:description" content="EXIF viewer and editor. Check and modify camera settings, GPS data, and dates embedded in image files." />
-  <meta property="og:url" content="https://onlinetoolsvault.com/image-metadata-editor" />
-  <meta property="og:site_name" content="FreeTools" />
+  <meta property="og:title" content="Image Metadata Editor - Edit EXIF Online" />
+  <meta property="og:description" content="Read and rewrite six EXIF fields in a JPEG: Artist, Copyright, Date, Software, Camera Make and Model. GPS, exposure and the pixels are left untouched." />
+  <meta property="og:url" content="https://onlinetoolsvault.com/image-metadata-editor/" />
+  <meta property="og:site_name" content="OnlineToolsVault" />
   <meta property="og:image" content="https://onlinetoolsvault.com/og/image-metadata.png" />
   <meta property="og:image:width" content="1200" />
   <meta property="og:image:height" content="630" />
@@ -24,8 +23,8 @@
 
   <meta name="twitter:card" content="summary_large_image" />
   <meta name="twitter:site" content="@sourcestrongai" />
-  <meta name="twitter:title" content="Image Metadata | OnlineToolsVault" />
-  <meta name="twitter:description" content="EXIF viewer and editor. Check and modify camera settings, GPS data, and dates embedded in image files." />
+  <meta name="twitter:title" content="Image Metadata Editor - Edit EXIF Online" />
+  <meta name="twitter:description" content="Read and rewrite six EXIF fields in a JPEG: Artist, Copyright, Date, Software, Camera Make and Model. GPS, exposure and the pixels are left untouched." />
   <meta name="twitter:image" content="https://onlinetoolsvault.com/og/image-metadata.png" />
   <meta name="twitter:image:alt" content="Image Metadata — OnlineToolsVault" />
   <meta name="twitter:creator" content="@sourcestrongai" />
@@ -35,7 +34,7 @@
     {
       "@context": "https://schema.org",
       "@type": "WebApplication",
-      "name": "FreeTools",
+      "name": "OnlineToolsVault",
       "url": "https://onlinetoolsvault.com/",
       "description": "Collection of free online client-side tools for PDF and image processing.",
       "applicationCategory": "Utility",
@@ -48,10 +47,48 @@
     }
   </script>
 
-  <!-- Preconnect to Google Fonts -->
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <!--
+    Inter, served from this origin.
+
+    This used to be a <link> to fonts.googleapis.com, which made every one of the 89 routes open a
+    connection to Google (and then a second one to fonts.gstatic.com) before it could paint text —
+    the last off-origin request common to all pages, and one that handed a third party the IP of
+    every visitor on a site whose whole pitch is that nothing leaves the browser.
+
+    scripts/copy-runtime-assets.js stages the two woff2 files into public/fonts at build time.
+    Change a filename or a unicode-range here and change it there; the script re-checks the ranges
+    against what Google serves and warns when they drift.
+
+    These are the *variable* faces (`font-weight: 100 900`), which is what Google was already
+    serving: css2 answers `wght@400;500;600;700;800` with the same single file declared five times,
+    so all five weights come out of one 48 KB download exactly as before.
+
+    Only latin is preloaded. latin-ext is a further 83 KB that the unicode-range below keeps unread
+    unless a page actually contains one of its characters, which no page currently does — preloading
+    it would cost every visitor 83 KB for nothing. `crossorigin` is required even though the file is
+    same-origin: fonts are always fetched in CORS mode, and without it the preload is discarded and
+    the file downloaded twice.
+  -->
+  <link rel="preload" href="/fonts/inter-latin.woff2" as="font" type="font/woff2" crossorigin>
+  <style>
+    @font-face {
+      font-family: 'Inter';
+      font-style: normal;
+      font-weight: 100 900;
+      font-display: swap;
+      src: url('/fonts/inter-latin.woff2') format('woff2');
+      unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+    }
+
+    @font-face {
+      font-family: 'Inter';
+      font-style: normal;
+      font-weight: 100 900;
+      font-display: swap;
+      src: url('/fonts/inter-latin-ext.woff2') format('woff2');
+      unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF;
+    }
+  </style>
 
   <!-- Analytics & Ads -->
   <script async src="https://www.googletagmanager.com/gtag/js?id=G-EVGNTG49J7"></script>
@@ -64,6 +101,55 @@
   <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-4988388949365963"
     crossorigin="anonymous"></script>
 
+  <!--
+    Retire the old COOP/COEP service worker.
+
+    It was added for SharedArrayBuffer, but the FFmpeg tools load the single-threaded
+    @ffmpeg/core build, which never touches SharedArrayBuffer — verified by running a
+    conversion with crossOriginIsolated === false. Meanwhile cross-origin isolation blocked
+    every third-party image a user pastes into the Markdown Previewer, and forced a full page
+    reload on each visitor's first page view.
+
+    Returning visitors still have the worker installed and would keep getting the COEP headers
+    forever, so unregister it once and reload to drop out of the isolated context.
+  -->
+  <script>
+    (function () {
+      if (!('serviceWorker' in navigator)) return;
+      navigator.serviceWorker.getRegistrations().then(function (registrations) {
+        var removed = false;
+        for (var i = 0; i < registrations.length; i++) {
+          var url = (registrations[i].active && registrations[i].active.scriptURL) || '';
+          if (url.indexOf('coi-serviceworker') !== -1) {
+            registrations[i].unregister();
+            removed = true;
+          }
+        }
+        if (removed && window.crossOriginIsolated) window.location.reload();
+      }).catch(function () { /* nothing to clean up */ });
+    })();
+  </script>
+
+  <!--
+    Restore the URL that 404.html forwarded here, before React Router reads location.
+    GitHub Pages cannot rewrite unknown paths itself, so 404.html bounces them to
+    /?notfound=<path>; putting the real path back lets the app's "*" route render NotFound
+    at the address the visitor actually typed.
+  -->
+  <script>
+    (function () {
+      try {
+        var params = new URLSearchParams(window.location.search);
+        var requested = params.get('notfound');
+        if (requested && requested.charAt(0) === '/' && requested.charAt(1) !== '/') {
+          window.history.replaceState(null, '', requested);
+        }
+      } catch (error) {
+        console.error('[NotFound Restore] Error:', error);
+      }
+    })();
+  </script>
+
   <!-- Smart Hash URL Redirect (handles legacy #/ URLs) -->
   <script>
     (function () {
@@ -74,6 +160,18 @@
         if (hash && hash.startsWith('#/')) {
           var path = hash.slice(2); // Remove '#/'
           var search = window.location.search || '';
+
+          // A legacy link can carry its own query or fragment inside the hash
+          // (#/word-counter?tab=2). Split that off before the path is touched, otherwise the
+          // trailing slash below lands after the query string and produces "word-counter?tab=2/".
+          var extra = '';
+          var cut = path.search(/[?#]/);
+          if (cut !== -1) {
+            extra = path.slice(cut);
+            path = path.slice(0, cut);
+          }
+          // Two query strings concatenated would give "?a=1?b=2"; the second '?' becomes '&'.
+          if (search && extra.charAt(0) === '?') extra = '&' + extra.slice(1);
 
           // Auto-detect base path (works in dev and production)
           // In dev: localhost:5173 → base = '/'
@@ -88,13 +186,20 @@
           // Clean up the path (remove trailing/leading slashes)
           path = path.replace(/^\/+|\/+$/g, '');
 
-          // Build redirect URL
+          // Build redirect URL.
+          //
+          // The trailing slash is not cosmetic. GitHub Pages serves each route from
+          // dist/<route>/index.html, so /word-counter answers with a 301 to /word-counter/ —
+          // meaning the slash-less form this used to emit turned every legacy hash link into two
+          // navigations, and any of them that ended up in a canonical, a sitemap or an inbound
+          // link pointed at the redirecting URL rather than the real one. Every other internal
+          // link on the site was normalised to the trailing-slash form; this was the last hole.
           var redirectUrl;
           if (path) {
-            redirectUrl = base + path + search;
+            redirectUrl = base + path + '/' + search + extra;
           } else {
             // Just '#/' with no path - go to home
-            redirectUrl = base;
+            redirectUrl = base + search + extra;
           }
 
           // Redirect using replace (doesn't add to history)
@@ -106,13 +211,16 @@
       }
     })();
   </script>
-  <script type="module" crossorigin src="/assets/index-kvHMSlMz.js"></script>
-  <link rel="stylesheet" crossorigin href="/assets/index-CZAylM9v.css">
-  <link rel="canonical" href="https://onlinetoolsvault.com/image-metadata-editor" />
+  <script type="module" crossorigin src="/assets/index-BtmU1OS0.js"></script>
+  <link rel="stylesheet" crossorigin href="/assets/index-Cv0roaG_.css">
+  <link data-rh="true" rel="canonical" href="https://onlinetoolsvault.com/image-metadata-editor/" />
+  <!-- prerender:head -->
+  <script type="application/ld+json" data-rh="true">{"@context":"https://schema.org","@type":"FAQPage","mainEntity":[{"@type":"Question","name":"What exactly can I edit here?","acceptedAnswer":{"@type":"Answer","text":"Six fields from the main IFD0 block: **Artist**, **Copyright**, **Date & Time**, **Software**, **Camera Make** and **Camera Model**. They cover the two realistic reasons to edit metadata by hand — stamping authorship and ownership onto your own work, and correcting a wrong capture date from a camera whose clock was not set."}},{"@type":"Question","name":"What format does the date need to be in?","acceptedAnswer":{"@type":"Answer","text":"EXIF specifies a rigid nineteen-character form: **YYYY:MM:DD HH:MM:SS**, with colons between the date parts, a single space, and a 24-hour clock. `2024:03:17 14:05:00` is valid; `17/03/2024` is not. Software reading a malformed value will usually ignore the field, so if a corrected date does not appear afterwards, check the punctuation first."}},{"@type":"Question","name":"Does saving re-compress my photo?","acceptedAnswer":{"@type":"Answer","text":"No, and this is the main reason to use a metadata editor rather than an image editor. Only the EXIF segment near the start of the file is replaced; the compressed scan data is copied through untouched. The saved file is pixel-for-pixel identical to the original, so you can edit the tags as many times as you like with no cumulative loss."}},{"@type":"Question","name":"Why can I only load JPG files?","acceptedAnswer":{"@type":"Answer","text":"EXIF was designed for JPEG and TIFF, and the library used here writes the JPEG variant. PNG and WebP have their own, different metadata containers that are not interchangeable with EXIF. If your file is a PNG or a WebP, there is nothing here for this tool to edit."}},{"@type":"Question","name":"I got a message about Latin-1 characters.","acceptedAnswer":{"@type":"Answer","text":"EXIF text tags are byte strings limited to the Latin-1 range, so accented Western European letters are fine but Japanese, Chinese, Korean, Cyrillic, Greek and emoji cannot be encoded at all. Rather than silently writing bytes that read back as garbage, the tool refuses and tells you which field to fix. Transliterate the value into Latin characters and save again."}},{"@type":"Question","name":"Will the tags I am not editing be lost?","acceptedAnswer":{"@type":"Answer","text":"No. The existing metadata is parsed, your six values are set on it, and the whole block is written back. Exposure settings, lens information, GPS coordinates and the embedded thumbnail all survive. If the file has no readable EXIF to begin with, a new block is created containing just what you typed."}},{"@type":"Question","name":"Can I edit or remove the GPS location here?","acceptedAnswer":{"@type":"Answer","text":"Not from this page — the coordinates are preserved but not exposed as an editable field. To delete location data before sharing a photo, use Remove Image Metadata, which strips the EXIF, IPTC and XMP blocks wholesale and can do it on a JPEG without re-encoding the pixels."}},{"@type":"Question","name":"Why bother setting Artist and Copyright?","acceptedAnswer":{"@type":"Answer","text":"Because it travels with the file. A copyright line typed into these fields stays inside the JPEG when it is downloaded, emailed or archived, and it is what a stock library, a picture desk or an asset manager reads to establish provenance. It is not enforcement, but it makes ownership a fact recorded in the file rather than a claim made separately."}},{"@type":"Question","name":"Is my photo uploaded to edit its tags?","acceptedAnswer":{"@type":"Answer","text":"No. The file is read into memory, the EXIF block is parsed and rebuilt in JavaScript on your machine, and the result is saved straight back to your downloads. Nothing is transmitted — which matters here, because the metadata you are looking at may itself contain the location where the photo was taken."}}]}</script>
+  <!-- /prerender:head -->
 </head>
 
 <body>
-  <div id="root"></div>
+  <div id="root" data-prerendered="static"><div class="app-wrapper"><header class="site-header"><div class="container header-container"><a class="logo" href="/"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-rocket logo-icon"><path d="M4.5 16.5c-1.5 1.26-2 5-2 5s3.74-.5 5-2c.71-.84.7-2.13-.09-2.91a2.18 2.18 0 0 0-2.91-.09z"></path><path d="m12 15-3-3a22 22 0 0 1 2-3.95A12.88 12.88 0 0 1 22 2c0 2.72-.78 7.5-6 11a22.35 22.35 0 0 1-4 2z"></path><path d="M9 12H4s.55-3.03 2-4c1.62-1.08 5 0 5 0"></path><path d="M12 15v5s3.03-.55 4-2c1.08-1.62 0-5 0-5"></path></svg><span>OnlineToolsVault</span></a><nav class="nav-desktop"><a class="nav-link" href="/">Home</a><a class="nav-link" href="/about/">About</a><a class="nav-link" href="/contact/">Contact</a><div class="social-icons"><a href="https://x.com/sourcestrongai" target="_blank" rel="noopener noreferrer" class="social-icon" aria-label="Twitter"><svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-twitter "><path d="M22 4s-.7 2.1-2 3.4c1.6 10-9.4 17.3-18 11.6 2.2.1 4.4-.6 6-2C3 15.5.5 9.6 3 5c2.2 2.6 5.6 4.1 9 4-.9-4.2 4-6.6 7-3.8 1.1 0 3-1.2 3-1.2z"></path></svg></a><a href="https://www.linkedin.com/company/sourcestrongai" target="_blank" rel="noopener noreferrer" class="social-icon" aria-label="LinkedIn"><svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-linkedin "><path d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-2-2 2 2 0 0 0-2 2v7h-4v-7a6 6 0 0 1 6-6z"></path><rect width="4" height="12" x="2" y="9"></rect><circle cx="4" cy="4" r="2"></circle></svg></a></div></nav><button class="nav-mobile-btn" aria-label="Open menu" aria-expanded="false" aria-controls="mobile-menu"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-menu "><line x1="4" x2="20" y1="12" y2="12"></line><line x1="4" x2="20" y1="6" y2="6"></line><line x1="4" x2="20" y1="18" y2="18"></line></svg></button></div></header><main class="main-content"><!--$--><div class="container" style="padding: 3rem 1.5rem;"><div style="max-width: 1000px; margin: 0px auto;"><header style="margin-bottom: 3rem; text-align: center;"><h1 style="font-size: 2.5rem; font-weight: 800; margin-bottom: 0.5rem;">Image Metadata Editor</h1><p style="color: rgb(100, 116, 139);">View and Edit EXIF data (Artist, Camera, Date) of JPG images.</p></header><div class="tool-workspace" style="max-width: 1000px; margin: 0px auto;"><div id="image-metadata-dropzone" role="presentation" tabindex="0" class="tool-upload-area" style="border: 2px dashed var(--border); border-radius: 1rem; padding: 4rem 2rem; text-align: center; cursor: pointer; background: white; transition: 0.2s; box-shadow: rgba(0, 0, 0, 0.05) 0px 4px 6px -1px;"><input accept="image/jpeg,.jpg,.jpeg" type="file" tabindex="-1" aria-label="Choose a file for Image Metadata Editor" style="border: 0px; clip: rect(0px, 0px, 0px, 0px); clip-path: inset(50%); height: 1px; margin: 0px -1px -1px 0px; overflow: hidden; padding: 0px; position: absolute; width: 1px; white-space: nowrap;"><div style="width: 80px; height: 80px; background: rgb(239, 246, 255); border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0px auto 1.5rem; color: rgb(59, 130, 246);"><svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-pen-line "><path d="M12 20h9"></path><path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4Z"></path></svg></div><h3 style="font-size: 1.5rem; margin-bottom: 1rem; font-weight: 600; color: rgb(30, 41, 59);">Drag &amp; Drop JPG to Edit EXIF</h3><p style="color: rgb(100, 116, 139); font-size: 1.1rem;">or click to browse files</p><p style="margin-top: 1rem; font-size: 0.9rem; color: rgb(148, 163, 184);">Supports standard JPG/JPEG files</p></div><div class="tool-content" style="margin-top: 4rem;"><div class="tool-content" style="margin-top: 4rem;"><div class="related-tools-section" style="margin-top: 4rem; margin-bottom: 4rem;"><h2 style="font-size: 1.8rem; font-weight: 700; margin-bottom: 2rem; text-align: center; color: var(--text-primary);">More Useful Tools</h2><div class="tools-grid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(min(280px, 100%), 1fr)); gap: 1.5rem;"><a class="tool-card" href="/image-resizer/" style="text-decoration: none; color: inherit; background: var(--bg-card); border: 1px solid var(--border); border-radius: 1rem; padding: 1.5rem; transition: 0.2s; display: flex; flex-direction: column; gap: 1rem; cursor: pointer;"><div class="tool-card-header" style="display: flex; align-items: center; gap: 0.75rem;"><div class="tool-icon-wrapper" style="width: 40px; height: 40px; border-radius: 0.5rem; background: var(--primary-light); display: flex; align-items: center; justify-content: center; color: var(--primary);"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-maximize "><path d="M8 3H5a2 2 0 0 0-2 2v3"></path><path d="M21 8V5a2 2 0 0 0-2-2h-3"></path><path d="M3 16v3a2 2 0 0 0 2 2h3"></path><path d="M16 21h3a2 2 0 0 0 2-2v-3"></path></svg></div><h3 class="tool-title" style="font-size: 1.1rem; font-weight: 600; margin: 0px;">Image Resizer</h3></div><p class="tool-description" style="font-size: 0.85rem; color: var(--text-secondary); margin: 0px; line-height: 1.5; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;">Resize images to exact pixel dimensions.</p></a><a class="tool-card" href="/image-to-text/" style="text-decoration: none; color: inherit; background: var(--bg-card); border: 1px solid var(--border); border-radius: 1rem; padding: 1.5rem; transition: 0.2s; display: flex; flex-direction: column; gap: 1rem; cursor: pointer;"><div class="tool-card-header" style="display: flex; align-items: center; gap: 0.75rem;"><div class="tool-icon-wrapper" style="width: 40px; height: 40px; border-radius: 0.5rem; background: var(--primary-light); display: flex; align-items: center; justify-content: center; color: var(--primary);"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-file-text "><path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z"></path><path d="M14 2v4a2 2 0 0 0 2 2h4"></path><path d="M10 9H8"></path><path d="M16 13H8"></path><path d="M16 17H8"></path></svg></div><h3 class="tool-title" style="font-size: 1.1rem; font-weight: 600; margin: 0px;">Image to Text</h3></div><p class="tool-description" style="font-size: 0.85rem; color: var(--text-secondary); margin: 0px; line-height: 1.5; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;">Extract text from images using OCR.</p></a><a class="tool-card" href="/instagram-twitter-resizer/" style="text-decoration: none; color: inherit; background: var(--bg-card); border: 1px solid var(--border); border-radius: 1rem; padding: 1.5rem; transition: 0.2s; display: flex; flex-direction: column; gap: 1rem; cursor: pointer;"><div class="tool-card-header" style="display: flex; align-items: center; gap: 0.75rem;"><div class="tool-icon-wrapper" style="width: 40px; height: 40px; border-radius: 0.5rem; background: var(--primary-light); display: flex; align-items: center; justify-content: center; color: var(--primary);"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-maximize "><path d="M8 3H5a2 2 0 0 0-2 2v3"></path><path d="M21 8V5a2 2 0 0 0-2-2h-3"></path><path d="M3 16v3a2 2 0 0 0 2 2h3"></path><path d="M16 21h3a2 2 0 0 0 2-2v-3"></path></svg></div><h3 class="tool-title" style="font-size: 1.1rem; font-weight: 600; margin: 0px;">Social Media Resizer</h3></div><p class="tool-description" style="font-size: 0.85rem; color: var(--text-secondary); margin: 0px; line-height: 1.5; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;">Resize images for Instagram, Twitter, etc.</p></a><a class="tool-card" href="/merge-images/" style="text-decoration: none; color: inherit; background: var(--bg-card); border: 1px solid var(--border); border-radius: 1rem; padding: 1.5rem; transition: 0.2s; display: flex; flex-direction: column; gap: 1rem; cursor: pointer;"><div class="tool-card-header" style="display: flex; align-items: center; gap: 0.75rem;"><div class="tool-icon-wrapper" style="width: 40px; height: 40px; border-radius: 0.5rem; background: var(--primary-light); display: flex; align-items: center; justify-content: center; color: var(--primary);"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-panels-top-left "><rect width="18" height="18" x="3" y="3" rx="2"></rect><path d="M3 9h18"></path><path d="M9 21V9"></path></svg></div><h3 class="tool-title" style="font-size: 1.1rem; font-weight: 600; margin: 0px;">Merge Images</h3></div><p class="tool-description" style="font-size: 0.85rem; color: var(--text-secondary); margin: 0px; line-height: 1.5; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;">Join images horizontally or vertically.</p></a><a class="tool-card" href="/sql-formatter/" style="text-decoration: none; color: inherit; background: var(--bg-card); border: 1px solid var(--border); border-radius: 1rem; padding: 1.5rem; transition: 0.2s; display: flex; flex-direction: column; gap: 1rem; cursor: pointer;"><div class="tool-card-header" style="display: flex; align-items: center; gap: 0.75rem;"><div class="tool-icon-wrapper" style="width: 40px; height: 40px; border-radius: 0.5rem; background: var(--primary-light); display: flex; align-items: center; justify-content: center; color: var(--primary);"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-database "><ellipse cx="12" cy="5" rx="9" ry="3"></ellipse><path d="M3 5V19A9 3 0 0 0 21 19V5"></path><path d="M3 12A9 3 0 0 0 21 12"></path></svg></div><h3 class="tool-title" style="font-size: 1.1rem; font-weight: 600; margin: 0px;">SQL Formatter</h3></div><p class="tool-description" style="font-size: 0.85rem; color: var(--text-secondary); margin: 0px; line-height: 1.5; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;">Format SQL queries for better readability.</p></a><a class="tool-card" href="/flatten-pdf/" style="text-decoration: none; color: inherit; background: var(--bg-card); border: 1px solid var(--border); border-radius: 1rem; padding: 1.5rem; transition: 0.2s; display: flex; flex-direction: column; gap: 1rem; cursor: pointer;"><div class="tool-card-header" style="display: flex; align-items: center; gap: 0.75rem;"><div class="tool-icon-wrapper" style="width: 40px; height: 40px; border-radius: 0.5rem; background: var(--primary-light); display: flex; align-items: center; justify-content: center; color: var(--primary);"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-layers "><path d="m12.83 2.18a2 2 0 0 0-1.66 0L2.6 6.08a1 1 0 0 0 0 1.83l8.58 3.91a2 2 0 0 0 1.66 0l8.58-3.9a1 1 0 0 0 0-1.83Z"></path><path d="m22 17.65-9.17 4.16a2 2 0 0 1-1.66 0L2 17.65"></path><path d="m22 12.65-9.17 4.16a2 2 0 0 1-1.66 0L2 12.65"></path></svg></div><h3 class="tool-title" style="font-size: 1.1rem; font-weight: 600; margin: 0px;">Flatten PDF</h3></div><p class="tool-description" style="font-size: 0.85rem; color: var(--text-secondary); margin: 0px; line-height: 1.5; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;">Bake filled form fields into the page.</p></a></div></div><div class="about-section" style="background: var(--bg-card); padding: 2rem; border-radius: 1rem; border: 1px solid var(--border); margin-bottom: 2rem;"><h2 style="font-size: 1.8rem; margin-bottom: 1.5rem;">About Image Metadata Editor</h2><p style="line-height: 1.6; color: var(--text-secondary); margin-bottom: 1rem;">A JPEG is not only pixels. Near the front of the file sits an EXIF block: a small structured record written by the camera holding the capture time, the make and model of the body, exposure settings, and often the coordinates where the shutter was pressed. This page loads that block from a JPEG, shows you six of its fields, and writes your changes back.</p><h3 style="font-size: 1.15rem; margin: 1.5rem 0px 0.75rem;">Editing tags without re-encoding pixels</h3><p style="line-height: 1.6; color: var(--text-secondary); margin-bottom: 1rem;">Opening a photo in an image editor and saving it again re-compresses the whole picture, costing a generation of quality for the sake of a text field. This tool does not do that. The EXIF segment is parsed, your values are set on it, and the segment is spliced back into the original file — the compressed scan data is copied through byte for byte. The saved image is pixel-identical to the one you loaded, however many times you edit it. Tags you are not touching, including exposure data, lens information and the embedded thumbnail, are re-emitted unchanged rather than dropped.</p><h3 style="font-size: 1.15rem; margin: 1.5rem 0px 0.75rem;">The six fields, and what they are for</h3><p style="line-height: 1.6; color: var(--text-secondary); margin-bottom: 1rem;"><strong>Artist</strong> and <strong>Copyright</strong> are the attribution pair. Written here, they travel inside the file wherever it goes — through a download, an email, a stock library ingest or an asset manager — which is a more durable statement of authorship than a note kept somewhere else. <strong>Date &amp; Time</strong> is the one people most often need to correct, because a camera whose clock was never set will file an entire trip under the wrong year; it must be typed in the EXIF form <strong>YYYY:MM:DD HH:MM:SS</strong>, with colons in the date and a 24-hour clock, or readers will ignore it. <strong>Software</strong>, <strong>Camera Make</strong> and <strong>Camera Model</strong> record or correct the equipment that produced the image.</p><h3 style="font-size: 1.15rem; margin: 1.5rem 0px 0.75rem;">Two real limitations</h3><p style="line-height: 1.6; color: var(--text-secondary); margin-bottom: 1rem;">The first is format: EXIF as written here belongs to JPEG, so only .jpg and .jpeg files can be loaded. PNG and WebP store metadata in entirely different containers. The second is character set: EXIF text tags are byte strings limited to Latin-1, which covers accented Western European letters but not Japanese, Chinese, Korean, Cyrillic, Greek or emoji. Rather than write bytes that read back as nonsense, the tool checks before saving and names the field that needs changing. If the photo has no EXIF block at all, a fresh one is created from what you typed.</p><p style="line-height: 1.6; color: var(--text-secondary);">Everything happens in this browser tab — the file is read into memory, the metadata is rebuilt in JavaScript, and the result goes straight to your downloads as edited- plus the original name. Nothing is uploaded, which is worth noting given that the data on screen may include the exact coordinates of where the photograph was taken. If your goal is to delete that information rather than adjust it, Remove Image Metadata strips the EXIF, IPTC and XMP blocks outright.</p></div><div class="features-section" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 2rem;"><div class="tool-feature-block" style="padding: 1.5rem; border-radius: 1rem; border: 1px solid var(--border); background: var(--bg-card);"><div style="width: 48px; height: 48px; background: var(--primary-light); border-radius: 0.75rem; display: flex; align-items: center; justify-content: center; margin-bottom: 1rem;"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="var(--primary)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-save "><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"></path><polyline points="17 21 17 13 7 13 7 21"></polyline><polyline points="7 3 7 8 15 8"></polyline></svg></div><h3 style="font-size: 1.25rem; margin-bottom: 0.5rem;">The pixels are never touched</h3><p style="color: var(--text-secondary);">Only the EXIF segment at the front of the JPEG is rewritten. The compressed image data is left exactly as it was, so saving costs you no quality at all.</p></div><div class="tool-feature-block" style="padding: 1.5rem; border-radius: 1rem; border: 1px solid var(--border); background: var(--bg-card);"><div style="width: 48px; height: 48px; background: var(--primary-light); border-radius: 0.75rem; display: flex; align-items: center; justify-content: center; margin-bottom: 1rem;"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="var(--primary)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-pen-line "><path d="M12 20h9"></path><path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4Z"></path></svg></div><h3 style="font-size: 1.25rem; margin-bottom: 0.5rem;">Six IFD0 fields, read and write</h3><p style="color: var(--text-secondary);">Artist, Copyright, Date &amp; Time, Software, Camera Make and Camera Model are loaded from the file, shown as they are, and written back when you save.</p></div><div class="tool-feature-block" style="padding: 1.5rem; border-radius: 1rem; border: 1px solid var(--border); background: var(--bg-card);"><div style="width: 48px; height: 48px; background: var(--primary-light); border-radius: 0.75rem; display: flex; align-items: center; justify-content: center; margin-bottom: 1rem;"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="var(--primary)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-camera "><path d="M14.5 4h-5L7 7H4a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-3l-2.5-3z"></path><circle cx="12" cy="13" r="3"></circle></svg></div><h3 style="font-size: 1.25rem; margin-bottom: 0.5rem;">Other tags are preserved</h3><p style="color: var(--text-secondary);">The existing EXIF block is parsed and re-emitted, so exposure, lens, GPS and thumbnail tags you are not editing survive the round trip instead of being wiped.</p></div><div class="tool-feature-block" style="padding: 1.5rem; border-radius: 1rem; border: 1px solid var(--border); background: var(--bg-card);"><div style="width: 48px; height: 48px; background: var(--primary-light); border-radius: 0.75rem; display: flex; align-items: center; justify-content: center; margin-bottom: 1rem;"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="var(--primary)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-copyright "><circle cx="12" cy="12" r="10"></circle><path d="M14.83 14.83a4 4 0 1 1 0-5.66"></path></svg></div><h3 style="font-size: 1.25rem; margin-bottom: 0.5rem;">Latin-1 checked before saving</h3><p style="color: var(--text-secondary);">EXIF text tags are byte strings that cannot hold Japanese, Chinese, Cyrillic or emoji. The tool names the offending field up front instead of writing a file that reads back as garbage.</p></div><div class="tool-feature-block" style="padding: 1.5rem; border-radius: 1rem; border: 1px solid var(--border); background: var(--bg-card);"><div style="width: 48px; height: 48px; background: var(--primary-light); border-radius: 0.75rem; display: flex; align-items: center; justify-content: center; margin-bottom: 1rem;"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="var(--primary)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-pen-line "><path d="M12 20h9"></path><path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4Z"></path></svg></div><h3 style="font-size: 1.25rem; margin-bottom: 0.5rem;">Works on a photo with no EXIF</h3><p style="color: var(--text-secondary);">If a file has no metadata block at all, a fresh one is created and your values are written into it, which is how you add authorship to an image exported by a tool that stripped everything.</p></div></div></div></div></div><div style="max-width: 1000px; margin: 4rem auto 0px; border-top: 1px solid var(--border); padding-top: 3rem;"><h2 style="font-size: 1.8rem; font-weight: 700; margin-bottom: 2rem; text-align: center;">Frequently Asked Questions</h2><div style="display: grid; gap: 2rem;"><div><h3 style="font-size: 1.2rem; font-weight: 600; margin-bottom: 0.5rem; color: rgb(30, 41, 59);">What exactly can I edit here?</h3><p style="line-height: 1.6; color: rgb(71, 85, 105);">Six fields from the main IFD0 block: <strong>Artist</strong>, <strong>Copyright</strong>, <strong>Date &amp; Time</strong>, <strong>Software</strong>, <strong>Camera Make</strong> and <strong>Camera Model</strong>. They cover the two realistic reasons to edit metadata by hand — stamping authorship and ownership onto your own work, and correcting a wrong capture date from a camera whose clock was not set.</p></div><div><h3 style="font-size: 1.2rem; font-weight: 600; margin-bottom: 0.5rem; color: rgb(30, 41, 59);">What format does the date need to be in?</h3><p style="line-height: 1.6; color: rgb(71, 85, 105);">EXIF specifies a rigid nineteen-character form: <strong>YYYY:MM:DD HH:MM:SS</strong>, with colons between the date parts, a single space, and a 24-hour clock. `2024:03:17 14:05:00` is valid; `17/03/2024` is not. Software reading a malformed value will usually ignore the field, so if a corrected date does not appear afterwards, check the punctuation first.</p></div><div><h3 style="font-size: 1.2rem; font-weight: 600; margin-bottom: 0.5rem; color: rgb(30, 41, 59);">Does saving re-compress my photo?</h3><p style="line-height: 1.6; color: rgb(71, 85, 105);">No, and this is the main reason to use a metadata editor rather than an image editor. Only the EXIF segment near the start of the file is replaced; the compressed scan data is copied through untouched. The saved file is pixel-for-pixel identical to the original, so you can edit the tags as many times as you like with no cumulative loss.</p></div><div><h3 style="font-size: 1.2rem; font-weight: 600; margin-bottom: 0.5rem; color: rgb(30, 41, 59);">Why can I only load JPG files?</h3><p style="line-height: 1.6; color: rgb(71, 85, 105);">EXIF was designed for JPEG and TIFF, and the library used here writes the JPEG variant. PNG and WebP have their own, different metadata containers that are not interchangeable with EXIF. If your file is a PNG or a WebP, there is nothing here for this tool to edit.</p></div><div><h3 style="font-size: 1.2rem; font-weight: 600; margin-bottom: 0.5rem; color: rgb(30, 41, 59);">I got a message about Latin-1 characters.</h3><p style="line-height: 1.6; color: rgb(71, 85, 105);">EXIF text tags are byte strings limited to the Latin-1 range, so accented Western European letters are fine but Japanese, Chinese, Korean, Cyrillic, Greek and emoji cannot be encoded at all. Rather than silently writing bytes that read back as garbage, the tool refuses and tells you which field to fix. Transliterate the value into Latin characters and save again.</p></div><div><h3 style="font-size: 1.2rem; font-weight: 600; margin-bottom: 0.5rem; color: rgb(30, 41, 59);">Will the tags I am not editing be lost?</h3><p style="line-height: 1.6; color: rgb(71, 85, 105);">No. The existing metadata is parsed, your six values are set on it, and the whole block is written back. Exposure settings, lens information, GPS coordinates and the embedded thumbnail all survive. If the file has no readable EXIF to begin with, a new block is created containing just what you typed.</p></div><div><h3 style="font-size: 1.2rem; font-weight: 600; margin-bottom: 0.5rem; color: rgb(30, 41, 59);">Can I edit or remove the GPS location here?</h3><p style="line-height: 1.6; color: rgb(71, 85, 105);">Not from this page — the coordinates are preserved but not exposed as an editable field. To delete location data before sharing a photo, use Remove Image Metadata, which strips the EXIF, IPTC and XMP blocks wholesale and can do it on a JPEG without re-encoding the pixels.</p></div><div><h3 style="font-size: 1.2rem; font-weight: 600; margin-bottom: 0.5rem; color: rgb(30, 41, 59);">Why bother setting Artist and Copyright?</h3><p style="line-height: 1.6; color: rgb(71, 85, 105);">Because it travels with the file. A copyright line typed into these fields stays inside the JPEG when it is downloaded, emailed or archived, and it is what a stock library, a picture desk or an asset manager reads to establish provenance. It is not enforcement, but it makes ownership a fact recorded in the file rather than a claim made separately.</p></div><div><h3 style="font-size: 1.2rem; font-weight: 600; margin-bottom: 0.5rem; color: rgb(30, 41, 59);">Is my photo uploaded to edit its tags?</h3><p style="line-height: 1.6; color: rgb(71, 85, 105);">No. The file is read into memory, the EXIF block is parsed and rebuilt in JavaScript on your machine, and the result is saved straight back to your downloads. Nothing is transmitted — which matters here, because the metadata you are looking at may itself contain the location where the photo was taken.</p></div></div></div></div></div><!--/$--></main><footer class="site-footer"><div class="container footer-content"><div class="footer-brand"><h3>OnlineToolsVault</h3><p>Premium, free-to-use online tools for everyone. Free, Fast, Secure and Privacy Focused<br>You can check the source code <a href="https://github.com/OnlineToolsVault/OnlineToolsVault.github.io" target="_blank" rel="noopener noreferrer" style="color: var(--primary); text-decoration: underline;">here</a>.</p></div><div class="footer-links"><div class="footer-col"><h4>Popular Tools</h4><ul><li><a href="/merge-pdf/">Merge PDF</a></li><li><a href="/compress-pdf/">Compress PDF</a></li><li><a href="/image-compressor/">Image Compressor</a></li><li><a href="/qr-generator/">QR Generator</a></li></ul></div><div class="footer-col"><h4>Company</h4><ul><li><a href="/about/">About Us</a></li><li><a href="/contact/">Contact</a></li><li><a href="/privacy/">Privacy Policy</a></li><li><a href="/terms/">Terms of Service</a></li></ul></div><div class="footer-col"><h4>Connect</h4><ul><li><a href="https://x.com/sourcestrongai" target="_blank" rel="noopener noreferrer">Twitter</a></li><li><a href="https://github.com/OnlineToolsVault" target="_blank" rel="noopener noreferrer">GitHub</a></li><li><a href="https://www.linkedin.com/company/sourcestrongai" target="_blank" rel="noopener noreferrer">LinkedIn</a></li></ul></div></div></div><div class="container footer-bottom"><p>© 2026 Source Strong AI. All Rights Reserved. Managed under <a href="/terms/" style="color: inherit; text-decoration: underline;">Proprietary License</a>.</p><p style="display: flex; align-items: center; gap: 0.25rem;">Made with <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-heart "><path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z"></path></svg> for the web</p></div></footer></div></div>
 </body>
 
 </html>

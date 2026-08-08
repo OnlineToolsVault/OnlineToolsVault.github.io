@@ -2,21 +2,20 @@
 <html lang="en">
 
 <head>
-  <script src="/coi-serviceworker.js"></script>
   <meta charset="UTF-8" />
   <link rel="icon" type="image/svg+xml" href="/vite.svg" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>PDF to PNG | OnlineToolsVault</title>
-  <meta name="description" content="Turn PDF pages into transparent or high-quality PNG images. Ideal for presentations and web use." />
+  <title data-rh="true">PDF to PNG Converter - Free Online Tool</title>
+  <meta data-rh="true" name="description" content="Render PDF pages to lossless PNG at 72 to 432 DPI, with no compression artefacts around small text. Pages come out opaque on white, not transparent." />
 
   <!-- SEO & Social Meta Tags -->
   <meta name="robots" content="index, follow" />
 
   <meta property="og:type" content="website" />
-  <meta property="og:title" content="PDF to PNG | OnlineToolsVault" />
-  <meta property="og:description" content="Turn PDF pages into transparent or high-quality PNG images. Ideal for presentations and web use." />
-  <meta property="og:url" content="https://onlinetoolsvault.com/pdf-to-png" />
-  <meta property="og:site_name" content="FreeTools" />
+  <meta property="og:title" content="PDF to PNG Converter - Free Online Tool" />
+  <meta property="og:description" content="Render PDF pages to lossless PNG at 72 to 432 DPI, with no compression artefacts around small text. Pages come out opaque on white, not transparent." />
+  <meta property="og:url" content="https://onlinetoolsvault.com/pdf-to-png/" />
+  <meta property="og:site_name" content="OnlineToolsVault" />
   <meta property="og:image" content="https://onlinetoolsvault.com/og/pdf-to-png.png" />
   <meta property="og:image:width" content="1200" />
   <meta property="og:image:height" content="630" />
@@ -24,8 +23,8 @@
 
   <meta name="twitter:card" content="summary_large_image" />
   <meta name="twitter:site" content="@sourcestrongai" />
-  <meta name="twitter:title" content="PDF to PNG | OnlineToolsVault" />
-  <meta name="twitter:description" content="Turn PDF pages into transparent or high-quality PNG images. Ideal for presentations and web use." />
+  <meta name="twitter:title" content="PDF to PNG Converter - Free Online Tool" />
+  <meta name="twitter:description" content="Render PDF pages to lossless PNG at 72 to 432 DPI, with no compression artefacts around small text. Pages come out opaque on white, not transparent." />
   <meta name="twitter:image" content="https://onlinetoolsvault.com/og/pdf-to-png.png" />
   <meta name="twitter:image:alt" content="PDF to PNG — OnlineToolsVault" />
   <meta name="twitter:creator" content="@sourcestrongai" />
@@ -35,7 +34,7 @@
     {
       "@context": "https://schema.org",
       "@type": "WebApplication",
-      "name": "FreeTools",
+      "name": "OnlineToolsVault",
       "url": "https://onlinetoolsvault.com/",
       "description": "Collection of free online client-side tools for PDF and image processing.",
       "applicationCategory": "Utility",
@@ -48,10 +47,48 @@
     }
   </script>
 
-  <!-- Preconnect to Google Fonts -->
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <!--
+    Inter, served from this origin.
+
+    This used to be a <link> to fonts.googleapis.com, which made every one of the 89 routes open a
+    connection to Google (and then a second one to fonts.gstatic.com) before it could paint text —
+    the last off-origin request common to all pages, and one that handed a third party the IP of
+    every visitor on a site whose whole pitch is that nothing leaves the browser.
+
+    scripts/copy-runtime-assets.js stages the two woff2 files into public/fonts at build time.
+    Change a filename or a unicode-range here and change it there; the script re-checks the ranges
+    against what Google serves and warns when they drift.
+
+    These are the *variable* faces (`font-weight: 100 900`), which is what Google was already
+    serving: css2 answers `wght@400;500;600;700;800` with the same single file declared five times,
+    so all five weights come out of one 48 KB download exactly as before.
+
+    Only latin is preloaded. latin-ext is a further 83 KB that the unicode-range below keeps unread
+    unless a page actually contains one of its characters, which no page currently does — preloading
+    it would cost every visitor 83 KB for nothing. `crossorigin` is required even though the file is
+    same-origin: fonts are always fetched in CORS mode, and without it the preload is discarded and
+    the file downloaded twice.
+  -->
+  <link rel="preload" href="/fonts/inter-latin.woff2" as="font" type="font/woff2" crossorigin>
+  <style>
+    @font-face {
+      font-family: 'Inter';
+      font-style: normal;
+      font-weight: 100 900;
+      font-display: swap;
+      src: url('/fonts/inter-latin.woff2') format('woff2');
+      unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+    }
+
+    @font-face {
+      font-family: 'Inter';
+      font-style: normal;
+      font-weight: 100 900;
+      font-display: swap;
+      src: url('/fonts/inter-latin-ext.woff2') format('woff2');
+      unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF;
+    }
+  </style>
 
   <!-- Analytics & Ads -->
   <script async src="https://www.googletagmanager.com/gtag/js?id=G-EVGNTG49J7"></script>
@@ -64,6 +101,55 @@
   <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-4988388949365963"
     crossorigin="anonymous"></script>
 
+  <!--
+    Retire the old COOP/COEP service worker.
+
+    It was added for SharedArrayBuffer, but the FFmpeg tools load the single-threaded
+    @ffmpeg/core build, which never touches SharedArrayBuffer — verified by running a
+    conversion with crossOriginIsolated === false. Meanwhile cross-origin isolation blocked
+    every third-party image a user pastes into the Markdown Previewer, and forced a full page
+    reload on each visitor's first page view.
+
+    Returning visitors still have the worker installed and would keep getting the COEP headers
+    forever, so unregister it once and reload to drop out of the isolated context.
+  -->
+  <script>
+    (function () {
+      if (!('serviceWorker' in navigator)) return;
+      navigator.serviceWorker.getRegistrations().then(function (registrations) {
+        var removed = false;
+        for (var i = 0; i < registrations.length; i++) {
+          var url = (registrations[i].active && registrations[i].active.scriptURL) || '';
+          if (url.indexOf('coi-serviceworker') !== -1) {
+            registrations[i].unregister();
+            removed = true;
+          }
+        }
+        if (removed && window.crossOriginIsolated) window.location.reload();
+      }).catch(function () { /* nothing to clean up */ });
+    })();
+  </script>
+
+  <!--
+    Restore the URL that 404.html forwarded here, before React Router reads location.
+    GitHub Pages cannot rewrite unknown paths itself, so 404.html bounces them to
+    /?notfound=<path>; putting the real path back lets the app's "*" route render NotFound
+    at the address the visitor actually typed.
+  -->
+  <script>
+    (function () {
+      try {
+        var params = new URLSearchParams(window.location.search);
+        var requested = params.get('notfound');
+        if (requested && requested.charAt(0) === '/' && requested.charAt(1) !== '/') {
+          window.history.replaceState(null, '', requested);
+        }
+      } catch (error) {
+        console.error('[NotFound Restore] Error:', error);
+      }
+    })();
+  </script>
+
   <!-- Smart Hash URL Redirect (handles legacy #/ URLs) -->
   <script>
     (function () {
@@ -74,6 +160,18 @@
         if (hash && hash.startsWith('#/')) {
           var path = hash.slice(2); // Remove '#/'
           var search = window.location.search || '';
+
+          // A legacy link can carry its own query or fragment inside the hash
+          // (#/word-counter?tab=2). Split that off before the path is touched, otherwise the
+          // trailing slash below lands after the query string and produces "word-counter?tab=2/".
+          var extra = '';
+          var cut = path.search(/[?#]/);
+          if (cut !== -1) {
+            extra = path.slice(cut);
+            path = path.slice(0, cut);
+          }
+          // Two query strings concatenated would give "?a=1?b=2"; the second '?' becomes '&'.
+          if (search && extra.charAt(0) === '?') extra = '&' + extra.slice(1);
 
           // Auto-detect base path (works in dev and production)
           // In dev: localhost:5173 → base = '/'
@@ -88,13 +186,20 @@
           // Clean up the path (remove trailing/leading slashes)
           path = path.replace(/^\/+|\/+$/g, '');
 
-          // Build redirect URL
+          // Build redirect URL.
+          //
+          // The trailing slash is not cosmetic. GitHub Pages serves each route from
+          // dist/<route>/index.html, so /word-counter answers with a 301 to /word-counter/ —
+          // meaning the slash-less form this used to emit turned every legacy hash link into two
+          // navigations, and any of them that ended up in a canonical, a sitemap or an inbound
+          // link pointed at the redirecting URL rather than the real one. Every other internal
+          // link on the site was normalised to the trailing-slash form; this was the last hole.
           var redirectUrl;
           if (path) {
-            redirectUrl = base + path + search;
+            redirectUrl = base + path + '/' + search + extra;
           } else {
             // Just '#/' with no path - go to home
-            redirectUrl = base;
+            redirectUrl = base + search + extra;
           }
 
           // Redirect using replace (doesn't add to history)
@@ -106,13 +211,54 @@
       }
     })();
   </script>
-  <script type="module" crossorigin src="/assets/index-kvHMSlMz.js"></script>
-  <link rel="stylesheet" crossorigin href="/assets/index-CZAylM9v.css">
-  <link rel="canonical" href="https://onlinetoolsvault.com/pdf-to-png" />
+  <script type="module" crossorigin src="/assets/index-BtmU1OS0.js"></script>
+  <link rel="stylesheet" crossorigin href="/assets/index-Cv0roaG_.css">
+  <link data-rh="true" rel="canonical" href="https://onlinetoolsvault.com/pdf-to-png/" />
+  <!-- prerender:head -->
+  <script type="application/ld+json" data-rh="true">{"@context":"https://schema.org","@type":"FAQPage","mainEntity":[{"@type":"Question","name":"When is PNG the right choice over JPG?","acceptedAnswer":{"@type":"Answer","text":"Whenever the page is made of text, tables, diagrams, charts or line art — which is most documents. Lossless compression is extremely efficient on the large flat white areas that dominate a printed page, so a text page is often both smaller and visibly sharper as a PNG than as a high-quality JPEG. Switch to **PDF to JPG** when the pages are photographic, when you need the smallest possible files, or when something downstream insists on JPEG."}},{"@type":"Question","name":"Why is there no quality slider?","acceptedAnswer":{"@type":"Answer","text":"Because PNG has nothing to trade. Its compression is lossless, so there is no dial between fidelity and size — the only lever is resolution. That is a genuine simplification: pick the scale you need and the output is decided. If you find the files too large, the answer is a lower scale, or a different format."}},{"@type":"Question","name":"Are the PNGs transparent?","acceptedAnswer":{"@type":"Answer","text":"No. The canvas is filled with white before the page is drawn, so every image is fully opaque with a white background, exactly as the page would print. If you are after transparency you probably want the pictures embedded inside the document rather than photographs of its pages — **Extract Images from PDF** pulls those out with their own alpha channel intact."}},{"@type":"Question","name":"How big will the files be?","acceptedAnswer":{"@type":"Answer","text":"Much larger than JPEG for photographic content and often smaller for text. As a rough guide, an A4 text page at 2x lands in the low hundreds of kilobytes; the same page at 6x is several megabytes, because it holds nine times the pixels. A scanned photograph page can be ten times its JPEG equivalent. Check the estimated archive size on the download button before committing to a long document."}},{"@type":"Question","name":"Is this a good source for OCR or image editing?","acceptedAnswer":{"@type":"Answer","text":"Yes — it is the best of the image options for both. OCR accuracy depends heavily on clean glyph edges, and lossy artefacts around small type are exactly what confuses a recogniser, so render at 3x and feed the PNGs to **Image to Text**. The same argument applies to editing: a lossless source can be cropped, annotated and re-saved repeatedly without accumulating generational damage."}},{"@type":"Question","name":"Do annotations and form values appear in the image?","acceptedAnswer":{"@type":"Answer","text":"Yes. Annotations that carry an appearance stream — highlights, notes, stamps, and the text typed into form fields — are painted by the renderer just as a reader displays them. Converting a marked-up document to PNG is therefore a reliable way to freeze the review copy exactly as it looks."}},{"@type":"Question","name":"Can I turn the PNGs back into a PDF?","acceptedAnswer":{"@type":"Answer","text":"Yes, with **Image to PDF**, which accepts PNG among other formats and combines them into a single document with a page size and margin you choose. Be aware that the round trip is one-way in terms of content: the text became pixels at the first step and putting the pictures back in a PDF does not bring it back. For that, keep the original or use **PDF to Text**."}},{"@type":"Question","name":"A page came out blank, or the tab ran out of memory.","acceptedAnswer":{"@type":"Answer","text":"High scales are expensive: each page is held as a canvas at four bytes per pixel and then as a lossless image, and every page stays in memory until you download. An A4 page at 6x is 18 megapixels. Browsers also limit how large a single canvas may be, and an oversized page such as an A0 drawing can exceed that at high scale and render empty. Drop to 2x or 3x, or cut the document up with **Split PDF** and convert in batches."}}]}</script>
+  <!-- /prerender:head -->
 </head>
 
 <body>
-  <div id="root"></div>
+  <div id="root" data-prerendered="static"><div class="app-wrapper"><header class="site-header"><div class="container header-container"><a class="logo" href="/"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-rocket logo-icon"><path d="M4.5 16.5c-1.5 1.26-2 5-2 5s3.74-.5 5-2c.71-.84.7-2.13-.09-2.91a2.18 2.18 0 0 0-2.91-.09z"></path><path d="m12 15-3-3a22 22 0 0 1 2-3.95A12.88 12.88 0 0 1 22 2c0 2.72-.78 7.5-6 11a22.35 22.35 0 0 1-4 2z"></path><path d="M9 12H4s.55-3.03 2-4c1.62-1.08 5 0 5 0"></path><path d="M12 15v5s3.03-.55 4-2c1.08-1.62 0-5 0-5"></path></svg><span>OnlineToolsVault</span></a><nav class="nav-desktop"><a class="nav-link" href="/">Home</a><a class="nav-link" href="/about/">About</a><a class="nav-link" href="/contact/">Contact</a><div class="social-icons"><a href="https://x.com/sourcestrongai" target="_blank" rel="noopener noreferrer" class="social-icon" aria-label="Twitter"><svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-twitter "><path d="M22 4s-.7 2.1-2 3.4c1.6 10-9.4 17.3-18 11.6 2.2.1 4.4-.6 6-2C3 15.5.5 9.6 3 5c2.2 2.6 5.6 4.1 9 4-.9-4.2 4-6.6 7-3.8 1.1 0 3-1.2 3-1.2z"></path></svg></a><a href="https://www.linkedin.com/company/sourcestrongai" target="_blank" rel="noopener noreferrer" class="social-icon" aria-label="LinkedIn"><svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-linkedin "><path d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-2-2 2 2 0 0 0-2 2v7h-4v-7a6 6 0 0 1 6-6z"></path><rect width="4" height="12" x="2" y="9"></rect><circle cx="4" cy="4" r="2"></circle></svg></a></div></nav><button class="nav-mobile-btn" aria-label="Open menu" aria-expanded="false" aria-controls="mobile-menu"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-menu "><line x1="4" x2="20" y1="12" y2="12"></line><line x1="4" x2="20" y1="6" y2="6"></line><line x1="4" x2="20" y1="18" y2="18"></line></svg></button></div></header><main class="main-content"><!--$--><div class="container" style="padding: 3rem 1.5rem;"><div style="max-width: 1000px; margin: 0px auto;"><header style="margin-bottom: 3rem; text-align: center;"><h1 style="font-size: 2.5rem; font-weight: 800; margin-bottom: 0.5rem;">PDF to PNG Converter</h1><p style="color: rgb(100, 116, 139);">Convert PDF pages to lossless PNG images.</p></header><div class="tool-workspace" style="max-width: 1000px; margin: 0px auto;"><div role="presentation" tabindex="0" style="border: 2px dashed var(--border); border-radius: 1rem; padding: 4rem 2rem; text-align: center; cursor: pointer; background: white; min-height: 300px; display: flex; flex-direction: column; align-items: center; justify-content: center;"><input accept="application/pdf,.pdf" type="file" tabindex="-1" aria-label="Choose a file for PDF to PNG Converter" style="border: 0px; clip: rect(0px, 0px, 0px, 0px); clip-path: inset(50%); height: 1px; margin: 0px -1px -1px 0px; overflow: hidden; padding: 0px; position: absolute; width: 1px; white-space: nowrap;"><div style="width: 64px; height: 64px; background: rgb(224, 242, 254); border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0px auto 1.5rem; color: rgb(2, 132, 199);"><svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-file-text "><path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z"></path><path d="M14 2v4a2 2 0 0 0 2 2h4"></path><path d="M10 9H8"></path><path d="M16 13H8"></path><path d="M16 17H8"></path></svg></div><h3 style="font-size: 1.25rem; font-weight: 600; margin-bottom: 0.5rem;">Drag &amp; Drop PDF here</h3><p style="color: rgb(100, 116, 139);">or click to select file</p></div><div class="tool-content" style="margin-top: 4rem;"><div class="related-tools-section" style="margin-top: 4rem; margin-bottom: 4rem;"><h2 style="font-size: 1.8rem; font-weight: 700; margin-bottom: 2rem; text-align: center; color: var(--text-primary);">More Useful Tools</h2><div class="tools-grid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(min(280px, 100%), 1fr)); gap: 1.5rem;"><a class="tool-card" href="/pdf-to-txt/" style="text-decoration: none; color: inherit; background: var(--bg-card); border: 1px solid var(--border); border-radius: 1rem; padding: 1.5rem; transition: 0.2s; display: flex; flex-direction: column; gap: 1rem; cursor: pointer;"><div class="tool-card-header" style="display: flex; align-items: center; gap: 0.75rem;"><div class="tool-icon-wrapper" style="width: 40px; height: 40px; border-radius: 0.5rem; background: var(--primary-light); display: flex; align-items: center; justify-content: center; color: var(--primary);"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-file-text "><path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z"></path><path d="M14 2v4a2 2 0 0 0 2 2h4"></path><path d="M10 9H8"></path><path d="M16 13H8"></path><path d="M16 17H8"></path></svg></div><h3 class="tool-title" style="font-size: 1.1rem; font-weight: 600; margin: 0px;">PDF to Text</h3></div><p class="tool-description" style="font-size: 0.85rem; color: var(--text-secondary); margin: 0px; line-height: 1.5; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;">Extract raw text content from PDFs.</p></a><a class="tool-card" href="/pdf-to-word/" style="text-decoration: none; color: inherit; background: var(--bg-card); border: 1px solid var(--border); border-radius: 1rem; padding: 1.5rem; transition: 0.2s; display: flex; flex-direction: column; gap: 1rem; cursor: pointer;"><div class="tool-card-header" style="display: flex; align-items: center; gap: 0.75rem;"><div class="tool-icon-wrapper" style="width: 40px; height: 40px; border-radius: 0.5rem; background: var(--primary-light); display: flex; align-items: center; justify-content: center; color: var(--primary);"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-file-text "><path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z"></path><path d="M14 2v4a2 2 0 0 0 2 2h4"></path><path d="M10 9H8"></path><path d="M16 13H8"></path><path d="M16 17H8"></path></svg></div><h3 class="tool-title" style="font-size: 1.1rem; font-weight: 600; margin: 0px;">PDF to Word</h3></div><p class="tool-description" style="font-size: 0.85rem; color: var(--text-secondary); margin: 0px; line-height: 1.5; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;">Extract PDF text into an editable Word document.</p></a><a class="tool-card" href="/protect-pdf/" style="text-decoration: none; color: inherit; background: var(--bg-card); border: 1px solid var(--border); border-radius: 1rem; padding: 1.5rem; transition: 0.2s; display: flex; flex-direction: column; gap: 1rem; cursor: pointer;"><div class="tool-card-header" style="display: flex; align-items: center; gap: 0.75rem;"><div class="tool-icon-wrapper" style="width: 40px; height: 40px; border-radius: 0.5rem; background: var(--primary-light); display: flex; align-items: center; justify-content: center; color: var(--primary);"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-lock "><rect width="18" height="11" x="3" y="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg></div><h3 class="tool-title" style="font-size: 1.1rem; font-weight: 600; margin: 0px;">Protect PDF</h3></div><p class="tool-description" style="font-size: 0.85rem; color: var(--text-secondary); margin: 0px; line-height: 1.5; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;">Encrypt your PDF with a strong password.</p></a><a class="tool-card" href="/remove-pdf-metadata/" style="text-decoration: none; color: inherit; background: var(--bg-card); border: 1px solid var(--border); border-radius: 1rem; padding: 1.5rem; transition: 0.2s; display: flex; flex-direction: column; gap: 1rem; cursor: pointer;"><div class="tool-card-header" style="display: flex; align-items: center; gap: 0.75rem;"><div class="tool-icon-wrapper" style="width: 40px; height: 40px; border-radius: 0.5rem; background: var(--primary-light); display: flex; align-items: center; justify-content: center; color: var(--primary);"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-file-text "><path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z"></path><path d="M14 2v4a2 2 0 0 0 2 2h4"></path><path d="M10 9H8"></path><path d="M16 13H8"></path><path d="M16 17H8"></path></svg></div><h3 class="tool-title" style="font-size: 1.1rem; font-weight: 600; margin: 0px;">Remove PDF Metadata</h3></div><p class="tool-description" style="font-size: 0.85rem; color: var(--text-secondary); margin: 0px; line-height: 1.5; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;">Clean hidden metadata from PDF files.</p></a><a class="tool-card" href="/uuid-generator/" style="text-decoration: none; color: inherit; background: var(--bg-card); border: 1px solid var(--border); border-radius: 1rem; padding: 1.5rem; transition: 0.2s; display: flex; flex-direction: column; gap: 1rem; cursor: pointer;"><div class="tool-card-header" style="display: flex; align-items: center; gap: 0.75rem;"><div class="tool-icon-wrapper" style="width: 40px; height: 40px; border-radius: 0.5rem; background: var(--primary-light); display: flex; align-items: center; justify-content: center; color: var(--primary);"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-hash "><line x1="4" x2="20" y1="9" y2="9"></line><line x1="4" x2="20" y1="15" y2="15"></line><line x1="10" x2="8" y1="3" y2="21"></line><line x1="16" x2="14" y1="3" y2="21"></line></svg></div><h3 class="tool-title" style="font-size: 1.1rem; font-weight: 600; margin: 0px;">UUID Generator</h3></div><p class="tool-description" style="font-size: 0.85rem; color: var(--text-secondary); margin: 0px; line-height: 1.5; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;">Generate unique UUID v4 identifiers.</p></a><a class="tool-card" href="/heic-to-jpg/" style="text-decoration: none; color: inherit; background: var(--bg-card); border: 1px solid var(--border); border-radius: 1rem; padding: 1.5rem; transition: 0.2s; display: flex; flex-direction: column; gap: 1rem; cursor: pointer;"><div class="tool-card-header" style="display: flex; align-items: center; gap: 0.75rem;"><div class="tool-icon-wrapper" style="width: 40px; height: 40px; border-radius: 0.5rem; background: var(--primary-light); display: flex; align-items: center; justify-content: center; color: var(--primary);"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-file-image "><path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z"></path><path d="M14 2v4a2 2 0 0 0 2 2h4"></path><circle cx="10" cy="12" r="2"></circle><path d="m20 17-1.296-1.296a2.41 2.41 0 0 0-3.408 0L9 22"></path></svg></div><h3 class="tool-title" style="font-size: 1.1rem; font-weight: 600; margin: 0px;">HEIC to JPG</h3></div><p class="tool-description" style="font-size: 0.85rem; color: var(--text-secondary); margin: 0px; line-height: 1.5; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;">Convert iPhone HEIC photos to JPG format.</p></a></div></div><div class="about-section" style="background: var(--bg-card); padding: 2rem; border-radius: 1rem; border: 1px solid var(--border); margin-bottom: 2rem;"><h2 style="font-size: 1.8rem; margin-bottom: 1.5rem;">About PDF to PNG Converter</h2><p style="line-height: 1.6; color: var(--text-secondary); margin-bottom: 1rem;">Each page is drawn onto a canvas at the scale you pick and saved as a PNG — losslessly, with no quality setting because there is nothing to trade away. Download pages one at a time from the thumbnail grid, or take the whole set as converted-images.zip. The document is read and rendered inside this browser tab and never uploaded.</p><h3 style="font-size: 1.15rem; margin-top: 1.75rem; margin-bottom: 0.75rem;">Why lossless matters for documents specifically</h3><p style="line-height: 1.6; color: var(--text-secondary); margin-bottom: 1rem;">Lossy image formats were designed for photographs, where the eye tolerates the loss of fine high-frequency detail because photographs are mostly gradual transitions. A page of text is the opposite: it is almost entirely hard edges between pure black and pure white, which is exactly the information a lossy codec discards first. The result is ringing — a faint grey halo around every letterform — plus smeared hairline rules in tables and mottling in flat backgrounds.</p><p style="line-height: 1.6; color: var(--text-secondary); margin-bottom: 1rem;">PNG uses DEFLATE with per-row filtering, which stores the image exactly and happens to be very good at the sort of content documents contain: long runs of identical white pixels compress to almost nothing. So for a typical text page you get a file that is both more faithful and frequently smaller than a high-quality lossy alternative. The trade reverses on photographic pages, where lossless coding has little redundancy to exploit and files can balloon.</p><h3 style="font-size: 1.15rem; margin-top: 1.75rem; margin-bottom: 0.75rem;">Picking a resolution</h3><p style="line-height: 1.6; color: var(--text-secondary); margin-bottom: 1rem;">A PDF page is a set of vector instructions with no inherent resolution, so rasterising means choosing a scale. Because a PDF point is one seventy-second of an inch, the scale is the DPI divided by 72 — the five settings here are 1x, 1.5x, 2x, 3x and 6x, or 72, 108, 144, 216 and 432 DPI. On A4 that runs from 595 by 842 pixels up to 3570 by 5052.</p><ul style="line-height: 1.7; color: var(--text-secondary); margin-bottom: 1rem; padding-left: 1.25rem;"><li><strong>1x–1.5x</strong> — contact sheets, thumbnails, quick visual checks.</li><li><strong>2x</strong> — the default, and right for most screen use including retina displays and slide decks.</li><li><strong>3x</strong> — the sweet spot for text recognition and for images that will be printed at modest size.</li><li><strong>6x</strong> — only when you intend to crop into part of a page, or when reproducing very fine engineering detail. Expect multi-megabyte files and slow rendering.</li></ul><h3 style="font-size: 1.15rem; margin-top: 1.75rem; margin-bottom: 0.75rem;">Where these images are genuinely the right output</h3><p style="line-height: 1.6; color: var(--text-secondary); margin-bottom: 1rem;">Feeding an OCR engine, where artefacts around glyph edges directly cost you accuracy. Producing figures for documentation or a wiki, where a screenshot of a page needs to stay legible. Archiving a visual record of a signed or annotated document, since annotations and filled form values are rendered in as the reader shows them. Preparing artwork for further editing, because a lossless source survives repeated crops and re-saves without accumulating damage. And any workflow that needs the page as an opaque image on white rather than as a live document.</p><h3 style="font-size: 1.15rem; margin-top: 1.75rem; margin-bottom: 0.75rem;">What rasterising costs you</h3><p style="line-height: 1.6; color: var(--text-secondary);">Everything that made the file a document. Text stops being text: no selection, no search, no copy-paste, no links, no bookmarks, nothing for a screen reader to read. Vector artwork stops scaling — zoom past your chosen resolution and you see pixels. If you need the words, <strong>PDF to Text</strong> reads the text layer directly and <strong>PDF to Word</strong> puts it into an editable file. If you need the embedded photographs rather than pictures of pages, <strong>Extract Images from PDF</strong> pulls them out at native resolution. And if you are heading in the opposite direction, <strong>Image to PDF</strong> assembles PNGs back into a document.</p></div><div class="features-section" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 2rem;"><div class="tool-feature-block" style="padding: 1.5rem; border-radius: 1rem; border: 1px solid var(--border); background: var(--bg-card);"><div style="width: 48px; height: 48px; background: var(--primary-light); border-radius: 0.75rem; display: flex; align-items: center; justify-content: center; margin-bottom: 1rem;"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="var(--primary)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-image "><rect width="18" height="18" x="3" y="3" rx="2" ry="2"></rect><circle cx="9" cy="9" r="2"></circle><path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21"></path></svg></div><h3 style="font-size: 1.25rem; margin-bottom: 0.5rem;">Pixel-exact, every time</h3><p style="color: var(--text-secondary);">PNG stores the rendered page with DEFLATE compression, which throws nothing away. Whatever the renderer drew is what the file contains — no quality setting to get wrong, and identical settings always produce an identical image.</p></div><div class="tool-feature-block" style="padding: 1.5rem; border-radius: 1rem; border: 1px solid var(--border); background: var(--bg-card);"><div style="width: 48px; height: 48px; background: var(--primary-light); border-radius: 0.75rem; display: flex; align-items: center; justify-content: center; margin-bottom: 1rem;"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="var(--primary)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-maximize "><path d="M8 3H5a2 2 0 0 0-2 2v3"></path><path d="M21 8V5a2 2 0 0 0-2-2h-3"></path><path d="M3 16v3a2 2 0 0 0 2 2h3"></path><path d="M16 21h3a2 2 0 0 0 2-2v-3"></path></svg></div><h3 style="font-size: 1.25rem; margin-bottom: 0.5rem;">Built for type and line art</h3><p style="color: var(--text-secondary);">Lossless coding leaves the hard black-and-white boundary of a letterform intact, so there is no grey halo around small text and no smearing of hairline table rules — the artefacts that give lossy conversions of documents away.</p></div><div class="tool-feature-block" style="padding: 1.5rem; border-radius: 1rem; border: 1px solid var(--border); background: var(--bg-card);"><div style="width: 48px; height: 48px; background: var(--primary-light); border-radius: 0.75rem; display: flex; align-items: center; justify-content: center; margin-bottom: 1rem;"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="var(--primary)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-shield "><path d="M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1.17 1.17 0 0 1 1.52 0C14.51 3.81 17 5 19 5a1 1 0 0 1 1 1z"></path></svg></div><h3 style="font-size: 1.25rem; margin-bottom: 0.5rem;">Five resolutions, real numbers</h3><p style="color: var(--text-secondary);">Render at 1x, 1.5x, 2x, 3x or 6x. A PDF point is 1/72 inch, so that is 72, 108, 144, 216 and 432 DPI. Take pages individually or as converted-images.zip; nothing is uploaded at any point.</p></div></div></div></div><style>
+          .pdf-tool-toolbar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2rem;
+            flex-wrap: wrap;
+            gap: 1.5rem;
+          }
+          .pdf-file-info {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+          }
+          .pdf-controls {
+            display: flex;
+            gap: 1rem;
+            align-items: center;
+            flex-wrap: wrap;
+          }
+          
+          @media (max-width: 768px) {
+            .pdf-tool-toolbar {
+              flex-direction: column;
+              align-items: flex-start;
+            }
+            .pdf-controls {
+              width: 100%;
+              justify-content: space-between;
+              margin-top: 1rem;
+            }
+            .pdf-controls > div {
+               flex: 1;
+            }
+            .pdf-controls select, .pdf-controls button {
+              flex: 1;
+            }
+          }
+        </style><div style="max-width: 1000px; margin: 4rem auto 0px; border-top: 1px solid var(--border); padding-top: 3rem;"><h2 style="font-size: 1.8rem; font-weight: 700; margin-bottom: 2rem; text-align: center;">Frequently Asked Questions</h2><div style="display: grid; gap: 2rem;"><div><h3 style="font-size: 1.2rem; font-weight: 600; margin-bottom: 0.5rem; color: rgb(30, 41, 59);">When is PNG the right choice over JPG?</h3><p style="line-height: 1.6; color: rgb(71, 85, 105);">Whenever the page is made of text, tables, diagrams, charts or line art — which is most documents. Lossless compression is extremely efficient on the large flat white areas that dominate a printed page, so a text page is often both smaller and visibly sharper as a PNG than as a high-quality JPEG. Switch to <strong>PDF to JPG</strong> when the pages are photographic, when you need the smallest possible files, or when something downstream insists on JPEG.</p></div><div><h3 style="font-size: 1.2rem; font-weight: 600; margin-bottom: 0.5rem; color: rgb(30, 41, 59);">Why is there no quality slider?</h3><p style="line-height: 1.6; color: rgb(71, 85, 105);">Because PNG has nothing to trade. Its compression is lossless, so there is no dial between fidelity and size — the only lever is resolution. That is a genuine simplification: pick the scale you need and the output is decided. If you find the files too large, the answer is a lower scale, or a different format.</p></div><div><h3 style="font-size: 1.2rem; font-weight: 600; margin-bottom: 0.5rem; color: rgb(30, 41, 59);">Are the PNGs transparent?</h3><p style="line-height: 1.6; color: rgb(71, 85, 105);">No. The canvas is filled with white before the page is drawn, so every image is fully opaque with a white background, exactly as the page would print. If you are after transparency you probably want the pictures embedded inside the document rather than photographs of its pages — <strong>Extract Images from PDF</strong> pulls those out with their own alpha channel intact.</p></div><div><h3 style="font-size: 1.2rem; font-weight: 600; margin-bottom: 0.5rem; color: rgb(30, 41, 59);">How big will the files be?</h3><p style="line-height: 1.6; color: rgb(71, 85, 105);">Much larger than JPEG for photographic content and often smaller for text. As a rough guide, an A4 text page at 2x lands in the low hundreds of kilobytes; the same page at 6x is several megabytes, because it holds nine times the pixels. A scanned photograph page can be ten times its JPEG equivalent. Check the estimated archive size on the download button before committing to a long document.</p></div><div><h3 style="font-size: 1.2rem; font-weight: 600; margin-bottom: 0.5rem; color: rgb(30, 41, 59);">Is this a good source for OCR or image editing?</h3><p style="line-height: 1.6; color: rgb(71, 85, 105);">Yes — it is the best of the image options for both. OCR accuracy depends heavily on clean glyph edges, and lossy artefacts around small type are exactly what confuses a recogniser, so render at 3x and feed the PNGs to <strong>Image to Text</strong>. The same argument applies to editing: a lossless source can be cropped, annotated and re-saved repeatedly without accumulating generational damage.</p></div><div><h3 style="font-size: 1.2rem; font-weight: 600; margin-bottom: 0.5rem; color: rgb(30, 41, 59);">Do annotations and form values appear in the image?</h3><p style="line-height: 1.6; color: rgb(71, 85, 105);">Yes. Annotations that carry an appearance stream — highlights, notes, stamps, and the text typed into form fields — are painted by the renderer just as a reader displays them. Converting a marked-up document to PNG is therefore a reliable way to freeze the review copy exactly as it looks.</p></div><div><h3 style="font-size: 1.2rem; font-weight: 600; margin-bottom: 0.5rem; color: rgb(30, 41, 59);">Can I turn the PNGs back into a PDF?</h3><p style="line-height: 1.6; color: rgb(71, 85, 105);">Yes, with <strong>Image to PDF</strong>, which accepts PNG among other formats and combines them into a single document with a page size and margin you choose. Be aware that the round trip is one-way in terms of content: the text became pixels at the first step and putting the pictures back in a PDF does not bring it back. For that, keep the original or use <strong>PDF to Text</strong>.</p></div><div><h3 style="font-size: 1.2rem; font-weight: 600; margin-bottom: 0.5rem; color: rgb(30, 41, 59);">A page came out blank, or the tab ran out of memory.</h3><p style="line-height: 1.6; color: rgb(71, 85, 105);">High scales are expensive: each page is held as a canvas at four bytes per pixel and then as a lossless image, and every page stays in memory until you download. An A4 page at 6x is 18 megapixels. Browsers also limit how large a single canvas may be, and an oversized page such as an A0 drawing can exceed that at high scale and render empty. Drop to 2x or 3x, or cut the document up with <strong>Split PDF</strong> and convert in batches.</p></div></div></div></div></div><!--/$--></main><footer class="site-footer"><div class="container footer-content"><div class="footer-brand"><h3>OnlineToolsVault</h3><p>Premium, free-to-use online tools for everyone. Free, Fast, Secure and Privacy Focused<br>You can check the source code <a href="https://github.com/OnlineToolsVault/OnlineToolsVault.github.io" target="_blank" rel="noopener noreferrer" style="color: var(--primary); text-decoration: underline;">here</a>.</p></div><div class="footer-links"><div class="footer-col"><h4>Popular Tools</h4><ul><li><a href="/merge-pdf/">Merge PDF</a></li><li><a href="/compress-pdf/">Compress PDF</a></li><li><a href="/image-compressor/">Image Compressor</a></li><li><a href="/qr-generator/">QR Generator</a></li></ul></div><div class="footer-col"><h4>Company</h4><ul><li><a href="/about/">About Us</a></li><li><a href="/contact/">Contact</a></li><li><a href="/privacy/">Privacy Policy</a></li><li><a href="/terms/">Terms of Service</a></li></ul></div><div class="footer-col"><h4>Connect</h4><ul><li><a href="https://x.com/sourcestrongai" target="_blank" rel="noopener noreferrer">Twitter</a></li><li><a href="https://github.com/OnlineToolsVault" target="_blank" rel="noopener noreferrer">GitHub</a></li><li><a href="https://www.linkedin.com/company/sourcestrongai" target="_blank" rel="noopener noreferrer">LinkedIn</a></li></ul></div></div></div><div class="container footer-bottom"><p>© 2026 Source Strong AI. All Rights Reserved. Managed under <a href="/terms/" style="color: inherit; text-decoration: underline;">Proprietary License</a>.</p><p style="display: flex; align-items: center; gap: 0.25rem;">Made with <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-heart "><path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z"></path></svg> for the web</p></div></footer></div></div>
 </body>
 
 </html>

@@ -2,21 +2,20 @@
 <html lang="en">
 
 <head>
-  <script src="/coi-serviceworker.js"></script>
   <meta charset="UTF-8" />
   <link rel="icon" type="image/svg+xml" href="/vite.svg" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Color Picker | OnlineToolsVault</title>
-  <meta name="description" content="Advanced color picker. Get HEX, RGB, HSL, and CMYK codes from a color wheel or image palette." />
+  <title data-rh="true">Online Color Picker - HEX RGB HSL Converter</title>
+  <meta data-rh="true" name="description" content="Pick a colour with your system picker and copy it as HEX, RGB or HSL, all re-derived from one editable hex field. sRGB only - no CMYK, alpha or palettes." />
 
   <!-- SEO & Social Meta Tags -->
   <meta name="robots" content="index, follow" />
 
   <meta property="og:type" content="website" />
-  <meta property="og:title" content="Color Picker | OnlineToolsVault" />
-  <meta property="og:description" content="Advanced color picker. Get HEX, RGB, HSL, and CMYK codes from a color wheel or image palette." />
-  <meta property="og:url" content="https://onlinetoolsvault.com/color-picker" />
-  <meta property="og:site_name" content="FreeTools" />
+  <meta property="og:title" content="Online Color Picker - HEX RGB HSL Converter" />
+  <meta property="og:description" content="Pick a colour with your system picker and copy it as HEX, RGB or HSL, all re-derived from one editable hex field. sRGB only - no CMYK, alpha or palettes." />
+  <meta property="og:url" content="https://onlinetoolsvault.com/color-picker/" />
+  <meta property="og:site_name" content="OnlineToolsVault" />
   <meta property="og:image" content="https://onlinetoolsvault.com/og/color-picker.png" />
   <meta property="og:image:width" content="1200" />
   <meta property="og:image:height" content="630" />
@@ -24,8 +23,8 @@
 
   <meta name="twitter:card" content="summary_large_image" />
   <meta name="twitter:site" content="@sourcestrongai" />
-  <meta name="twitter:title" content="Color Picker | OnlineToolsVault" />
-  <meta name="twitter:description" content="Advanced color picker. Get HEX, RGB, HSL, and CMYK codes from a color wheel or image palette." />
+  <meta name="twitter:title" content="Online Color Picker - HEX RGB HSL Converter" />
+  <meta name="twitter:description" content="Pick a colour with your system picker and copy it as HEX, RGB or HSL, all re-derived from one editable hex field. sRGB only - no CMYK, alpha or palettes." />
   <meta name="twitter:image" content="https://onlinetoolsvault.com/og/color-picker.png" />
   <meta name="twitter:image:alt" content="Color Picker — OnlineToolsVault" />
   <meta name="twitter:creator" content="@sourcestrongai" />
@@ -35,7 +34,7 @@
     {
       "@context": "https://schema.org",
       "@type": "WebApplication",
-      "name": "FreeTools",
+      "name": "OnlineToolsVault",
       "url": "https://onlinetoolsvault.com/",
       "description": "Collection of free online client-side tools for PDF and image processing.",
       "applicationCategory": "Utility",
@@ -48,10 +47,48 @@
     }
   </script>
 
-  <!-- Preconnect to Google Fonts -->
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <!--
+    Inter, served from this origin.
+
+    This used to be a <link> to fonts.googleapis.com, which made every one of the 89 routes open a
+    connection to Google (and then a second one to fonts.gstatic.com) before it could paint text —
+    the last off-origin request common to all pages, and one that handed a third party the IP of
+    every visitor on a site whose whole pitch is that nothing leaves the browser.
+
+    scripts/copy-runtime-assets.js stages the two woff2 files into public/fonts at build time.
+    Change a filename or a unicode-range here and change it there; the script re-checks the ranges
+    against what Google serves and warns when they drift.
+
+    These are the *variable* faces (`font-weight: 100 900`), which is what Google was already
+    serving: css2 answers `wght@400;500;600;700;800` with the same single file declared five times,
+    so all five weights come out of one 48 KB download exactly as before.
+
+    Only latin is preloaded. latin-ext is a further 83 KB that the unicode-range below keeps unread
+    unless a page actually contains one of its characters, which no page currently does — preloading
+    it would cost every visitor 83 KB for nothing. `crossorigin` is required even though the file is
+    same-origin: fonts are always fetched in CORS mode, and without it the preload is discarded and
+    the file downloaded twice.
+  -->
+  <link rel="preload" href="/fonts/inter-latin.woff2" as="font" type="font/woff2" crossorigin>
+  <style>
+    @font-face {
+      font-family: 'Inter';
+      font-style: normal;
+      font-weight: 100 900;
+      font-display: swap;
+      src: url('/fonts/inter-latin.woff2') format('woff2');
+      unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+    }
+
+    @font-face {
+      font-family: 'Inter';
+      font-style: normal;
+      font-weight: 100 900;
+      font-display: swap;
+      src: url('/fonts/inter-latin-ext.woff2') format('woff2');
+      unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF;
+    }
+  </style>
 
   <!-- Analytics & Ads -->
   <script async src="https://www.googletagmanager.com/gtag/js?id=G-EVGNTG49J7"></script>
@@ -64,6 +101,55 @@
   <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-4988388949365963"
     crossorigin="anonymous"></script>
 
+  <!--
+    Retire the old COOP/COEP service worker.
+
+    It was added for SharedArrayBuffer, but the FFmpeg tools load the single-threaded
+    @ffmpeg/core build, which never touches SharedArrayBuffer — verified by running a
+    conversion with crossOriginIsolated === false. Meanwhile cross-origin isolation blocked
+    every third-party image a user pastes into the Markdown Previewer, and forced a full page
+    reload on each visitor's first page view.
+
+    Returning visitors still have the worker installed and would keep getting the COEP headers
+    forever, so unregister it once and reload to drop out of the isolated context.
+  -->
+  <script>
+    (function () {
+      if (!('serviceWorker' in navigator)) return;
+      navigator.serviceWorker.getRegistrations().then(function (registrations) {
+        var removed = false;
+        for (var i = 0; i < registrations.length; i++) {
+          var url = (registrations[i].active && registrations[i].active.scriptURL) || '';
+          if (url.indexOf('coi-serviceworker') !== -1) {
+            registrations[i].unregister();
+            removed = true;
+          }
+        }
+        if (removed && window.crossOriginIsolated) window.location.reload();
+      }).catch(function () { /* nothing to clean up */ });
+    })();
+  </script>
+
+  <!--
+    Restore the URL that 404.html forwarded here, before React Router reads location.
+    GitHub Pages cannot rewrite unknown paths itself, so 404.html bounces them to
+    /?notfound=<path>; putting the real path back lets the app's "*" route render NotFound
+    at the address the visitor actually typed.
+  -->
+  <script>
+    (function () {
+      try {
+        var params = new URLSearchParams(window.location.search);
+        var requested = params.get('notfound');
+        if (requested && requested.charAt(0) === '/' && requested.charAt(1) !== '/') {
+          window.history.replaceState(null, '', requested);
+        }
+      } catch (error) {
+        console.error('[NotFound Restore] Error:', error);
+      }
+    })();
+  </script>
+
   <!-- Smart Hash URL Redirect (handles legacy #/ URLs) -->
   <script>
     (function () {
@@ -74,6 +160,18 @@
         if (hash && hash.startsWith('#/')) {
           var path = hash.slice(2); // Remove '#/'
           var search = window.location.search || '';
+
+          // A legacy link can carry its own query or fragment inside the hash
+          // (#/word-counter?tab=2). Split that off before the path is touched, otherwise the
+          // trailing slash below lands after the query string and produces "word-counter?tab=2/".
+          var extra = '';
+          var cut = path.search(/[?#]/);
+          if (cut !== -1) {
+            extra = path.slice(cut);
+            path = path.slice(0, cut);
+          }
+          // Two query strings concatenated would give "?a=1?b=2"; the second '?' becomes '&'.
+          if (search && extra.charAt(0) === '?') extra = '&' + extra.slice(1);
 
           // Auto-detect base path (works in dev and production)
           // In dev: localhost:5173 → base = '/'
@@ -88,13 +186,20 @@
           // Clean up the path (remove trailing/leading slashes)
           path = path.replace(/^\/+|\/+$/g, '');
 
-          // Build redirect URL
+          // Build redirect URL.
+          //
+          // The trailing slash is not cosmetic. GitHub Pages serves each route from
+          // dist/<route>/index.html, so /word-counter answers with a 301 to /word-counter/ —
+          // meaning the slash-less form this used to emit turned every legacy hash link into two
+          // navigations, and any of them that ended up in a canonical, a sitemap or an inbound
+          // link pointed at the redirecting URL rather than the real one. Every other internal
+          // link on the site was normalised to the trailing-slash form; this was the last hole.
           var redirectUrl;
           if (path) {
-            redirectUrl = base + path + search;
+            redirectUrl = base + path + '/' + search + extra;
           } else {
             // Just '#/' with no path - go to home
-            redirectUrl = base;
+            redirectUrl = base + search + extra;
           }
 
           // Redirect using replace (doesn't add to history)
@@ -106,13 +211,16 @@
       }
     })();
   </script>
-  <script type="module" crossorigin src="/assets/index-kvHMSlMz.js"></script>
-  <link rel="stylesheet" crossorigin href="/assets/index-CZAylM9v.css">
-  <link rel="canonical" href="https://onlinetoolsvault.com/color-picker" />
+  <script type="module" crossorigin src="/assets/index-BtmU1OS0.js"></script>
+  <link rel="stylesheet" crossorigin href="/assets/index-Cv0roaG_.css">
+  <link data-rh="true" rel="canonical" href="https://onlinetoolsvault.com/color-picker/" />
+  <!-- prerender:head -->
+  <script type="application/ld+json" data-rh="true">{"@context":"https://schema.org","@type":"FAQPage","mainEntity":[{"@type":"Question","name":"What hex formats can I paste into the box?","acceptedAnswer":{"@type":"Answer","text":"Four shapes are accepted: three digits or six, each with or without a leading hash. A three-digit value is expanded by doubling every character, so #abc becomes #aabbcc — that is the same rule CSS uses, not an approximation. Everything is normalised to lower case internally. Eight-digit hex with an alpha channel is not accepted, because there is nowhere on this page to show opacity."}},{"@type":"Question","name":"Why did nothing happen when I typed a partial value?","acceptedAnswer":{"@type":"Answer","text":"By design. The swatch only updates once the text forms a complete three- or six-digit colour, so typing the middle of a hex code does not flash the preview to black and back. If your value never takes effect, check for a stray character — a trailing space is fine and is trimmed, but a quote or semicolon copied along from a stylesheet is not."}},{"@type":"Question","name":"The HEX copy button gave me exactly what I typed, not the normalised value.","acceptedAnswer":{"@type":"Answer","text":"That is what it does: the hex copy hands over the literal contents of the text field, so typing abc copies abc rather than #aabbcc. If you want the canonical six-digit form, let the swatch write it back first — pick any colour from the native dialog and the field is replaced with a full lower-case #rrggbb value."}},{"@type":"Question","name":"How exact is the HSL conversion?","acceptedAnswer":{"@type":"Answer","text":"Hue is rounded to a whole degree, and saturation and lightness to one decimal place. That is precise enough that the colour is visually identical, but converting hex to HSL and typing the HSL back into a stylesheet can land a shade or two off the original byte values. When exactness matters — brand colours, design tokens, anything that gets diffed — store the hex and treat the HSL as a reading aid."}},{"@type":"Question","name":"Why does grey come out as hue zero?","acceptedAnswer":{"@type":"Answer","text":"Because a fully desaturated colour has no hue. When red, green and blue are equal the chroma is zero, the hue calculation has nothing to work with, and the convention is to report zero degrees. Pure white and pure black behave the same way. It is not a bug, and raising the saturation from that state will give you red unless you set the hue first."}},{"@type":"Question","name":"Do you support CMYK, LAB, OKLCH or alpha?","acceptedAnswer":{"@type":"Answer","text":"No. This page handles sRGB only, in the three notations shown. CMYK is deliberately absent: a meaningful conversion needs an ICC profile for the specific press and paper, and any tool that produces CMYK from a hex code without one is guessing. For LAB and OKLCH you want a colour-space calculator; for transparency, append an alpha channel to the rgb or hsl value yourself."}},{"@type":"Question","name":"Does it generate a palette or check contrast?","acceptedAnswer":{"@type":"Answer","text":"Not currently — this is a picker and a converter for one colour at a time. There is no tint and shade ladder, no complementary scheme and no WCAG contrast ratio. For accessibility work you need a dedicated contrast checker that takes both foreground and background and reports the ratio against the 4.5-to-1 and 3-to-1 thresholds."}},{"@type":"Question","name":"Is the colour I pick sent anywhere?","acceptedAnswer":{"@type":"Answer","text":"No. Everything here is arithmetic on a string: the hex is parsed, converted and rendered inside this tab, with no network request at any point. Nothing is stored either, so reloading the page returns it to the default blue rather than your last colour."}}]}</script>
+  <!-- /prerender:head -->
 </head>
 
 <body>
-  <div id="root"></div>
+  <div id="root" data-prerendered="static"><div class="app-wrapper"><header class="site-header"><div class="container header-container"><a class="logo" href="/"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-rocket logo-icon"><path d="M4.5 16.5c-1.5 1.26-2 5-2 5s3.74-.5 5-2c.71-.84.7-2.13-.09-2.91a2.18 2.18 0 0 0-2.91-.09z"></path><path d="m12 15-3-3a22 22 0 0 1 2-3.95A12.88 12.88 0 0 1 22 2c0 2.72-.78 7.5-6 11a22.35 22.35 0 0 1-4 2z"></path><path d="M9 12H4s.55-3.03 2-4c1.62-1.08 5 0 5 0"></path><path d="M12 15v5s3.03-.55 4-2c1.08-1.62 0-5 0-5"></path></svg><span>OnlineToolsVault</span></a><nav class="nav-desktop"><a class="nav-link" href="/">Home</a><a class="nav-link" href="/about/">About</a><a class="nav-link" href="/contact/">Contact</a><div class="social-icons"><a href="https://x.com/sourcestrongai" target="_blank" rel="noopener noreferrer" class="social-icon" aria-label="Twitter"><svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-twitter "><path d="M22 4s-.7 2.1-2 3.4c1.6 10-9.4 17.3-18 11.6 2.2.1 4.4-.6 6-2C3 15.5.5 9.6 3 5c2.2 2.6 5.6 4.1 9 4-.9-4.2 4-6.6 7-3.8 1.1 0 3-1.2 3-1.2z"></path></svg></a><a href="https://www.linkedin.com/company/sourcestrongai" target="_blank" rel="noopener noreferrer" class="social-icon" aria-label="LinkedIn"><svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-linkedin "><path d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-2-2 2 2 0 0 0-2 2v7h-4v-7a6 6 0 0 1 6-6z"></path><rect width="4" height="12" x="2" y="9"></rect><circle cx="4" cy="4" r="2"></circle></svg></a></div></nav><button class="nav-mobile-btn" aria-label="Open menu" aria-expanded="false" aria-controls="mobile-menu"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-menu "><line x1="4" x2="20" y1="12" y2="12"></line><line x1="4" x2="20" y1="6" y2="6"></line><line x1="4" x2="20" y1="18" y2="18"></line></svg></button></div></header><main class="main-content"><!--$--><div class="container" style="padding: 3rem 1.5rem;"><div style="max-width: 1000px; margin: 0px auto;"><header style="margin-bottom: 3rem; text-align: center;"><h1 style="font-size: 2.5rem; font-weight: 800; margin-bottom: 0.5rem;">Color Picker</h1><p style="color: rgb(100, 116, 139);">Pick colors and convert between HEX, RGB, and HSL formats.</p></header><div class="tool-workspace" style="max-width: 1000px; margin: 0px auto; padding: 2rem; background: white; border-radius: 1rem; border: 1px solid var(--border);"><div style="display: flex; gap: 2rem; flex-wrap: wrap; justify-content: center;"><div><input type="color" aria-label="Color swatch" value="#3b82f6" style="width: 200px; height: 200px; border-width: medium; border-style: none; border-color: currentcolor; border-image: none; cursor: pointer; background: none;"></div><div style="flex: 1 1 0%; display: flex; flex-direction: column; gap: 1.5rem; justify-content: center;"><div><label for="color-picker-hex" style="display: block; margin-bottom: 0.5rem; font-weight: bold;">HEX</label><div style="display: flex; gap: 0.5rem;"><input id="color-picker-hex" type="text" spellcheck="false" placeholder="#3b82f6" value="#3b82f6" style="flex: 1 1 0%; min-width: 0px; padding: 0.75rem; font-size: 1.2rem; font-family: monospace; border-radius: 0.5rem; border: 1px solid var(--border);"><button title="Copy HEX" style="padding: 0px 0.75rem; border-radius: 0.5rem; border: 1px solid var(--border); background: white; color: var(--text-secondary); cursor: pointer; display: flex; align-items: center;"><svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-copy "><rect width="14" height="14" x="8" y="8" rx="2" ry="2"></rect><path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"></path></svg></button></div></div><div><label for="color-picker-rgb" style="display: block; margin-bottom: 0.5rem; font-weight: bold;">RGB</label><div style="display: flex; gap: 0.5rem;"><input id="color-picker-rgb" type="text" readonly="" value="rgb(59, 130, 246)" style="flex: 1 1 0%; min-width: 0px; padding: 0.75rem; font-size: 1.2rem; font-family: monospace; border-radius: 0.5rem; border: 1px solid var(--border);"><button title="Copy RGB" style="padding: 0px 0.75rem; border-radius: 0.5rem; border: 1px solid var(--border); background: white; color: var(--text-secondary); cursor: pointer; display: flex; align-items: center;"><svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-copy "><rect width="14" height="14" x="8" y="8" rx="2" ry="2"></rect><path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"></path></svg></button></div></div><div><label for="color-picker-hsl" style="display: block; margin-bottom: 0.5rem; font-weight: bold;">HSL</label><div style="display: flex; gap: 0.5rem;"><input id="color-picker-hsl" type="text" readonly="" value="hsl(217, 91%, 60%)" style="flex: 1 1 0%; min-width: 0px; padding: 0.75rem; font-size: 1.2rem; font-family: monospace; border-radius: 0.5rem; border: 1px solid var(--border);"><button title="Copy HSL" style="padding: 0px 0.75rem; border-radius: 0.5rem; border: 1px solid var(--border); background: white; color: var(--text-secondary); cursor: pointer; display: flex; align-items: center;"><svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-copy "><rect width="14" height="14" x="8" y="8" rx="2" ry="2"></rect><path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"></path></svg></button></div></div></div></div></div><div class="tool-content" style="margin-top: 4rem;"><div class="related-tools-section" style="margin-top: 4rem; margin-bottom: 4rem;"><h2 style="font-size: 1.8rem; font-weight: 700; margin-bottom: 2rem; text-align: center; color: var(--text-primary);">More Useful Tools</h2><div class="tools-grid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(min(280px, 100%), 1fr)); gap: 1.5rem;"><a class="tool-card" href="/cron-parser/" style="text-decoration: none; color: inherit; background: var(--bg-card); border: 1px solid var(--border); border-radius: 1rem; padding: 1.5rem; transition: 0.2s; display: flex; flex-direction: column; gap: 1rem; cursor: pointer;"><div class="tool-card-header" style="display: flex; align-items: center; gap: 0.75rem;"><div class="tool-icon-wrapper" style="width: 40px; height: 40px; border-radius: 0.5rem; background: var(--primary-light); display: flex; align-items: center; justify-content: center; color: var(--primary);"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-clock "><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg></div><h3 class="tool-title" style="font-size: 1.1rem; font-weight: 600; margin: 0px;">Cron Parser</h3></div><p class="tool-description" style="font-size: 0.85rem; color: var(--text-secondary); margin: 0px; line-height: 1.5; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;">Translate Cron expressions into plain English.</p></a><a class="tool-card" href="/css-formatter/" style="text-decoration: none; color: inherit; background: var(--bg-card); border: 1px solid var(--border); border-radius: 1rem; padding: 1.5rem; transition: 0.2s; display: flex; flex-direction: column; gap: 1rem; cursor: pointer;"><div class="tool-card-header" style="display: flex; align-items: center; gap: 0.75rem;"><div class="tool-icon-wrapper" style="width: 40px; height: 40px; border-radius: 0.5rem; background: var(--primary-light); display: flex; align-items: center; justify-content: center; color: var(--primary);"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-code "><polyline points="16 18 22 12 16 6"></polyline><polyline points="8 6 2 12 8 18"></polyline></svg></div><h3 class="tool-title" style="font-size: 1.1rem; font-weight: 600; margin: 0px;">CSS Formatter</h3></div><p class="tool-description" style="font-size: 0.85rem; color: var(--text-secondary); margin: 0px; line-height: 1.5; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;">Beautify and re-indent CSS stylesheets.</p></a><a class="tool-card" href="/html-formatter/" style="text-decoration: none; color: inherit; background: var(--bg-card); border: 1px solid var(--border); border-radius: 1rem; padding: 1.5rem; transition: 0.2s; display: flex; flex-direction: column; gap: 1rem; cursor: pointer;"><div class="tool-card-header" style="display: flex; align-items: center; gap: 0.75rem;"><div class="tool-icon-wrapper" style="width: 40px; height: 40px; border-radius: 0.5rem; background: var(--primary-light); display: flex; align-items: center; justify-content: center; color: var(--primary);"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-code "><polyline points="16 18 22 12 16 6"></polyline><polyline points="8 6 2 12 8 18"></polyline></svg></div><h3 class="tool-title" style="font-size: 1.1rem; font-weight: 600; margin: 0px;">HTML Formatter</h3></div><p class="tool-description" style="font-size: 0.85rem; color: var(--text-secondary); margin: 0px; line-height: 1.5; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;">Format, indent, and beautify HTML code.</p></a><a class="tool-card" href="/js-formatter/" style="text-decoration: none; color: inherit; background: var(--bg-card); border: 1px solid var(--border); border-radius: 1rem; padding: 1.5rem; transition: 0.2s; display: flex; flex-direction: column; gap: 1rem; cursor: pointer;"><div class="tool-card-header" style="display: flex; align-items: center; gap: 0.75rem;"><div class="tool-icon-wrapper" style="width: 40px; height: 40px; border-radius: 0.5rem; background: var(--primary-light); display: flex; align-items: center; justify-content: center; color: var(--primary);"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-code "><polyline points="16 18 22 12 16 6"></polyline><polyline points="8 6 2 12 8 18"></polyline></svg></div><h3 class="tool-title" style="font-size: 1.1rem; font-weight: 600; margin: 0px;">JS Formatter</h3></div><p class="tool-description" style="font-size: 0.85rem; color: var(--text-secondary); margin: 0px; line-height: 1.5; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;">Format and beautify JavaScript code.</p></a><a class="tool-card" href="/image-cropper/" style="text-decoration: none; color: inherit; background: var(--bg-card); border: 1px solid var(--border); border-radius: 1rem; padding: 1.5rem; transition: 0.2s; display: flex; flex-direction: column; gap: 1rem; cursor: pointer;"><div class="tool-card-header" style="display: flex; align-items: center; gap: 0.75rem;"><div class="tool-icon-wrapper" style="width: 40px; height: 40px; border-radius: 0.5rem; background: var(--primary-light); display: flex; align-items: center; justify-content: center; color: var(--primary);"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-crop "><path d="M6 2v14a2 2 0 0 0 2 2h14"></path><path d="M18 22V8a2 2 0 0 0-2-2H2"></path></svg></div><h3 class="tool-title" style="font-size: 1.1rem; font-weight: 600; margin: 0px;">Image Cropper</h3></div><p class="tool-description" style="font-size: 0.85rem; color: var(--text-secondary); margin: 0px; line-height: 1.5; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;">Crop images to custom sizes and aspect ratios.</p></a><a class="tool-card" href="/passport-photo-maker/" style="text-decoration: none; color: inherit; background: var(--bg-card); border: 1px solid var(--border); border-radius: 1rem; padding: 1.5rem; transition: 0.2s; display: flex; flex-direction: column; gap: 1rem; cursor: pointer;"><div class="tool-card-header" style="display: flex; align-items: center; gap: 0.75rem;"><div class="tool-icon-wrapper" style="width: 40px; height: 40px; border-radius: 0.5rem; background: var(--primary-light); display: flex; align-items: center; justify-content: center; color: var(--primary);"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-file-image "><path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z"></path><path d="M14 2v4a2 2 0 0 0 2 2h4"></path><circle cx="10" cy="12" r="2"></circle><path d="m20 17-1.296-1.296a2.41 2.41 0 0 0-3.408 0L9 22"></path></svg></div><h3 class="tool-title" style="font-size: 1.1rem; font-weight: 600; margin: 0px;">Passport Photo Maker</h3></div><p class="tool-description" style="font-size: 0.85rem; color: var(--text-secondary); margin: 0px; line-height: 1.5; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;">Create ID and passport photos fast.</p></a></div></div><div class="about-section" style="background: var(--bg-card); padding: 2rem; border-radius: 1rem; border: 1px solid var(--border); margin-bottom: 2rem;"><h2 style="font-size: 1.8rem; margin-bottom: 1.5rem;">About Online Color Picker</h2><p style="line-height: 1.6; color: var(--text-secondary); margin-bottom: 1rem;">One colour, shown three ways. Drag the swatch or type a hex code, and the RGB and HSL fields below it re-derive on every keystroke. All three notations describe the same point in the sRGB space, so nothing is lost moving between them — they are different ways of writing the same number, chosen to suit different jobs.</p><h3 style="font-size: 1.15rem; font-weight: 600; margin: 1.75rem 0px 0.75rem;">Which notation to reach for</h3><p style="line-height: 1.6; color: var(--text-secondary); margin-bottom: 1rem;"><strong>HEX</strong> is the compact form for committing a fixed colour: six digits, two per channel, unambiguous in a stylesheet or a design file. <strong>RGB</strong> exposes the three channels as decimals from 0 to 255, which is what you need when a value is being computed — an animation interpolating between two colours, or a canvas drawing call.<strong> HSL</strong> is the one to use when you are designing rather than specifying. Because hue, saturation and lightness are separate axes, you can build a whole scale from one colour by holding the hue and moving lightness, something that is guesswork in hex.</p><h3 style="font-size: 1.15rem; font-weight: 600; margin: 1.75rem 0px 0.75rem;">How the conversion is done</h3><p style="line-height: 1.6; color: var(--text-secondary); margin-bottom: 1rem;">Hex to RGB is a straight base-16 read: each pair of characters is one byte per channel. Hex to HSL is real geometry rather than a lookup. The three channels are scaled to the range 0 to 1, the largest and smallest are found, and their difference gives the chroma. Lightness is the midpoint of that pair; saturation is the chroma divided by how much room is left at that lightness; and hue is the angle on the colour wheel, determined by which channel is the largest and how far the other two sit from it. The result is rounded — hue to a whole degree, saturation and lightness to one decimal — so the HSL you see is faithful to the eye but is not a bit-exact round trip back to the original hex.</p><h3 style="font-size: 1.15rem; font-weight: 600; margin: 1.75rem 0px 0.75rem;">The swatch is your system picker</h3><p style="line-height: 1.6; color: var(--text-secondary); margin-bottom: 1rem;">The large square is a native colour input, not a custom widget, so clicking it hands off to the operating system. On macOS that is the standard colour panel with its sliders, palettes and magnifier; on Windows and Linux it is whatever the browser provides, and recent Chrome and Edge builds include an eyedropper for sampling any pixel on screen. Whatever you choose there is written straight back into the hex field as a normalised lower-case value.</p><h3 style="font-size: 1.15rem; font-weight: 600; margin: 1.75rem 0px 0.75rem;">What this page deliberately leaves out</h3><p style="line-height: 1.6; color: var(--text-secondary); margin-bottom: 1rem;">There is no alpha channel, no CMYK, no palette builder and no contrast checker. CMYK is the significant omission and it is intentional: converting sRGB to ink requires an ICC profile for the specific press, ink set and paper stock, and a browser tool that produces four numbers without one is inventing them. If you are preparing artwork for print, do the conversion in the application that owns the output profile. Everything on this page is arithmetic performed in your browser, with no request made and nothing stored between visits.</p></div><div class="features-section" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 2rem;"><div class="tool-feature-block" style="padding: 1.5rem; border-radius: 1rem; border: 1px solid var(--border); background: var(--bg-card);"><div style="width: 48px; height: 48px; background: var(--primary-light); border-radius: 0.75rem; display: flex; align-items: center; justify-content: center; margin-bottom: 1rem;"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="var(--primary)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-refresh-cw "><path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8"></path><path d="M21 3v5h-5"></path><path d="M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16"></path><path d="M8 16H3v5"></path></svg></div><h3 style="font-size: 1.25rem; margin-bottom: 0.5rem;">Three Notations, One Source Of Truth</h3><p style="color: var(--text-secondary);">HEX is the one editable field; the RGB and HSL boxes are read-only and re-derive from it on every keystroke. You set the colour by hex or by the swatch, and copy it out in whichever of the three notations your stylesheet wants.</p></div><div class="tool-feature-block" style="padding: 1.5rem; border-radius: 1rem; border: 1px solid var(--border); background: var(--bg-card);"><div style="width: 48px; height: 48px; background: var(--primary-light); border-radius: 0.75rem; display: flex; align-items: center; justify-content: center; margin-bottom: 1rem;"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="var(--primary)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-palette "><circle cx="13.5" cy="6.5" r=".5" fill="currentColor"></circle><circle cx="17.5" cy="10.5" r=".5" fill="currentColor"></circle><circle cx="8.5" cy="7.5" r=".5" fill="currentColor"></circle><circle cx="6.5" cy="12.5" r=".5" fill="currentColor"></circle><path d="M12 2C6.5 2 2 6.5 2 12s4.5 10 10 10c.926 0 1.648-.746 1.648-1.688 0-.437-.18-.835-.437-1.125-.29-.289-.438-.652-.438-1.125a1.64 1.64 0 0 1 1.668-1.668h1.996c3.051 0 5.555-2.503 5.555-5.554C21.965 6.012 17.461 2 12 2z"></path></svg></div><h3 style="font-size: 1.25rem; margin-bottom: 0.5rem;">Your Operating System’s Picker</h3><p style="color: var(--text-secondary);">The large swatch is a native colour input, so clicking it opens the same dialog your design apps use — spectrum, sliders, recent swatches, and on platforms that provide one, a screen eyedropper for sampling any pixel.</p></div><div class="tool-feature-block" style="padding: 1.5rem; border-radius: 1rem; border: 1px solid var(--border); background: var(--bg-card);"><div style="width: 48px; height: 48px; background: var(--primary-light); border-radius: 0.75rem; display: flex; align-items: center; justify-content: center; margin-bottom: 1rem;"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="var(--primary)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-copy "><rect width="14" height="14" x="8" y="8" rx="2" ry="2"></rect><path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"></path></svg></div><h3 style="font-size: 1.25rem; margin-bottom: 0.5rem;">Forgiving Hex Entry</h3><p style="color: var(--text-secondary);">Type with or without the leading hash, in three digits or six, upper or lower case. Half-finished input leaves the swatch on the last valid colour instead of snapping to black while you are still typing.</p></div></div></div><div style="max-width: 1000px; margin: 4rem auto 0px; border-top: 1px solid var(--border); padding-top: 3rem;"><h2 style="font-size: 1.8rem; font-weight: 700; margin-bottom: 2rem; text-align: center;">Frequently Asked Questions</h2><div style="display: grid; gap: 2rem;"><div><h3 style="font-size: 1.2rem; font-weight: 600; margin-bottom: 0.5rem; color: rgb(30, 41, 59);">What hex formats can I paste into the box?</h3><p style="line-height: 1.6; color: rgb(71, 85, 105);">Four shapes are accepted: three digits or six, each with or without a leading hash. A three-digit value is expanded by doubling every character, so #abc becomes #aabbcc — that is the same rule CSS uses, not an approximation. Everything is normalised to lower case internally. Eight-digit hex with an alpha channel is not accepted, because there is nowhere on this page to show opacity.</p></div><div><h3 style="font-size: 1.2rem; font-weight: 600; margin-bottom: 0.5rem; color: rgb(30, 41, 59);">Why did nothing happen when I typed a partial value?</h3><p style="line-height: 1.6; color: rgb(71, 85, 105);">By design. The swatch only updates once the text forms a complete three- or six-digit colour, so typing the middle of a hex code does not flash the preview to black and back. If your value never takes effect, check for a stray character — a trailing space is fine and is trimmed, but a quote or semicolon copied along from a stylesheet is not.</p></div><div><h3 style="font-size: 1.2rem; font-weight: 600; margin-bottom: 0.5rem; color: rgb(30, 41, 59);">The HEX copy button gave me exactly what I typed, not the normalised value.</h3><p style="line-height: 1.6; color: rgb(71, 85, 105);">That is what it does: the hex copy hands over the literal contents of the text field, so typing abc copies abc rather than #aabbcc. If you want the canonical six-digit form, let the swatch write it back first — pick any colour from the native dialog and the field is replaced with a full lower-case #rrggbb value.</p></div><div><h3 style="font-size: 1.2rem; font-weight: 600; margin-bottom: 0.5rem; color: rgb(30, 41, 59);">How exact is the HSL conversion?</h3><p style="line-height: 1.6; color: rgb(71, 85, 105);">Hue is rounded to a whole degree, and saturation and lightness to one decimal place. That is precise enough that the colour is visually identical, but converting hex to HSL and typing the HSL back into a stylesheet can land a shade or two off the original byte values. When exactness matters — brand colours, design tokens, anything that gets diffed — store the hex and treat the HSL as a reading aid.</p></div><div><h3 style="font-size: 1.2rem; font-weight: 600; margin-bottom: 0.5rem; color: rgb(30, 41, 59);">Why does grey come out as hue zero?</h3><p style="line-height: 1.6; color: rgb(71, 85, 105);">Because a fully desaturated colour has no hue. When red, green and blue are equal the chroma is zero, the hue calculation has nothing to work with, and the convention is to report zero degrees. Pure white and pure black behave the same way. It is not a bug, and raising the saturation from that state will give you red unless you set the hue first.</p></div><div><h3 style="font-size: 1.2rem; font-weight: 600; margin-bottom: 0.5rem; color: rgb(30, 41, 59);">Do you support CMYK, LAB, OKLCH or alpha?</h3><p style="line-height: 1.6; color: rgb(71, 85, 105);">No. This page handles sRGB only, in the three notations shown. CMYK is deliberately absent: a meaningful conversion needs an ICC profile for the specific press and paper, and any tool that produces CMYK from a hex code without one is guessing. For LAB and OKLCH you want a colour-space calculator; for transparency, append an alpha channel to the rgb or hsl value yourself.</p></div><div><h3 style="font-size: 1.2rem; font-weight: 600; margin-bottom: 0.5rem; color: rgb(30, 41, 59);">Does it generate a palette or check contrast?</h3><p style="line-height: 1.6; color: rgb(71, 85, 105);">Not currently — this is a picker and a converter for one colour at a time. There is no tint and shade ladder, no complementary scheme and no WCAG contrast ratio. For accessibility work you need a dedicated contrast checker that takes both foreground and background and reports the ratio against the 4.5-to-1 and 3-to-1 thresholds.</p></div><div><h3 style="font-size: 1.2rem; font-weight: 600; margin-bottom: 0.5rem; color: rgb(30, 41, 59);">Is the colour I pick sent anywhere?</h3><p style="line-height: 1.6; color: rgb(71, 85, 105);">No. Everything here is arithmetic on a string: the hex is parsed, converted and rendered inside this tab, with no network request at any point. Nothing is stored either, so reloading the page returns it to the default blue rather than your last colour.</p></div></div></div></div></div><!--/$--></main><footer class="site-footer"><div class="container footer-content"><div class="footer-brand"><h3>OnlineToolsVault</h3><p>Premium, free-to-use online tools for everyone. Free, Fast, Secure and Privacy Focused<br>You can check the source code <a href="https://github.com/OnlineToolsVault/OnlineToolsVault.github.io" target="_blank" rel="noopener noreferrer" style="color: var(--primary); text-decoration: underline;">here</a>.</p></div><div class="footer-links"><div class="footer-col"><h4>Popular Tools</h4><ul><li><a href="/merge-pdf/">Merge PDF</a></li><li><a href="/compress-pdf/">Compress PDF</a></li><li><a href="/image-compressor/">Image Compressor</a></li><li><a href="/qr-generator/">QR Generator</a></li></ul></div><div class="footer-col"><h4>Company</h4><ul><li><a href="/about/">About Us</a></li><li><a href="/contact/">Contact</a></li><li><a href="/privacy/">Privacy Policy</a></li><li><a href="/terms/">Terms of Service</a></li></ul></div><div class="footer-col"><h4>Connect</h4><ul><li><a href="https://x.com/sourcestrongai" target="_blank" rel="noopener noreferrer">Twitter</a></li><li><a href="https://github.com/OnlineToolsVault" target="_blank" rel="noopener noreferrer">GitHub</a></li><li><a href="https://www.linkedin.com/company/sourcestrongai" target="_blank" rel="noopener noreferrer">LinkedIn</a></li></ul></div></div></div><div class="container footer-bottom"><p>© 2026 Source Strong AI. All Rights Reserved. Managed under <a href="/terms/" style="color: inherit; text-decoration: underline;">Proprietary License</a>.</p><p style="display: flex; align-items: center; gap: 0.25rem;">Made with <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-heart "><path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z"></path></svg> for the web</p></div></footer></div></div>
 </body>
 
 </html>

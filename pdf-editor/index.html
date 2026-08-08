@@ -2,21 +2,20 @@
 <html lang="en">
 
 <head>
-  <script src="/coi-serviceworker.js"></script>
   <meta charset="UTF-8" />
   <link rel="icon" type="image/svg+xml" href="/vite.svg" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>PDF Editor | OnlineToolsVault</title>
-  <meta name="description" content="Online PDF Editor. Modify PDF properties, titles, authors, and other metadata directly in your browser." />
+  <title data-rh="true">Free Online PDF Editor - Edit PDFs Securely</title>
+  <meta data-rh="true" name="description" content="Professional PDF Editor. Add text, images, shapes, and freehand drawings to your PDF documents online. 100% free and client-side secure." />
 
   <!-- SEO & Social Meta Tags -->
   <meta name="robots" content="index, follow" />
 
   <meta property="og:type" content="website" />
-  <meta property="og:title" content="PDF Editor | OnlineToolsVault" />
-  <meta property="og:description" content="Online PDF Editor. Modify PDF properties, titles, authors, and other metadata directly in your browser." />
-  <meta property="og:url" content="https://onlinetoolsvault.com/pdf-editor" />
-  <meta property="og:site_name" content="FreeTools" />
+  <meta property="og:title" content="Free Online PDF Editor - Edit PDFs Securely" />
+  <meta property="og:description" content="Professional PDF Editor. Add text, images, shapes, and freehand drawings to your PDF documents online. 100% free and client-side secure." />
+  <meta property="og:url" content="https://onlinetoolsvault.com/pdf-editor/" />
+  <meta property="og:site_name" content="OnlineToolsVault" />
   <meta property="og:image" content="https://onlinetoolsvault.com/og/pdf-editor.png" />
   <meta property="og:image:width" content="1200" />
   <meta property="og:image:height" content="630" />
@@ -24,8 +23,8 @@
 
   <meta name="twitter:card" content="summary_large_image" />
   <meta name="twitter:site" content="@sourcestrongai" />
-  <meta name="twitter:title" content="PDF Editor | OnlineToolsVault" />
-  <meta name="twitter:description" content="Online PDF Editor. Modify PDF properties, titles, authors, and other metadata directly in your browser." />
+  <meta name="twitter:title" content="Free Online PDF Editor - Edit PDFs Securely" />
+  <meta name="twitter:description" content="Professional PDF Editor. Add text, images, shapes, and freehand drawings to your PDF documents online. 100% free and client-side secure." />
   <meta name="twitter:image" content="https://onlinetoolsvault.com/og/pdf-editor.png" />
   <meta name="twitter:image:alt" content="PDF Editor — OnlineToolsVault" />
   <meta name="twitter:creator" content="@sourcestrongai" />
@@ -35,7 +34,7 @@
     {
       "@context": "https://schema.org",
       "@type": "WebApplication",
-      "name": "FreeTools",
+      "name": "OnlineToolsVault",
       "url": "https://onlinetoolsvault.com/",
       "description": "Collection of free online client-side tools for PDF and image processing.",
       "applicationCategory": "Utility",
@@ -48,10 +47,48 @@
     }
   </script>
 
-  <!-- Preconnect to Google Fonts -->
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <!--
+    Inter, served from this origin.
+
+    This used to be a <link> to fonts.googleapis.com, which made every one of the 89 routes open a
+    connection to Google (and then a second one to fonts.gstatic.com) before it could paint text —
+    the last off-origin request common to all pages, and one that handed a third party the IP of
+    every visitor on a site whose whole pitch is that nothing leaves the browser.
+
+    scripts/copy-runtime-assets.js stages the two woff2 files into public/fonts at build time.
+    Change a filename or a unicode-range here and change it there; the script re-checks the ranges
+    against what Google serves and warns when they drift.
+
+    These are the *variable* faces (`font-weight: 100 900`), which is what Google was already
+    serving: css2 answers `wght@400;500;600;700;800` with the same single file declared five times,
+    so all five weights come out of one 48 KB download exactly as before.
+
+    Only latin is preloaded. latin-ext is a further 83 KB that the unicode-range below keeps unread
+    unless a page actually contains one of its characters, which no page currently does — preloading
+    it would cost every visitor 83 KB for nothing. `crossorigin` is required even though the file is
+    same-origin: fonts are always fetched in CORS mode, and without it the preload is discarded and
+    the file downloaded twice.
+  -->
+  <link rel="preload" href="/fonts/inter-latin.woff2" as="font" type="font/woff2" crossorigin>
+  <style>
+    @font-face {
+      font-family: 'Inter';
+      font-style: normal;
+      font-weight: 100 900;
+      font-display: swap;
+      src: url('/fonts/inter-latin.woff2') format('woff2');
+      unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+    }
+
+    @font-face {
+      font-family: 'Inter';
+      font-style: normal;
+      font-weight: 100 900;
+      font-display: swap;
+      src: url('/fonts/inter-latin-ext.woff2') format('woff2');
+      unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF;
+    }
+  </style>
 
   <!-- Analytics & Ads -->
   <script async src="https://www.googletagmanager.com/gtag/js?id=G-EVGNTG49J7"></script>
@@ -64,6 +101,55 @@
   <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-4988388949365963"
     crossorigin="anonymous"></script>
 
+  <!--
+    Retire the old COOP/COEP service worker.
+
+    It was added for SharedArrayBuffer, but the FFmpeg tools load the single-threaded
+    @ffmpeg/core build, which never touches SharedArrayBuffer — verified by running a
+    conversion with crossOriginIsolated === false. Meanwhile cross-origin isolation blocked
+    every third-party image a user pastes into the Markdown Previewer, and forced a full page
+    reload on each visitor's first page view.
+
+    Returning visitors still have the worker installed and would keep getting the COEP headers
+    forever, so unregister it once and reload to drop out of the isolated context.
+  -->
+  <script>
+    (function () {
+      if (!('serviceWorker' in navigator)) return;
+      navigator.serviceWorker.getRegistrations().then(function (registrations) {
+        var removed = false;
+        for (var i = 0; i < registrations.length; i++) {
+          var url = (registrations[i].active && registrations[i].active.scriptURL) || '';
+          if (url.indexOf('coi-serviceworker') !== -1) {
+            registrations[i].unregister();
+            removed = true;
+          }
+        }
+        if (removed && window.crossOriginIsolated) window.location.reload();
+      }).catch(function () { /* nothing to clean up */ });
+    })();
+  </script>
+
+  <!--
+    Restore the URL that 404.html forwarded here, before React Router reads location.
+    GitHub Pages cannot rewrite unknown paths itself, so 404.html bounces them to
+    /?notfound=<path>; putting the real path back lets the app's "*" route render NotFound
+    at the address the visitor actually typed.
+  -->
+  <script>
+    (function () {
+      try {
+        var params = new URLSearchParams(window.location.search);
+        var requested = params.get('notfound');
+        if (requested && requested.charAt(0) === '/' && requested.charAt(1) !== '/') {
+          window.history.replaceState(null, '', requested);
+        }
+      } catch (error) {
+        console.error('[NotFound Restore] Error:', error);
+      }
+    })();
+  </script>
+
   <!-- Smart Hash URL Redirect (handles legacy #/ URLs) -->
   <script>
     (function () {
@@ -74,6 +160,18 @@
         if (hash && hash.startsWith('#/')) {
           var path = hash.slice(2); // Remove '#/'
           var search = window.location.search || '';
+
+          // A legacy link can carry its own query or fragment inside the hash
+          // (#/word-counter?tab=2). Split that off before the path is touched, otherwise the
+          // trailing slash below lands after the query string and produces "word-counter?tab=2/".
+          var extra = '';
+          var cut = path.search(/[?#]/);
+          if (cut !== -1) {
+            extra = path.slice(cut);
+            path = path.slice(0, cut);
+          }
+          // Two query strings concatenated would give "?a=1?b=2"; the second '?' becomes '&'.
+          if (search && extra.charAt(0) === '?') extra = '&' + extra.slice(1);
 
           // Auto-detect base path (works in dev and production)
           // In dev: localhost:5173 → base = '/'
@@ -88,13 +186,20 @@
           // Clean up the path (remove trailing/leading slashes)
           path = path.replace(/^\/+|\/+$/g, '');
 
-          // Build redirect URL
+          // Build redirect URL.
+          //
+          // The trailing slash is not cosmetic. GitHub Pages serves each route from
+          // dist/<route>/index.html, so /word-counter answers with a 301 to /word-counter/ —
+          // meaning the slash-less form this used to emit turned every legacy hash link into two
+          // navigations, and any of them that ended up in a canonical, a sitemap or an inbound
+          // link pointed at the redirecting URL rather than the real one. Every other internal
+          // link on the site was normalised to the trailing-slash form; this was the last hole.
           var redirectUrl;
           if (path) {
-            redirectUrl = base + path + search;
+            redirectUrl = base + path + '/' + search + extra;
           } else {
             // Just '#/' with no path - go to home
-            redirectUrl = base;
+            redirectUrl = base + search + extra;
           }
 
           // Redirect using replace (doesn't add to history)
@@ -106,13 +211,16 @@
       }
     })();
   </script>
-  <script type="module" crossorigin src="/assets/index-kvHMSlMz.js"></script>
-  <link rel="stylesheet" crossorigin href="/assets/index-CZAylM9v.css">
-  <link rel="canonical" href="https://onlinetoolsvault.com/pdf-editor" />
+  <script type="module" crossorigin src="/assets/index-BtmU1OS0.js"></script>
+  <link rel="stylesheet" crossorigin href="/assets/index-Cv0roaG_.css">
+  <link data-rh="true" rel="canonical" href="https://onlinetoolsvault.com/pdf-editor/" />
+  <!-- prerender:head -->
+  <script type="application/ld+json" data-rh="true">{"@context":"https://schema.org","@type":"FAQPage","mainEntity":[{"@type":"Question","name":"Can I change the text that is already in the PDF?","acceptedAnswer":{"@type":"Answer","text":"No. A PDF stores glyphs at fixed positions in subset fonts, not editable paragraphs, so there is no text run to retype. Use the route that works: draw a rectangle over the old text with a white fill and a border width of zero, then add the replacement with the Text tool."}},{"@type":"Question","name":"Is my document uploaded anywhere?","acceptedAnswer":{"@type":"Answer","text":"No. The file is read from disk with the browser File API, drawn by pdf.js, edited on a canvas and written back out by pdf-lib, all inside this tab. Once the editor has loaded you can disconnect from the network and it still works."}},{"@type":"Question","name":"How do I sign a document here?","acceptedAnswer":{"@type":"Answer","text":"Either pick Freehand Draw, turn the brush size down and sign with a trackpad, mouse or touchscreen, or photograph a signature you already have, save it as a PNG with a transparent background and place it with Add Image. Either way the mark lands on the page you are viewing and can be dragged and resized before you download."}},{"@type":"Question","name":"What does Redact actually delete?","acceptedAnswer":{"@type":"Answer","text":"The page underneath the box. On download that page is re-rendered at 150 DPI, your boxes are painted over the raster, and the image is written as the page in a newly built document, so the hidden text is not in the output for an extractor to find. The trade-off is that the whole page becomes an image: nothing on it stays selectable, and the file grows."}},{"@type":"Question","name":"Why is the text I typed not selectable in the saved file?","acceptedAnswer":{"@type":"Answer","text":"Because annotations are stamped in as a raster layer: the editing surface is a canvas, and on save it is exported as a PNG and drawn over the page. It prints correctly, but it is a picture of text, so search will not find it and reopening the file here gives a flat page rather than editable objects."}},{"@type":"Question","name":"Saving says the PDF is password-protected. Now what?","acceptedAnswer":{"@type":"Answer","text":"There are two kinds of protection. A permissions-only password, common on bank statements and invoices, is handled for you: the save path opens the document with an empty password. A PDF that needs a password to open is different — pdf.js will not display it at all, so it fails when you add the file. Run it through the Unlock PDF tool first, then open the unlocked copy here."}},{"@type":"Question","name":"Can I add, delete, reorder or rotate pages?","acceptedAnswer":{"@type":"Answer","text":"Not in this editor: what you download has the same pages, in the same order, as what you opened. Organize PDF reorders and deletes, Rotate PDF fixes orientation, Merge PDF and Split PDF change the page count. Do the structural work first, then bring the result here to annotate."}}]}</script>
+  <!-- /prerender:head -->
 </head>
 
 <body>
-  <div id="root"></div>
+  <div id="root" data-prerendered="static"><div class="app-wrapper"><header class="site-header"><div class="container header-container"><a class="logo" href="/"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-rocket logo-icon"><path d="M4.5 16.5c-1.5 1.26-2 5-2 5s3.74-.5 5-2c.71-.84.7-2.13-.09-2.91a2.18 2.18 0 0 0-2.91-.09z"></path><path d="m12 15-3-3a22 22 0 0 1 2-3.95A12.88 12.88 0 0 1 22 2c0 2.72-.78 7.5-6 11a22.35 22.35 0 0 1-4 2z"></path><path d="M9 12H4s.55-3.03 2-4c1.62-1.08 5 0 5 0"></path><path d="M12 15v5s3.03-.55 4-2c1.08-1.62 0-5 0-5"></path></svg><span>OnlineToolsVault</span></a><nav class="nav-desktop"><a class="nav-link" href="/">Home</a><a class="nav-link" href="/about/">About</a><a class="nav-link" href="/contact/">Contact</a><div class="social-icons"><a href="https://x.com/sourcestrongai" target="_blank" rel="noopener noreferrer" class="social-icon" aria-label="Twitter"><svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-twitter "><path d="M22 4s-.7 2.1-2 3.4c1.6 10-9.4 17.3-18 11.6 2.2.1 4.4-.6 6-2C3 15.5.5 9.6 3 5c2.2 2.6 5.6 4.1 9 4-.9-4.2 4-6.6 7-3.8 1.1 0 3-1.2 3-1.2z"></path></svg></a><a href="https://www.linkedin.com/company/sourcestrongai" target="_blank" rel="noopener noreferrer" class="social-icon" aria-label="LinkedIn"><svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-linkedin "><path d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-2-2 2 2 0 0 0-2 2v7h-4v-7a6 6 0 0 1 6-6z"></path><rect width="4" height="12" x="2" y="9"></rect><circle cx="4" cy="4" r="2"></circle></svg></a></div></nav><button class="nav-mobile-btn" aria-label="Open menu" aria-expanded="false" aria-controls="mobile-menu"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-menu "><line x1="4" x2="20" y1="12" y2="12"></line><line x1="4" x2="20" y1="6" y2="6"></line><line x1="4" x2="20" y1="18" y2="18"></line></svg></button></div></header><main class="main-content"><!--$--><div class="tool-workspace" style="padding: 4rem 1.5rem; min-height: 80vh; display: flex; flex-direction: column; align-items: center; justify-content: center;"><header style="margin-bottom: 3rem; text-align: center;"><h1 style="font-size: 3rem; font-weight: 800; margin-bottom: 1rem; background-image: ; background-position-x: ; background-position-y: ; background-size: ; background-repeat: ; background-attachment: ; background-origin: ; background-clip: text; background-color: ; -webkit-text-fill-color: transparent;">Professional PDF Editor</h1><p style="color: rgb(100, 116, 139); font-size: 1.25rem;">Annotate, sign and redact a PDF in your browser. The file is opened, edited and saved on this device.</p></header><div role="presentation" tabindex="0" style="width: 100%; max-width: 600px; border: 3px dashed var(--border); border-radius: 1.5rem; padding: 4rem 2rem; text-align: center; cursor: pointer; background: white; transition: 0.3s; box-shadow: rgba(0, 0, 0, 0.1) 0px 20px 25px -5px, rgba(0, 0, 0, 0.04) 0px 10px 10px -5px;"><input accept="application/pdf,.pdf" type="file" tabindex="-1" aria-label="Choose a file for file" style="border: 0px; clip: rect(0px, 0px, 0px, 0px); clip-path: inset(50%); height: 1px; margin: 0px -1px -1px 0px; overflow: hidden; padding: 0px; position: absolute; width: 1px; white-space: nowrap;"><div style="width: 80px; height: 80px; background: var(--secondary); border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0px auto 1.5rem; color: var(--primary);"><svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-upload "><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="17 8 12 3 7 8"></polyline><line x1="12" x2="12" y1="3" y2="15"></line></svg></div><h3 style="font-size: 1.5rem; font-weight: 700; margin-bottom: 0.5rem;">Upload PDF Document</h3><p style="color: rgb(100, 116, 139);">Drag &amp; drop or click to browse</p></div><section style="margin-top: 4rem; width: 100%; max-width: 1000px;"><h2 style="font-size: 1.75rem; font-weight: 700; margin-bottom: 1.5rem; text-align: center;">What The Editor Gives You</h2><div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 2rem;"><div class="tool-feature-block" style="padding: 2rem; background: white; border-radius: 1rem; border: 1px solid var(--border);"><h3 style="font-size: 1.1rem; font-weight: 700; margin-bottom: 0.5rem;">Seven Tools On One Overlay</h3><p style="color: rgb(100, 116, 139); font-size: 0.9rem; line-height: 1.6;">Select, Text, Freehand Draw, Highlight, Rectangle, Circle and Redact, plus Add Image. Everything you place sits on an editable layer above the page and can be moved, resized, recoloured or deleted until you download.</p></div><div class="tool-feature-block" style="padding: 2rem; background: white; border-radius: 1rem; border: 1px solid var(--border);"><h3 style="font-size: 1.1rem; font-weight: 700; margin-bottom: 0.5rem;">Properties Follow The Selection</h3><p style="color: rgb(100, 116, 139); font-size: 0.9rem; line-height: 1.6;">The right panel tracks the active tool and whatever you click: eight swatches plus a colour picker, font size 8 to 72, brush size 1 to 50, border width up to 20, highlight opacity 10 to 100 per cent.</p></div><div class="tool-feature-block" style="padding: 2rem; background: white; border-radius: 1rem; border: 1px solid var(--border);"><h3 style="font-size: 1.1rem; font-weight: 700; margin-bottom: 0.5rem;">Undo Per Page, Fifty Deep</h3><p style="color: rgb(100, 116, 139); font-size: 0.9rem; line-height: 1.6;">Each page keeps its own history, up to fifty snapshots or eight megabytes. A burst of typing collapses into one entry, and Delete or Backspace removes the selection.</p></div><div class="tool-feature-block" style="padding: 2rem; background: white; border-radius: 1rem; border: 1px solid var(--border);"><h3 style="font-size: 1.1rem; font-weight: 700; margin-bottom: 0.5rem;">Untouched Pages Are Copied, Not Rebuilt</h3><p style="color: rgb(100, 116, 139); font-size: 0.9rem; line-height: 1.6;">Only pages carrying annotations are rewritten on save. The rest are copied from the original, so their text stays selectable and their quality is unchanged.</p></div><div class="tool-feature-block" style="padding: 2rem; background: white; border-radius: 1rem; border: 1px solid var(--border);"><h3 style="font-size: 1.1rem; font-weight: 700; margin-bottom: 0.5rem;">Redaction Removes Rather Than Covers</h3><p style="color: rgb(100, 116, 139); font-size: 0.9rem; line-height: 1.6;">A redaction box replaces its page with a flat 150 DPI image of the page plus your boxes, so the text underneath is gone from the file rather than hidden behind something.</p></div><div class="tool-feature-block" style="padding: 2rem; background: white; border-radius: 1rem; border: 1px solid var(--border);"><h3 style="font-size: 1.1rem; font-weight: 700; margin-bottom: 0.5rem;">Nothing Leaves This Tab</h3><p style="color: rgb(100, 116, 139); font-size: 0.9rem; line-height: 1.6;">pdf.js draws the pages, pdf-lib writes the result, both in your browser. No upload, no server round trip, and it keeps working offline once loaded.</p></div></div></section><section style="margin-top: 4rem; width: 100%; max-width: 800px; background: white; padding: 2rem; border-radius: 1rem; border: 1px solid var(--border);"><h2 style="font-size: 1.75rem; font-weight: 700; margin-bottom: 1.5rem;">How This PDF Editor Works</h2><p style="color: rgb(100, 116, 139); font-size: 0.95rem; line-height: 1.7; margin-bottom: 1rem;">Drop a PDF on the panel above and pdf.js parses it in the page. Each sheet becomes a page object: the left column renders thumbnails from the top, one at a time, and the main area draws every page onto a canvas with a transparent editing layer stacked over it. Zoom runs from 50 to 300 per cent in ten-point steps, applied instantly as a CSS transform and re-rasterised 300 milliseconds after you stop clicking, so the page stays sharp without a full re-render on every press.</p><p style="color: rgb(100, 116, 139); font-size: 0.95rem; line-height: 1.7; margin-bottom: 1rem;">Long documents render as a moving window. Only pages within about 1,200 pixels of the viewport hold a bitmap; scroll past one and its raster, plus the backing store of the two canvases behind it, is released and rebuilt when it comes back. Annotations, layout and undo history all survive, because only pixels are discarded. A single page raster is capped at four million pixels, device pixel ratio at two, and pages are rasterised one at a time through a queue, so a few hundred pages stay workable.</p><p style="color: rgb(100, 116, 139); font-size: 0.95rem; line-height: 1.7; margin-bottom: 1rem;">Clicking with the Text tool puts a caret where you clicked; type and the box stays, click away without typing and it is dropped. Rectangle and Circle place a starter shape you drag and resize by its handles. Draw and Highlight are brush modes, the highlight carrying an alpha value from the opacity slider. Add Image scales a picture to 200 pixels wide and centres it on the page you are looking at — the page with the most pixels on screen, which is also the page Undo and Redo act on.</p><p style="color: rgb(100, 116, 139); font-size: 0.95rem; line-height: 1.7; margin-bottom: 1rem;">Download rebuilds the file with pdf-lib from the original bytes, not from what is on screen. A page annotated but not redacted has its overlay exported as a transparent PNG at 150 DPI and stamped over the untouched original; a page holding a redaction box is replaced by a flat image instead. Rotated pages are anchored to the corner their rotation maps to and measured from the CropBox, which is what a viewer uses. The result arrives as edited-yourfile.pdf, or secured-yourfile.pdf when anything was redacted.</p><p style="color: rgb(100, 116, 139); font-size: 0.95rem; line-height: 1.7; margin-bottom: 1rem;">What it will not do: rewrite the text already in the document, or change its structure. A PDF holds positioned glyphs in subset fonts rather than paragraphs, so cover the old text with a white rectangle and type over it. Pages cannot be added, deleted, reordered or rotated here, and typing into a form draws on top of the field rather than filling it.</p></section><section style="margin-top: 4rem; width: 100%; max-width: 800px;"><h2 style="font-size: 1.75rem; font-weight: 700; margin-bottom: 1.5rem; text-align: center;">Frequently Asked Questions</h2><div style="display: flex; flex-direction: column; gap: 1rem;"><details style="background: white; border-radius: 0.75rem; border: 1px solid var(--border); overflow: hidden;"><summary style="padding: 1rem 1.25rem; font-weight: 600; cursor: pointer; font-size: 1rem;">Can I change the text that is already in the PDF?</summary><p style="padding: 0px 1.25rem 1rem; color: rgb(100, 116, 139); font-size: 0.95rem; line-height: 1.6;">No. A PDF stores glyphs at fixed positions in subset fonts, not editable paragraphs, so there is no text run to retype. Use the route that works: draw a rectangle over the old text with a white fill and a border width of zero, then add the replacement with the Text tool.</p></details><details style="background: white; border-radius: 0.75rem; border: 1px solid var(--border); overflow: hidden;"><summary style="padding: 1rem 1.25rem; font-weight: 600; cursor: pointer; font-size: 1rem;">Is my document uploaded anywhere?</summary><p style="padding: 0px 1.25rem 1rem; color: rgb(100, 116, 139); font-size: 0.95rem; line-height: 1.6;">No. The file is read from disk with the browser File API, drawn by pdf.js, edited on a canvas and written back out by pdf-lib, all inside this tab. Once the editor has loaded you can disconnect from the network and it still works.</p></details><details style="background: white; border-radius: 0.75rem; border: 1px solid var(--border); overflow: hidden;"><summary style="padding: 1rem 1.25rem; font-weight: 600; cursor: pointer; font-size: 1rem;">How do I sign a document here?</summary><p style="padding: 0px 1.25rem 1rem; color: rgb(100, 116, 139); font-size: 0.95rem; line-height: 1.6;">Either pick Freehand Draw, turn the brush size down and sign with a trackpad, mouse or touchscreen, or photograph a signature you already have, save it as a PNG with a transparent background and place it with Add Image. Either way the mark lands on the page you are viewing and can be dragged and resized before you download.</p></details><details style="background: white; border-radius: 0.75rem; border: 1px solid var(--border); overflow: hidden;"><summary style="padding: 1rem 1.25rem; font-weight: 600; cursor: pointer; font-size: 1rem;">What does Redact actually delete?</summary><p style="padding: 0px 1.25rem 1rem; color: rgb(100, 116, 139); font-size: 0.95rem; line-height: 1.6;">The page underneath the box. On download that page is re-rendered at 150 DPI, your boxes are painted over the raster, and the image is written as the page in a newly built document, so the hidden text is not in the output for an extractor to find. The trade-off is that the whole page becomes an image: nothing on it stays selectable, and the file grows.</p></details><details style="background: white; border-radius: 0.75rem; border: 1px solid var(--border); overflow: hidden;"><summary style="padding: 1rem 1.25rem; font-weight: 600; cursor: pointer; font-size: 1rem;">Why is the text I typed not selectable in the saved file?</summary><p style="padding: 0px 1.25rem 1rem; color: rgb(100, 116, 139); font-size: 0.95rem; line-height: 1.6;">Because annotations are stamped in as a raster layer: the editing surface is a canvas, and on save it is exported as a PNG and drawn over the page. It prints correctly, but it is a picture of text, so search will not find it and reopening the file here gives a flat page rather than editable objects.</p></details><details style="background: white; border-radius: 0.75rem; border: 1px solid var(--border); overflow: hidden;"><summary style="padding: 1rem 1.25rem; font-weight: 600; cursor: pointer; font-size: 1rem;">Saving says the PDF is password-protected. Now what?</summary><p style="padding: 0px 1.25rem 1rem; color: rgb(100, 116, 139); font-size: 0.95rem; line-height: 1.6;">There are two kinds of protection. A permissions-only password, common on bank statements and invoices, is handled for you: the save path opens the document with an empty password. A PDF that needs a password to open is different — pdf.js will not display it at all, so it fails when you add the file. Run it through the Unlock PDF tool first, then open the unlocked copy here.</p></details><details style="background: white; border-radius: 0.75rem; border: 1px solid var(--border); overflow: hidden;"><summary style="padding: 1rem 1.25rem; font-weight: 600; cursor: pointer; font-size: 1rem;">Can I add, delete, reorder or rotate pages?</summary><p style="padding: 0px 1.25rem 1rem; color: rgb(100, 116, 139); font-size: 0.95rem; line-height: 1.6;">Not in this editor: what you download has the same pages, in the same order, as what you opened. Organize PDF reorders and deletes, Rotate PDF fixes orientation, Merge PDF and Split PDF change the page count. Do the structural work first, then bring the result here to annotate.</p></details></div></section><div style="width: 100%; max-width: 1000px;"><div class="related-tools-section" style="margin-top: 4rem; margin-bottom: 4rem;"><h2 style="font-size: 1.8rem; font-weight: 700; margin-bottom: 2rem; text-align: center; color: var(--text-primary);">More Useful Tools</h2><div class="tools-grid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(min(280px, 100%), 1fr)); gap: 1.5rem;"><a class="tool-card" href="/pdf-metadata-editor/" style="text-decoration: none; color: inherit; background: var(--bg-card); border: 1px solid var(--border); border-radius: 1rem; padding: 1.5rem; transition: 0.2s; display: flex; flex-direction: column; gap: 1rem; cursor: pointer;"><div class="tool-card-header" style="display: flex; align-items: center; gap: 0.75rem;"><div class="tool-icon-wrapper" style="width: 40px; height: 40px; border-radius: 0.5rem; background: var(--primary-light); display: flex; align-items: center; justify-content: center; color: var(--primary);"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-file-text "><path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z"></path><path d="M14 2v4a2 2 0 0 0 2 2h4"></path><path d="M10 9H8"></path><path d="M16 13H8"></path><path d="M16 17H8"></path></svg></div><h3 class="tool-title" style="font-size: 1.1rem; font-weight: 600; margin: 0px;">PDF Metadata</h3></div><p class="tool-description" style="font-size: 0.85rem; color: var(--text-secondary); margin: 0px; line-height: 1.5; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;">View and edit PDF file properties.</p></a><a class="tool-card" href="/pdf-thumbnail-generator/" style="text-decoration: none; color: inherit; background: var(--bg-card); border: 1px solid var(--border); border-radius: 1rem; padding: 1.5rem; transition: 0.2s; display: flex; flex-direction: column; gap: 1rem; cursor: pointer;"><div class="tool-card-header" style="display: flex; align-items: center; gap: 0.75rem;"><div class="tool-icon-wrapper" style="width: 40px; height: 40px; border-radius: 0.5rem; background: var(--primary-light); display: flex; align-items: center; justify-content: center; color: var(--primary);"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-file-image "><path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z"></path><path d="M14 2v4a2 2 0 0 0 2 2h4"></path><circle cx="10" cy="12" r="2"></circle><path d="m20 17-1.296-1.296a2.41 2.41 0 0 0-3.408 0L9 22"></path></svg></div><h3 class="tool-title" style="font-size: 1.1rem; font-weight: 600; margin: 0px;">PDF Thumbnail Generator</h3></div><p class="tool-description" style="font-size: 0.85rem; color: var(--text-secondary); margin: 0px; line-height: 1.5; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;">Generate thumbnails from PDF pages.</p></a><a class="tool-card" href="/pdf-to-excel/" style="text-decoration: none; color: inherit; background: var(--bg-card); border: 1px solid var(--border); border-radius: 1rem; padding: 1.5rem; transition: 0.2s; display: flex; flex-direction: column; gap: 1rem; cursor: pointer;"><div class="tool-card-header" style="display: flex; align-items: center; gap: 0.75rem;"><div class="tool-icon-wrapper" style="width: 40px; height: 40px; border-radius: 0.5rem; background: var(--primary-light); display: flex; align-items: center; justify-content: center; color: var(--primary);"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-file-spreadsheet "><path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z"></path><path d="M14 2v4a2 2 0 0 0 2 2h4"></path><path d="M8 13h2"></path><path d="M14 13h2"></path><path d="M8 17h2"></path><path d="M14 17h2"></path></svg></div><h3 class="tool-title" style="font-size: 1.1rem; font-weight: 600; margin: 0px;">PDF to Excel</h3></div><p class="tool-description" style="font-size: 0.85rem; color: var(--text-secondary); margin: 0px; line-height: 1.5; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;">Extract PDF text rows into an Excel spreadsheet.</p></a><a class="tool-card" href="/pdf-to-jpg/" style="text-decoration: none; color: inherit; background: var(--bg-card); border: 1px solid var(--border); border-radius: 1rem; padding: 1.5rem; transition: 0.2s; display: flex; flex-direction: column; gap: 1rem; cursor: pointer;"><div class="tool-card-header" style="display: flex; align-items: center; gap: 0.75rem;"><div class="tool-icon-wrapper" style="width: 40px; height: 40px; border-radius: 0.5rem; background: var(--primary-light); display: flex; align-items: center; justify-content: center; color: var(--primary);"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-file-image "><path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z"></path><path d="M14 2v4a2 2 0 0 0 2 2h4"></path><circle cx="10" cy="12" r="2"></circle><path d="m20 17-1.296-1.296a2.41 2.41 0 0 0-3.408 0L9 22"></path></svg></div><h3 class="tool-title" style="font-size: 1.1rem; font-weight: 600; margin: 0px;">PDF to JPG</h3></div><p class="tool-description" style="font-size: 0.85rem; color: var(--text-secondary); margin: 0px; line-height: 1.5; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;">Convert PDF pages to high-quality images.</p></a><a class="tool-card" href="/unit-converter/" style="text-decoration: none; color: inherit; background: var(--bg-card); border: 1px solid var(--border); border-radius: 1rem; padding: 1.5rem; transition: 0.2s; display: flex; flex-direction: column; gap: 1rem; cursor: pointer;"><div class="tool-card-header" style="display: flex; align-items: center; gap: 0.75rem;"><div class="tool-icon-wrapper" style="width: 40px; height: 40px; border-radius: 0.5rem; background: var(--primary-light); display: flex; align-items: center; justify-content: center; color: var(--primary);"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-refresh-cw "><path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8"></path><path d="M21 3v5h-5"></path><path d="M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16"></path><path d="M8 16H3v5"></path></svg></div><h3 class="tool-title" style="font-size: 1.1rem; font-weight: 600; margin: 0px;">Unit Converter</h3></div><p class="tool-description" style="font-size: 0.85rem; color: var(--text-secondary); margin: 0px; line-height: 1.5; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;">Convert length, weight, temperature and data size.</p></a><a class="tool-card" href="/background-remover/" style="text-decoration: none; color: inherit; background: var(--bg-card); border: 1px solid var(--border); border-radius: 1rem; padding: 1.5rem; transition: 0.2s; display: flex; flex-direction: column; gap: 1rem; cursor: pointer;"><div class="tool-card-header" style="display: flex; align-items: center; gap: 0.75rem;"><div class="tool-icon-wrapper" style="width: 40px; height: 40px; border-radius: 0.5rem; background: var(--primary-light); display: flex; align-items: center; justify-content: center; color: var(--primary);"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-scissors "><circle cx="6" cy="6" r="3"></circle><path d="M8.12 8.12 12 12"></path><path d="M20 4 8.12 15.88"></path><circle cx="6" cy="18" r="3"></circle><path d="M14.8 14.8 20 20"></path></svg></div><h3 class="tool-title" style="font-size: 1.1rem; font-weight: 600; margin: 0px;">Background Remover</h3></div><p class="tool-description" style="font-size: 0.85rem; color: var(--text-secondary); margin: 0px; line-height: 1.5; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;">Remove image backgrounds automatically with AI.</p></a></div></div></div></div><!--/$--></main><footer class="site-footer"><div class="container footer-content"><div class="footer-brand"><h3>OnlineToolsVault</h3><p>Premium, free-to-use online tools for everyone. Free, Fast, Secure and Privacy Focused<br>You can check the source code <a href="https://github.com/OnlineToolsVault/OnlineToolsVault.github.io" target="_blank" rel="noopener noreferrer" style="color: var(--primary); text-decoration: underline;">here</a>.</p></div><div class="footer-links"><div class="footer-col"><h4>Popular Tools</h4><ul><li><a href="/merge-pdf/">Merge PDF</a></li><li><a href="/compress-pdf/">Compress PDF</a></li><li><a href="/image-compressor/">Image Compressor</a></li><li><a href="/qr-generator/">QR Generator</a></li></ul></div><div class="footer-col"><h4>Company</h4><ul><li><a href="/about/">About Us</a></li><li><a href="/contact/">Contact</a></li><li><a href="/privacy/">Privacy Policy</a></li><li><a href="/terms/">Terms of Service</a></li></ul></div><div class="footer-col"><h4>Connect</h4><ul><li><a href="https://x.com/sourcestrongai" target="_blank" rel="noopener noreferrer">Twitter</a></li><li><a href="https://github.com/OnlineToolsVault" target="_blank" rel="noopener noreferrer">GitHub</a></li><li><a href="https://www.linkedin.com/company/sourcestrongai" target="_blank" rel="noopener noreferrer">LinkedIn</a></li></ul></div></div></div><div class="container footer-bottom"><p>© 2026 Source Strong AI. All Rights Reserved. Managed under <a href="/terms/" style="color: inherit; text-decoration: underline;">Proprietary License</a>.</p><p style="display: flex; align-items: center; gap: 0.25rem;">Made with <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-heart "><path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z"></path></svg> for the web</p></div></footer></div></div>
 </body>
 
 </html>

@@ -2,21 +2,20 @@
 <html lang="en">
 
 <head>
-  <script src="/coi-serviceworker.js"></script>
   <meta charset="UTF-8" />
   <link rel="icon" type="image/svg+xml" href="/vite.svg" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Image to PDF | OnlineToolsVault</title>
-  <meta name="description" content="Universal Image to PDF converter. Turn JPG, PNG, BMP, and WebP images into a single PDF document." />
+  <title data-rh="true">Image to PDF Converter - JPG PNG WebP to PDF</title>
+  <meta data-rh="true" name="description" content="Put JPG, PNG, WebP, GIF and BMP images into one PDF, a page each, on A4, Letter or Legal. PNG transparency is carried through as a soft mask." />
 
   <!-- SEO & Social Meta Tags -->
   <meta name="robots" content="index, follow" />
 
   <meta property="og:type" content="website" />
-  <meta property="og:title" content="Image to PDF | OnlineToolsVault" />
-  <meta property="og:description" content="Universal Image to PDF converter. Turn JPG, PNG, BMP, and WebP images into a single PDF document." />
-  <meta property="og:url" content="https://onlinetoolsvault.com/image-to-pdf" />
-  <meta property="og:site_name" content="FreeTools" />
+  <meta property="og:title" content="Image to PDF Converter - JPG PNG WebP to PDF" />
+  <meta property="og:description" content="Put JPG, PNG, WebP, GIF and BMP images into one PDF, a page each, on A4, Letter or Legal. PNG transparency is carried through as a soft mask." />
+  <meta property="og:url" content="https://onlinetoolsvault.com/image-to-pdf/" />
+  <meta property="og:site_name" content="OnlineToolsVault" />
   <meta property="og:image" content="https://onlinetoolsvault.com/og/image-to-pdf.png" />
   <meta property="og:image:width" content="1200" />
   <meta property="og:image:height" content="630" />
@@ -24,8 +23,8 @@
 
   <meta name="twitter:card" content="summary_large_image" />
   <meta name="twitter:site" content="@sourcestrongai" />
-  <meta name="twitter:title" content="Image to PDF | OnlineToolsVault" />
-  <meta name="twitter:description" content="Universal Image to PDF converter. Turn JPG, PNG, BMP, and WebP images into a single PDF document." />
+  <meta name="twitter:title" content="Image to PDF Converter - JPG PNG WebP to PDF" />
+  <meta name="twitter:description" content="Put JPG, PNG, WebP, GIF and BMP images into one PDF, a page each, on A4, Letter or Legal. PNG transparency is carried through as a soft mask." />
   <meta name="twitter:image" content="https://onlinetoolsvault.com/og/image-to-pdf.png" />
   <meta name="twitter:image:alt" content="Image to PDF — OnlineToolsVault" />
   <meta name="twitter:creator" content="@sourcestrongai" />
@@ -35,7 +34,7 @@
     {
       "@context": "https://schema.org",
       "@type": "WebApplication",
-      "name": "FreeTools",
+      "name": "OnlineToolsVault",
       "url": "https://onlinetoolsvault.com/",
       "description": "Collection of free online client-side tools for PDF and image processing.",
       "applicationCategory": "Utility",
@@ -48,10 +47,48 @@
     }
   </script>
 
-  <!-- Preconnect to Google Fonts -->
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <!--
+    Inter, served from this origin.
+
+    This used to be a <link> to fonts.googleapis.com, which made every one of the 89 routes open a
+    connection to Google (and then a second one to fonts.gstatic.com) before it could paint text —
+    the last off-origin request common to all pages, and one that handed a third party the IP of
+    every visitor on a site whose whole pitch is that nothing leaves the browser.
+
+    scripts/copy-runtime-assets.js stages the two woff2 files into public/fonts at build time.
+    Change a filename or a unicode-range here and change it there; the script re-checks the ranges
+    against what Google serves and warns when they drift.
+
+    These are the *variable* faces (`font-weight: 100 900`), which is what Google was already
+    serving: css2 answers `wght@400;500;600;700;800` with the same single file declared five times,
+    so all five weights come out of one 48 KB download exactly as before.
+
+    Only latin is preloaded. latin-ext is a further 83 KB that the unicode-range below keeps unread
+    unless a page actually contains one of its characters, which no page currently does — preloading
+    it would cost every visitor 83 KB for nothing. `crossorigin` is required even though the file is
+    same-origin: fonts are always fetched in CORS mode, and without it the preload is discarded and
+    the file downloaded twice.
+  -->
+  <link rel="preload" href="/fonts/inter-latin.woff2" as="font" type="font/woff2" crossorigin>
+  <style>
+    @font-face {
+      font-family: 'Inter';
+      font-style: normal;
+      font-weight: 100 900;
+      font-display: swap;
+      src: url('/fonts/inter-latin.woff2') format('woff2');
+      unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+    }
+
+    @font-face {
+      font-family: 'Inter';
+      font-style: normal;
+      font-weight: 100 900;
+      font-display: swap;
+      src: url('/fonts/inter-latin-ext.woff2') format('woff2');
+      unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF;
+    }
+  </style>
 
   <!-- Analytics & Ads -->
   <script async src="https://www.googletagmanager.com/gtag/js?id=G-EVGNTG49J7"></script>
@@ -64,6 +101,55 @@
   <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-4988388949365963"
     crossorigin="anonymous"></script>
 
+  <!--
+    Retire the old COOP/COEP service worker.
+
+    It was added for SharedArrayBuffer, but the FFmpeg tools load the single-threaded
+    @ffmpeg/core build, which never touches SharedArrayBuffer — verified by running a
+    conversion with crossOriginIsolated === false. Meanwhile cross-origin isolation blocked
+    every third-party image a user pastes into the Markdown Previewer, and forced a full page
+    reload on each visitor's first page view.
+
+    Returning visitors still have the worker installed and would keep getting the COEP headers
+    forever, so unregister it once and reload to drop out of the isolated context.
+  -->
+  <script>
+    (function () {
+      if (!('serviceWorker' in navigator)) return;
+      navigator.serviceWorker.getRegistrations().then(function (registrations) {
+        var removed = false;
+        for (var i = 0; i < registrations.length; i++) {
+          var url = (registrations[i].active && registrations[i].active.scriptURL) || '';
+          if (url.indexOf('coi-serviceworker') !== -1) {
+            registrations[i].unregister();
+            removed = true;
+          }
+        }
+        if (removed && window.crossOriginIsolated) window.location.reload();
+      }).catch(function () { /* nothing to clean up */ });
+    })();
+  </script>
+
+  <!--
+    Restore the URL that 404.html forwarded here, before React Router reads location.
+    GitHub Pages cannot rewrite unknown paths itself, so 404.html bounces them to
+    /?notfound=<path>; putting the real path back lets the app's "*" route render NotFound
+    at the address the visitor actually typed.
+  -->
+  <script>
+    (function () {
+      try {
+        var params = new URLSearchParams(window.location.search);
+        var requested = params.get('notfound');
+        if (requested && requested.charAt(0) === '/' && requested.charAt(1) !== '/') {
+          window.history.replaceState(null, '', requested);
+        }
+      } catch (error) {
+        console.error('[NotFound Restore] Error:', error);
+      }
+    })();
+  </script>
+
   <!-- Smart Hash URL Redirect (handles legacy #/ URLs) -->
   <script>
     (function () {
@@ -74,6 +160,18 @@
         if (hash && hash.startsWith('#/')) {
           var path = hash.slice(2); // Remove '#/'
           var search = window.location.search || '';
+
+          // A legacy link can carry its own query or fragment inside the hash
+          // (#/word-counter?tab=2). Split that off before the path is touched, otherwise the
+          // trailing slash below lands after the query string and produces "word-counter?tab=2/".
+          var extra = '';
+          var cut = path.search(/[?#]/);
+          if (cut !== -1) {
+            extra = path.slice(cut);
+            path = path.slice(0, cut);
+          }
+          // Two query strings concatenated would give "?a=1?b=2"; the second '?' becomes '&'.
+          if (search && extra.charAt(0) === '?') extra = '&' + extra.slice(1);
 
           // Auto-detect base path (works in dev and production)
           // In dev: localhost:5173 → base = '/'
@@ -88,13 +186,20 @@
           // Clean up the path (remove trailing/leading slashes)
           path = path.replace(/^\/+|\/+$/g, '');
 
-          // Build redirect URL
+          // Build redirect URL.
+          //
+          // The trailing slash is not cosmetic. GitHub Pages serves each route from
+          // dist/<route>/index.html, so /word-counter answers with a 301 to /word-counter/ —
+          // meaning the slash-less form this used to emit turned every legacy hash link into two
+          // navigations, and any of them that ended up in a canonical, a sitemap or an inbound
+          // link pointed at the redirecting URL rather than the real one. Every other internal
+          // link on the site was normalised to the trailing-slash form; this was the last hole.
           var redirectUrl;
           if (path) {
-            redirectUrl = base + path + search;
+            redirectUrl = base + path + '/' + search + extra;
           } else {
             // Just '#/' with no path - go to home
-            redirectUrl = base;
+            redirectUrl = base + search + extra;
           }
 
           // Redirect using replace (doesn't add to history)
@@ -106,13 +211,16 @@
       }
     })();
   </script>
-  <script type="module" crossorigin src="/assets/index-kvHMSlMz.js"></script>
-  <link rel="stylesheet" crossorigin href="/assets/index-CZAylM9v.css">
-  <link rel="canonical" href="https://onlinetoolsvault.com/image-to-pdf" />
+  <script type="module" crossorigin src="/assets/index-BtmU1OS0.js"></script>
+  <link rel="stylesheet" crossorigin href="/assets/index-Cv0roaG_.css">
+  <link data-rh="true" rel="canonical" href="https://onlinetoolsvault.com/image-to-pdf/" />
+  <!-- prerender:head -->
+  <script type="application/ld+json" data-rh="true">{"@context":"https://schema.org","@type":"FAQPage","mainEntity":[{"@type":"Question","name":"Which formats can I actually use?","acceptedAnswer":{"@type":"Answer","text":"JPEG, PNG, WebP, GIF and BMP are the formats the converter can actually embed. The file picker filters on image/* rather than on that list, so a TIFF, HEIC or SVG can still be selected or dropped in — it will simply fail when you press Convert, with a message naming the file. Convert those first with **HEIC to JPG** for iPhone photos or **Image Converter** for everything else, then come back."}},{"@type":"Question","name":"How is each image placed on the page?","acceptedAnswer":{"@type":"Answer","text":"The available area is the page minus your margin on all four sides. The picture is scaled to the largest size that fits inside it without distorting the aspect ratio, then centred both ways. Nothing is ever cropped or stretched, so a square photograph on a portrait A4 page leaves white space above and below — that is the fit working correctly, not a bug."}},{"@type":"Question","name":"What resolution will the images be in the PDF?","acceptedAnswer":{"@type":"Answer","text":"Whatever they already are. Pixels are not resampled; the picture is simply placed at a physical size on the page. Effective print resolution is the pixel width divided by the printed width in inches — a 3000-pixel photograph across the 190 mm of an A4 page with 10 mm margins works out at about 400 DPI, comfortably beyond what any printer needs. A 640-pixel screenshot across the same width is about 85 DPI and will look soft in print."}},{"@type":"Question","name":"Does converting reduce the quality?","acceptedAnswer":{"@type":"Answer","text":"It depends on the format. JPEG data is carried into the PDF as it stands, so a photograph is not put through a second round of lossy compression — no generation loss. PNG is stored losslessly, alpha channel included. WebP, GIF and BMP are decoded and re-encoded as JPEG at maximum quality, which is a lossy step, though at that setting it is not something you will see. Either way the PDF ends up roughly the sum of your images, and a folder of 40 phone photographs makes a large document; shrink the pictures first with **Bulk Image Compressor** rather than reaching for **Compress PDF** afterwards, which does not touch image data."}},{"@type":"Question","name":"How do I control the page order?","acceptedAnswer":{"@type":"Answer","text":"Images are placed in the order the list shows them, one per page. Use the up and down arrows on each row to move a picture and the remove button to drop one. Dropping a folder in at once adds files in whatever order the operating system hands them over, which is often not alphabetical, so check the sequence before converting — this is the most common reason people redo a conversion."}},{"@type":"Question","name":"Can I fit several images on one page?","acceptedAnswer":{"@type":"Answer","text":"No — the layout is strictly one image per page. To make a contact sheet or a two-up layout, combine the pictures into a single image first with **Merge Images**, then convert that. For a photo album where each shot deserves a page, the default behaviour is already what you want."}},{"@type":"Question","name":"What happens with animated GIFs?","acceptedAnswer":{"@type":"Answer","text":"Only the first frame is placed; a PDF page cannot animate. If you need a particular frame, extract it before converting. The same one-frame rule applies to any multi-image format."}},{"@type":"Question","name":"One of my files was rejected as undecodable.","acceptedAnswer":{"@type":"Answer","text":"The message names the file. It usually means the extension does not match the actual contents — a TIFF renamed to .jpg, an HEIC copied off a phone, or a partially downloaded file. Open it in an image viewer to confirm it is intact, re-save it as JPEG or PNG, and try again. Everything happens in this browser tab, so a failure costs you nothing but the time and no image was ever uploaded."}}]}</script>
+  <!-- /prerender:head -->
 </head>
 
 <body>
-  <div id="root"></div>
+  <div id="root" data-prerendered="static"><div class="app-wrapper"><header class="site-header"><div class="container header-container"><a class="logo" href="/"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-rocket logo-icon"><path d="M4.5 16.5c-1.5 1.26-2 5-2 5s3.74-.5 5-2c.71-.84.7-2.13-.09-2.91a2.18 2.18 0 0 0-2.91-.09z"></path><path d="m12 15-3-3a22 22 0 0 1 2-3.95A12.88 12.88 0 0 1 22 2c0 2.72-.78 7.5-6 11a22.35 22.35 0 0 1-4 2z"></path><path d="M9 12H4s.55-3.03 2-4c1.62-1.08 5 0 5 0"></path><path d="M12 15v5s3.03-.55 4-2c1.08-1.62 0-5 0-5"></path></svg><span>OnlineToolsVault</span></a><nav class="nav-desktop"><a class="nav-link" href="/">Home</a><a class="nav-link" href="/about/">About</a><a class="nav-link" href="/contact/">Contact</a><div class="social-icons"><a href="https://x.com/sourcestrongai" target="_blank" rel="noopener noreferrer" class="social-icon" aria-label="Twitter"><svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-twitter "><path d="M22 4s-.7 2.1-2 3.4c1.6 10-9.4 17.3-18 11.6 2.2.1 4.4-.6 6-2C3 15.5.5 9.6 3 5c2.2 2.6 5.6 4.1 9 4-.9-4.2 4-6.6 7-3.8 1.1 0 3-1.2 3-1.2z"></path></svg></a><a href="https://www.linkedin.com/company/sourcestrongai" target="_blank" rel="noopener noreferrer" class="social-icon" aria-label="LinkedIn"><svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-linkedin "><path d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-2-2 2 2 0 0 0-2 2v7h-4v-7a6 6 0 0 1 6-6z"></path><rect width="4" height="12" x="2" y="9"></rect><circle cx="4" cy="4" r="2"></circle></svg></a></div></nav><button class="nav-mobile-btn" aria-label="Open menu" aria-expanded="false" aria-controls="mobile-menu"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-menu "><line x1="4" x2="20" y1="12" y2="12"></line><line x1="4" x2="20" y1="6" y2="6"></line><line x1="4" x2="20" y1="18" y2="18"></line></svg></button></div></header><main class="main-content"><!--$--><div class="container" style="padding: 3rem 1.5rem;"><div style="max-width: 1000px; margin: 0px auto;"><header style="margin-bottom: 3rem; text-align: center;"><h1 style="font-size: 2.5rem; font-weight: 800; margin-bottom: 0.5rem;">Image to PDF Converter</h1><p style="color: rgb(100, 116, 139);">Convert various image formats to PDF.</p></header><div class="tool-workspace" style="max-width: 1000px; margin: 0px auto;"><div style="background: white; border: 1px solid var(--border); border-radius: 1rem; padding: 2rem;"><div role="presentation" tabindex="0" style="border: 2px dashed var(--border); border-radius: 0.75rem; padding: 2rem; text-align: center; cursor: pointer; background: rgb(248, 250, 252); margin-bottom: 2rem;"><input accept="image/*,.jpg,.jpeg,.png,.webp,.gif,.bmp" multiple="" type="file" tabindex="-1" aria-label="Choose a file for Image to PDF Converter" style="border: 0px; clip: rect(0px, 0px, 0px, 0px); clip-path: inset(50%); height: 1px; margin: 0px -1px -1px 0px; overflow: hidden; padding: 0px; position: absolute; width: 1px; white-space: nowrap;"><div style="display: flex; align-items: center; justify-content: center; gap: 1rem; color: rgb(100, 116, 139);"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-upload "><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="17 8 12 3 7 8"></polyline><line x1="12" x2="12" y1="3" y2="15"></line></svg><span style="font-weight: 500;">Drop images here (JPG, PNG, WebP, GIF)</span></div></div><button disabled="" class="tool-btn-primary" style="width: 100%; padding: 1rem; background: var(--primary); color: white; border-width: medium; border-style: none; border-color: currentcolor; border-image: none; border-radius: 0.5rem; font-weight: 600; display: flex; align-items: center; justify-content: center; gap: 0.5rem; opacity: 0.5;"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-download "><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" x2="12" y1="15" y2="3"></line></svg> Convert to PDF</button></div><div class="tool-content" style="margin-top: 4rem;"><div class="related-tools-section" style="margin-top: 4rem; margin-bottom: 4rem;"><h2 style="font-size: 1.8rem; font-weight: 700; margin-bottom: 2rem; text-align: center; color: var(--text-primary);">More Useful Tools</h2><div class="tools-grid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(min(280px, 100%), 1fr)); gap: 1.5rem;"><a class="tool-card" href="/jpg-to-pdf/" style="text-decoration: none; color: inherit; background: var(--bg-card); border: 1px solid var(--border); border-radius: 1rem; padding: 1.5rem; transition: 0.2s; display: flex; flex-direction: column; gap: 1rem; cursor: pointer;"><div class="tool-card-header" style="display: flex; align-items: center; gap: 0.75rem;"><div class="tool-icon-wrapper" style="width: 40px; height: 40px; border-radius: 0.5rem; background: var(--primary-light); display: flex; align-items: center; justify-content: center; color: var(--primary);"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-image "><rect width="18" height="18" x="3" y="3" rx="2" ry="2"></rect><circle cx="9" cy="9" r="2"></circle><path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21"></path></svg></div><h3 class="tool-title" style="font-size: 1.1rem; font-weight: 600; margin: 0px;">JPG to PDF</h3></div><p class="tool-description" style="font-size: 0.85rem; color: var(--text-secondary); margin: 0px; line-height: 1.5; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;">Combine JPEG photos into a single PDF document.</p></a><a class="tool-card" href="/merge-pdf/" style="text-decoration: none; color: inherit; background: var(--bg-card); border: 1px solid var(--border); border-radius: 1rem; padding: 1.5rem; transition: 0.2s; display: flex; flex-direction: column; gap: 1rem; cursor: pointer;"><div class="tool-card-header" style="display: flex; align-items: center; gap: 0.75rem;"><div class="tool-icon-wrapper" style="width: 40px; height: 40px; border-radius: 0.5rem; background: var(--primary-light); display: flex; align-items: center; justify-content: center; color: var(--primary);"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-layers "><path d="m12.83 2.18a2 2 0 0 0-1.66 0L2.6 6.08a1 1 0 0 0 0 1.83l8.58 3.91a2 2 0 0 0 1.66 0l8.58-3.9a1 1 0 0 0 0-1.83Z"></path><path d="m22 17.65-9.17 4.16a2 2 0 0 1-1.66 0L2 17.65"></path><path d="m22 12.65-9.17 4.16a2 2 0 0 1-1.66 0L2 12.65"></path></svg></div><h3 class="tool-title" style="font-size: 1.1rem; font-weight: 600; margin: 0px;">Merge PDF</h3></div><p class="tool-description" style="font-size: 0.85rem; color: var(--text-secondary); margin: 0px; line-height: 1.5; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;">Combine multiple PDF files into one.</p></a><a class="tool-card" href="/organize-pdf/" style="text-decoration: none; color: inherit; background: var(--bg-card); border: 1px solid var(--border); border-radius: 1rem; padding: 1.5rem; transition: 0.2s; display: flex; flex-direction: column; gap: 1rem; cursor: pointer;"><div class="tool-card-header" style="display: flex; align-items: center; gap: 0.75rem;"><div class="tool-icon-wrapper" style="width: 40px; height: 40px; border-radius: 0.5rem; background: var(--primary-light); display: flex; align-items: center; justify-content: center; color: var(--primary);"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-layers "><path d="m12.83 2.18a2 2 0 0 0-1.66 0L2.6 6.08a1 1 0 0 0 0 1.83l8.58 3.91a2 2 0 0 0 1.66 0l8.58-3.9a1 1 0 0 0 0-1.83Z"></path><path d="m22 17.65-9.17 4.16a2 2 0 0 1-1.66 0L2 17.65"></path><path d="m22 12.65-9.17 4.16a2 2 0 0 1-1.66 0L2 12.65"></path></svg></div><h3 class="tool-title" style="font-size: 1.1rem; font-weight: 600; margin: 0px;">Organize PDF</h3></div><p class="tool-description" style="font-size: 0.85rem; color: var(--text-secondary); margin: 0px; line-height: 1.5; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;">Sort, reorder, and delete PDF pages.</p></a><a class="tool-card" href="/pdf-editor/" style="text-decoration: none; color: inherit; background: var(--bg-card); border: 1px solid var(--border); border-radius: 1rem; padding: 1.5rem; transition: 0.2s; display: flex; flex-direction: column; gap: 1rem; cursor: pointer;"><div class="tool-card-header" style="display: flex; align-items: center; gap: 0.75rem;"><div class="tool-icon-wrapper" style="width: 40px; height: 40px; border-radius: 0.5rem; background: var(--primary-light); display: flex; align-items: center; justify-content: center; color: var(--primary);"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-pen-line "><path d="M12 20h9"></path><path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4Z"></path></svg></div><h3 class="tool-title" style="font-size: 1.1rem; font-weight: 600; margin: 0px;">PDF Editor</h3></div><p class="tool-description" style="font-size: 0.85rem; color: var(--text-secondary); margin: 0px; line-height: 1.5; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;">Add text, images, shapes and drawings to a PDF.</p></a><a class="tool-card" href="/qr-generator/" style="text-decoration: none; color: inherit; background: var(--bg-card); border: 1px solid var(--border); border-radius: 1rem; padding: 1.5rem; transition: 0.2s; display: flex; flex-direction: column; gap: 1rem; cursor: pointer;"><div class="tool-card-header" style="display: flex; align-items: center; gap: 0.75rem;"><div class="tool-icon-wrapper" style="width: 40px; height: 40px; border-radius: 0.5rem; background: var(--primary-light); display: flex; align-items: center; justify-content: center; color: var(--primary);"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-qr-code "><rect width="5" height="5" x="3" y="3" rx="1"></rect><rect width="5" height="5" x="16" y="3" rx="1"></rect><rect width="5" height="5" x="3" y="16" rx="1"></rect><path d="M21 16h-3a2 2 0 0 0-2 2v3"></path><path d="M21 21v.01"></path><path d="M12 7v3a2 2 0 0 1-2 2H7"></path><path d="M3 12h.01"></path><path d="M12 3h.01"></path><path d="M12 16v.01"></path><path d="M16 12h1"></path><path d="M21 12v.01"></path><path d="M12 21v-1"></path></svg></div><h3 class="tool-title" style="font-size: 1.1rem; font-weight: 600; margin: 0px;">QR Generator</h3></div><p class="tool-description" style="font-size: 0.85rem; color: var(--text-secondary); margin: 0px; line-height: 1.5; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;">Create customizable QR codes for URLs and text.</p></a><a class="tool-card" href="/webp-to-jpg/" style="text-decoration: none; color: inherit; background: var(--bg-card); border: 1px solid var(--border); border-radius: 1rem; padding: 1.5rem; transition: 0.2s; display: flex; flex-direction: column; gap: 1rem; cursor: pointer;"><div class="tool-card-header" style="display: flex; align-items: center; gap: 0.75rem;"><div class="tool-icon-wrapper" style="width: 40px; height: 40px; border-radius: 0.5rem; background: var(--primary-light); display: flex; align-items: center; justify-content: center; color: var(--primary);"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-file-image "><path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z"></path><path d="M14 2v4a2 2 0 0 0 2 2h4"></path><circle cx="10" cy="12" r="2"></circle><path d="m20 17-1.296-1.296a2.41 2.41 0 0 0-3.408 0L9 22"></path></svg></div><h3 class="tool-title" style="font-size: 1.1rem; font-weight: 600; margin: 0px;">WebP to JPG</h3></div><p class="tool-description" style="font-size: 0.85rem; color: var(--text-secondary); margin: 0px; line-height: 1.5; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;">Convert WebP images to standard JPG.</p></a></div></div><div class="about-section" style="background: var(--bg-card); padding: 2rem; border-radius: 1rem; border: 1px solid var(--border); margin-bottom: 2rem;"><h2 style="font-size: 1.8rem; margin-bottom: 1.5rem;">About Image to PDF Converter</h2><p style="line-height: 1.6; color: var(--text-secondary); margin-bottom: 1rem;">Drop in a mixture of JPG, PNG, WebP, GIF and BMP files, arrange them, choose a paper size, orientation and margin, and get back a single PDF with one image per page. The document is built by JavaScript in this tab and downloads as converted-images.pdf; no picture is uploaded anywhere.</p><h3 style="font-size: 1.15rem; margin-top: 1.75rem; margin-bottom: 0.75rem;">How an image becomes a page</h3><p style="line-height: 1.6; color: var(--text-secondary); margin-bottom: 1rem;">A PDF page has physical dimensions; an image has pixels. Bridging the two means deciding how large the picture should print, and the rule here is simple and predictable. The margin you set is subtracted from all four edges, the image is scaled to the largest size that fits inside what remains without changing its proportions, and it is centred. Nothing is cropped and nothing is stretched, which is why a landscape photograph on a portrait page leaves bands of white above and below.</p><p style="line-height: 1.6; color: var(--text-secondary); margin-bottom: 1rem;">Pixels are never resampled, so print quality is decided entirely by what you feed in. Divide the pixel width by the printed width in inches to get the effective resolution: a 3000-pixel image across the 190 mm printable width of A4 gives roughly 400 DPI, while a 640-pixel screenshot across the same width gives about 85 and will look visibly soft. When the pictures are small, a larger margin always shrinks the printed width and raises the effective DPI. Orientation only helps when the page shape is the opposite of the picture's — a tall image on a landscape page is limited by the page height and comes out narrower, whereas a wide image on a landscape page gets wider, not narrower.</p><h3 style="font-size: 1.15rem; margin-top: 1.75rem; margin-bottom: 0.75rem;">Formats, and what happens to each</h3><ul style="line-height: 1.7; color: var(--text-secondary); margin-bottom: 1rem; padding-left: 1.25rem;"><li><strong>JPEG</strong> — embedded as it stands, with no second round of lossy compression. The best choice for photographs.</li><li><strong>PNG</strong> — stored losslessly, with an 8-bit alpha channel converted into a soft mask so transparency shows the white page through rather than a grey block.</li><li><strong>WebP, GIF, BMP</strong> — decoded to pixels and re-encoded as JPEG at maximum quality before being embedded, since PDF has no native filter for any of the three. Visually that is indistinguishable, but any transparency they carried is lost, and animated GIFs contribute their first frame only. Save as PNG instead if the alpha channel matters.</li><li><strong>Not convertible:</strong> TIFF, HEIC and SVG. The picker filters on image/* so it will let them in, but conversion then fails with a message naming the file. Route iPhone photos through <strong>HEIC to JPG</strong> and anything else through <strong>Image Converter</strong> first.</li></ul><h3 style="font-size: 1.15rem; margin-top: 1.75rem; margin-bottom: 0.75rem;">Practical notes on size and order</h3><p style="line-height: 1.6; color: var(--text-secondary); margin-bottom: 1rem;">The finished PDF is roughly the sum of the images that went into it, so twenty photographs from a modern phone will produce a document of tens of megabytes. If it has to go by email, compress the pictures first with <strong>Bulk Image Compressor</strong> — that is far more effective than compressing the PDF afterwards, because the images are the file. Order is taken from the list, and a folder dropped in at once arrives in whatever order the operating system supplies, which is frequently not the order the filenames suggest; the arrow buttons exist for exactly that reason.</p><h3 style="font-size: 1.15rem; margin-top: 1.75rem; margin-bottom: 0.75rem;">What this produces, and what it does not</h3><p style="line-height: 1.6; color: var(--text-secondary);">You get a document whose pages are pictures. That is exactly right for receipts, ID copies, a portfolio, photographs of a whiteboard, or anything a recipient needs to see and print as a single file. It is not a searchable document: there is no text layer, so nothing can be selected, searched or read by a screen reader. If the images are photographs of text and you need the words, run them through <strong>Image to Text</strong> for recognition. If every file is a JPEG, <strong>JPG to PDF</strong> does the same job with a picker that will not let a stray PNG in. And going the other way, <strong>PDF to JPG</strong> turns a document back into pictures.</p></div><div class="features-section" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 2rem;"><div class="tool-feature-block" style="padding: 1.5rem; border-radius: 1rem; border: 1px solid var(--border); background: var(--bg-card);"><div style="width: 48px; height: 48px; background: var(--primary-light); border-radius: 0.75rem; display: flex; align-items: center; justify-content: center; margin-bottom: 1rem;"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="var(--primary)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-file-text "><path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z"></path><path d="M14 2v4a2 2 0 0 0 2 2h4"></path><path d="M10 9H8"></path><path d="M16 13H8"></path><path d="M16 17H8"></path></svg></div><h3 style="font-size: 1.25rem; margin-bottom: 0.5rem;">Mixed formats in one document</h3><p style="color: var(--text-secondary);">JPG, PNG, WebP, GIF and BMP can all go into the same PDF, in any order. Each becomes one page, scaled to fit and centred, whatever combination of sizes and aspect ratios you throw at it.</p></div><div class="tool-feature-block" style="padding: 1.5rem; border-radius: 1rem; border: 1px solid var(--border); background: var(--bg-card);"><div style="width: 48px; height: 48px; background: var(--primary-light); border-radius: 0.75rem; display: flex; align-items: center; justify-content: center; margin-bottom: 1rem;"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="var(--primary)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-layout-template "><rect width="18" height="7" x="3" y="3" rx="1"></rect><rect width="9" height="7" x="3" y="14" rx="1"></rect><rect width="5" height="7" x="16" y="14" rx="1"></rect></svg></div><h3 style="font-size: 1.25rem; margin-bottom: 0.5rem;">Page geometry you set</h3><p style="color: var(--text-secondary);">A4, Letter or Legal, portrait or landscape, with a margin in millimetres. The margin is clamped so an over-large value can never collapse the printable area to nothing.</p></div><div class="tool-feature-block" style="padding: 1.5rem; border-radius: 1rem; border: 1px solid var(--border); background: var(--bg-card);"><div style="width: 48px; height: 48px; background: var(--primary-light); border-radius: 0.75rem; display: flex; align-items: center; justify-content: center; margin-bottom: 1rem;"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="var(--primary)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-shield-check "><path d="M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1.17 1.17 0 0 1 1.52 0C14.51 3.81 17 5 19 5a1 1 0 0 1 1 1z"></path><path d="m9 12 2 2 4-4"></path></svg></div><h3 style="font-size: 1.25rem; margin-bottom: 0.5rem;">PNG transparency carried through</h3><p style="color: var(--text-secondary);">The alpha channel of an 8-bit PNG is extracted into a soft mask, so a logo with a transparent background sits on the white page rather than arriving inside a grey box.</p></div></div></div></div><div style="max-width: 1000px; margin: 4rem auto 0px; border-top: 1px solid var(--border); padding-top: 3rem;"><h2 style="font-size: 1.8rem; font-weight: 700; margin-bottom: 2rem; text-align: center;">Frequently Asked Questions</h2><div style="display: grid; gap: 2rem;"><div><h3 style="font-size: 1.2rem; font-weight: 600; margin-bottom: 0.5rem; color: rgb(30, 41, 59);">Which formats can I actually use?</h3><p style="line-height: 1.6; color: rgb(71, 85, 105);">JPEG, PNG, WebP, GIF and BMP are the formats the converter can actually embed. The file picker filters on image/* rather than on that list, so a TIFF, HEIC or SVG can still be selected or dropped in — it will simply fail when you press Convert, with a message naming the file. Convert those first with <strong>HEIC to JPG</strong> for iPhone photos or <strong>Image Converter</strong> for everything else, then come back.</p></div><div><h3 style="font-size: 1.2rem; font-weight: 600; margin-bottom: 0.5rem; color: rgb(30, 41, 59);">How is each image placed on the page?</h3><p style="line-height: 1.6; color: rgb(71, 85, 105);">The available area is the page minus your margin on all four sides. The picture is scaled to the largest size that fits inside it without distorting the aspect ratio, then centred both ways. Nothing is ever cropped or stretched, so a square photograph on a portrait A4 page leaves white space above and below — that is the fit working correctly, not a bug.</p></div><div><h3 style="font-size: 1.2rem; font-weight: 600; margin-bottom: 0.5rem; color: rgb(30, 41, 59);">What resolution will the images be in the PDF?</h3><p style="line-height: 1.6; color: rgb(71, 85, 105);">Whatever they already are. Pixels are not resampled; the picture is simply placed at a physical size on the page. Effective print resolution is the pixel width divided by the printed width in inches — a 3000-pixel photograph across the 190 mm of an A4 page with 10 mm margins works out at about 400 DPI, comfortably beyond what any printer needs. A 640-pixel screenshot across the same width is about 85 DPI and will look soft in print.</p></div><div><h3 style="font-size: 1.2rem; font-weight: 600; margin-bottom: 0.5rem; color: rgb(30, 41, 59);">Does converting reduce the quality?</h3><p style="line-height: 1.6; color: rgb(71, 85, 105);">It depends on the format. JPEG data is carried into the PDF as it stands, so a photograph is not put through a second round of lossy compression — no generation loss. PNG is stored losslessly, alpha channel included. WebP, GIF and BMP are decoded and re-encoded as JPEG at maximum quality, which is a lossy step, though at that setting it is not something you will see. Either way the PDF ends up roughly the sum of your images, and a folder of 40 phone photographs makes a large document; shrink the pictures first with <strong>Bulk Image Compressor</strong> rather than reaching for <strong>Compress PDF</strong> afterwards, which does not touch image data.</p></div><div><h3 style="font-size: 1.2rem; font-weight: 600; margin-bottom: 0.5rem; color: rgb(30, 41, 59);">How do I control the page order?</h3><p style="line-height: 1.6; color: rgb(71, 85, 105);">Images are placed in the order the list shows them, one per page. Use the up and down arrows on each row to move a picture and the remove button to drop one. Dropping a folder in at once adds files in whatever order the operating system hands them over, which is often not alphabetical, so check the sequence before converting — this is the most common reason people redo a conversion.</p></div><div><h3 style="font-size: 1.2rem; font-weight: 600; margin-bottom: 0.5rem; color: rgb(30, 41, 59);">Can I fit several images on one page?</h3><p style="line-height: 1.6; color: rgb(71, 85, 105);">No — the layout is strictly one image per page. To make a contact sheet or a two-up layout, combine the pictures into a single image first with <strong>Merge Images</strong>, then convert that. For a photo album where each shot deserves a page, the default behaviour is already what you want.</p></div><div><h3 style="font-size: 1.2rem; font-weight: 600; margin-bottom: 0.5rem; color: rgb(30, 41, 59);">What happens with animated GIFs?</h3><p style="line-height: 1.6; color: rgb(71, 85, 105);">Only the first frame is placed; a PDF page cannot animate. If you need a particular frame, extract it before converting. The same one-frame rule applies to any multi-image format.</p></div><div><h3 style="font-size: 1.2rem; font-weight: 600; margin-bottom: 0.5rem; color: rgb(30, 41, 59);">One of my files was rejected as undecodable.</h3><p style="line-height: 1.6; color: rgb(71, 85, 105);">The message names the file. It usually means the extension does not match the actual contents — a TIFF renamed to .jpg, an HEIC copied off a phone, or a partially downloaded file. Open it in an image viewer to confirm it is intact, re-save it as JPEG or PNG, and try again. Everything happens in this browser tab, so a failure costs you nothing but the time and no image was ever uploaded.</p></div></div></div></div></div><!--/$--></main><footer class="site-footer"><div class="container footer-content"><div class="footer-brand"><h3>OnlineToolsVault</h3><p>Premium, free-to-use online tools for everyone. Free, Fast, Secure and Privacy Focused<br>You can check the source code <a href="https://github.com/OnlineToolsVault/OnlineToolsVault.github.io" target="_blank" rel="noopener noreferrer" style="color: var(--primary); text-decoration: underline;">here</a>.</p></div><div class="footer-links"><div class="footer-col"><h4>Popular Tools</h4><ul><li><a href="/merge-pdf/">Merge PDF</a></li><li><a href="/compress-pdf/">Compress PDF</a></li><li><a href="/image-compressor/">Image Compressor</a></li><li><a href="/qr-generator/">QR Generator</a></li></ul></div><div class="footer-col"><h4>Company</h4><ul><li><a href="/about/">About Us</a></li><li><a href="/contact/">Contact</a></li><li><a href="/privacy/">Privacy Policy</a></li><li><a href="/terms/">Terms of Service</a></li></ul></div><div class="footer-col"><h4>Connect</h4><ul><li><a href="https://x.com/sourcestrongai" target="_blank" rel="noopener noreferrer">Twitter</a></li><li><a href="https://github.com/OnlineToolsVault" target="_blank" rel="noopener noreferrer">GitHub</a></li><li><a href="https://www.linkedin.com/company/sourcestrongai" target="_blank" rel="noopener noreferrer">LinkedIn</a></li></ul></div></div></div><div class="container footer-bottom"><p>© 2026 Source Strong AI. All Rights Reserved. Managed under <a href="/terms/" style="color: inherit; text-decoration: underline;">Proprietary License</a>.</p><p style="display: flex; align-items: center; gap: 0.25rem;">Made with <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-heart "><path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z"></path></svg> for the web</p></div></footer></div></div>
 </body>
 
 </html>

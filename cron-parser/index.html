@@ -2,21 +2,20 @@
 <html lang="en">
 
 <head>
-  <script src="/coi-serviceworker.js"></script>
   <meta charset="UTF-8" />
   <link rel="icon" type="image/svg+xml" href="/vite.svg" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Cron Parser | OnlineToolsVault</title>
-  <meta name="description" content="Cron job scheduler helper. Understand complex Cron strings by converting them into human-readable schedules." />
+  <title data-rh="true">Cron Expression Parser - Online Cron to Text</title>
+  <meta data-rh="true" name="description" content="Turn a cron expression into a plain-English schedule as you type, so you can check a crontab line before it ever runs. Parsed in your browser, never sent." />
 
   <!-- SEO & Social Meta Tags -->
   <meta name="robots" content="index, follow" />
 
   <meta property="og:type" content="website" />
-  <meta property="og:title" content="Cron Parser | OnlineToolsVault" />
-  <meta property="og:description" content="Cron job scheduler helper. Understand complex Cron strings by converting them into human-readable schedules." />
-  <meta property="og:url" content="https://onlinetoolsvault.com/cron-parser" />
-  <meta property="og:site_name" content="FreeTools" />
+  <meta property="og:title" content="Cron Expression Parser - Online Cron to Text" />
+  <meta property="og:description" content="Turn a cron expression into a plain-English schedule as you type, so you can check a crontab line before it ever runs. Parsed in your browser, never sent." />
+  <meta property="og:url" content="https://onlinetoolsvault.com/cron-parser/" />
+  <meta property="og:site_name" content="OnlineToolsVault" />
   <meta property="og:image" content="https://onlinetoolsvault.com/og/cron-parser.png" />
   <meta property="og:image:width" content="1200" />
   <meta property="og:image:height" content="630" />
@@ -24,8 +23,8 @@
 
   <meta name="twitter:card" content="summary_large_image" />
   <meta name="twitter:site" content="@sourcestrongai" />
-  <meta name="twitter:title" content="Cron Parser | OnlineToolsVault" />
-  <meta name="twitter:description" content="Cron job scheduler helper. Understand complex Cron strings by converting them into human-readable schedules." />
+  <meta name="twitter:title" content="Cron Expression Parser - Online Cron to Text" />
+  <meta name="twitter:description" content="Turn a cron expression into a plain-English schedule as you type, so you can check a crontab line before it ever runs. Parsed in your browser, never sent." />
   <meta name="twitter:image" content="https://onlinetoolsvault.com/og/cron-parser.png" />
   <meta name="twitter:image:alt" content="Cron Parser — OnlineToolsVault" />
   <meta name="twitter:creator" content="@sourcestrongai" />
@@ -35,7 +34,7 @@
     {
       "@context": "https://schema.org",
       "@type": "WebApplication",
-      "name": "FreeTools",
+      "name": "OnlineToolsVault",
       "url": "https://onlinetoolsvault.com/",
       "description": "Collection of free online client-side tools for PDF and image processing.",
       "applicationCategory": "Utility",
@@ -48,10 +47,48 @@
     }
   </script>
 
-  <!-- Preconnect to Google Fonts -->
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <!--
+    Inter, served from this origin.
+
+    This used to be a <link> to fonts.googleapis.com, which made every one of the 89 routes open a
+    connection to Google (and then a second one to fonts.gstatic.com) before it could paint text —
+    the last off-origin request common to all pages, and one that handed a third party the IP of
+    every visitor on a site whose whole pitch is that nothing leaves the browser.
+
+    scripts/copy-runtime-assets.js stages the two woff2 files into public/fonts at build time.
+    Change a filename or a unicode-range here and change it there; the script re-checks the ranges
+    against what Google serves and warns when they drift.
+
+    These are the *variable* faces (`font-weight: 100 900`), which is what Google was already
+    serving: css2 answers `wght@400;500;600;700;800` with the same single file declared five times,
+    so all five weights come out of one 48 KB download exactly as before.
+
+    Only latin is preloaded. latin-ext is a further 83 KB that the unicode-range below keeps unread
+    unless a page actually contains one of its characters, which no page currently does — preloading
+    it would cost every visitor 83 KB for nothing. `crossorigin` is required even though the file is
+    same-origin: fonts are always fetched in CORS mode, and without it the preload is discarded and
+    the file downloaded twice.
+  -->
+  <link rel="preload" href="/fonts/inter-latin.woff2" as="font" type="font/woff2" crossorigin>
+  <style>
+    @font-face {
+      font-family: 'Inter';
+      font-style: normal;
+      font-weight: 100 900;
+      font-display: swap;
+      src: url('/fonts/inter-latin.woff2') format('woff2');
+      unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+    }
+
+    @font-face {
+      font-family: 'Inter';
+      font-style: normal;
+      font-weight: 100 900;
+      font-display: swap;
+      src: url('/fonts/inter-latin-ext.woff2') format('woff2');
+      unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF;
+    }
+  </style>
 
   <!-- Analytics & Ads -->
   <script async src="https://www.googletagmanager.com/gtag/js?id=G-EVGNTG49J7"></script>
@@ -64,6 +101,55 @@
   <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-4988388949365963"
     crossorigin="anonymous"></script>
 
+  <!--
+    Retire the old COOP/COEP service worker.
+
+    It was added for SharedArrayBuffer, but the FFmpeg tools load the single-threaded
+    @ffmpeg/core build, which never touches SharedArrayBuffer — verified by running a
+    conversion with crossOriginIsolated === false. Meanwhile cross-origin isolation blocked
+    every third-party image a user pastes into the Markdown Previewer, and forced a full page
+    reload on each visitor's first page view.
+
+    Returning visitors still have the worker installed and would keep getting the COEP headers
+    forever, so unregister it once and reload to drop out of the isolated context.
+  -->
+  <script>
+    (function () {
+      if (!('serviceWorker' in navigator)) return;
+      navigator.serviceWorker.getRegistrations().then(function (registrations) {
+        var removed = false;
+        for (var i = 0; i < registrations.length; i++) {
+          var url = (registrations[i].active && registrations[i].active.scriptURL) || '';
+          if (url.indexOf('coi-serviceworker') !== -1) {
+            registrations[i].unregister();
+            removed = true;
+          }
+        }
+        if (removed && window.crossOriginIsolated) window.location.reload();
+      }).catch(function () { /* nothing to clean up */ });
+    })();
+  </script>
+
+  <!--
+    Restore the URL that 404.html forwarded here, before React Router reads location.
+    GitHub Pages cannot rewrite unknown paths itself, so 404.html bounces them to
+    /?notfound=<path>; putting the real path back lets the app's "*" route render NotFound
+    at the address the visitor actually typed.
+  -->
+  <script>
+    (function () {
+      try {
+        var params = new URLSearchParams(window.location.search);
+        var requested = params.get('notfound');
+        if (requested && requested.charAt(0) === '/' && requested.charAt(1) !== '/') {
+          window.history.replaceState(null, '', requested);
+        }
+      } catch (error) {
+        console.error('[NotFound Restore] Error:', error);
+      }
+    })();
+  </script>
+
   <!-- Smart Hash URL Redirect (handles legacy #/ URLs) -->
   <script>
     (function () {
@@ -74,6 +160,18 @@
         if (hash && hash.startsWith('#/')) {
           var path = hash.slice(2); // Remove '#/'
           var search = window.location.search || '';
+
+          // A legacy link can carry its own query or fragment inside the hash
+          // (#/word-counter?tab=2). Split that off before the path is touched, otherwise the
+          // trailing slash below lands after the query string and produces "word-counter?tab=2/".
+          var extra = '';
+          var cut = path.search(/[?#]/);
+          if (cut !== -1) {
+            extra = path.slice(cut);
+            path = path.slice(0, cut);
+          }
+          // Two query strings concatenated would give "?a=1?b=2"; the second '?' becomes '&'.
+          if (search && extra.charAt(0) === '?') extra = '&' + extra.slice(1);
 
           // Auto-detect base path (works in dev and production)
           // In dev: localhost:5173 → base = '/'
@@ -88,13 +186,20 @@
           // Clean up the path (remove trailing/leading slashes)
           path = path.replace(/^\/+|\/+$/g, '');
 
-          // Build redirect URL
+          // Build redirect URL.
+          //
+          // The trailing slash is not cosmetic. GitHub Pages serves each route from
+          // dist/<route>/index.html, so /word-counter answers with a 301 to /word-counter/ —
+          // meaning the slash-less form this used to emit turned every legacy hash link into two
+          // navigations, and any of them that ended up in a canonical, a sitemap or an inbound
+          // link pointed at the redirecting URL rather than the real one. Every other internal
+          // link on the site was normalised to the trailing-slash form; this was the last hole.
           var redirectUrl;
           if (path) {
-            redirectUrl = base + path + search;
+            redirectUrl = base + path + '/' + search + extra;
           } else {
             // Just '#/' with no path - go to home
-            redirectUrl = base;
+            redirectUrl = base + search + extra;
           }
 
           // Redirect using replace (doesn't add to history)
@@ -106,13 +211,16 @@
       }
     })();
   </script>
-  <script type="module" crossorigin src="/assets/index-kvHMSlMz.js"></script>
-  <link rel="stylesheet" crossorigin href="/assets/index-CZAylM9v.css">
-  <link rel="canonical" href="https://onlinetoolsvault.com/cron-parser" />
+  <script type="module" crossorigin src="/assets/index-BtmU1OS0.js"></script>
+  <link rel="stylesheet" crossorigin href="/assets/index-Cv0roaG_.css">
+  <link data-rh="true" rel="canonical" href="https://onlinetoolsvault.com/cron-parser/" />
+  <!-- prerender:head -->
+  <script type="application/ld+json" data-rh="true">{"@context":"https://schema.org","@type":"FAQPage","mainEntity":[{"@type":"Question","name":"Which field is which?","acceptedAnswer":{"@type":"Answer","text":"In the five-field form the order is minute (0-59), hour (0-23), day of month (1-31), month (1-12 or JAN-DEC) and day of week (0-6 or SUN-SAT, with 7 also accepted for Sunday). So 30 8 * * 1 is 08:30 every Monday. The two positions that trip people up are day of month and day of week sitting next to each other, and hour using a 24-hour clock while the description below reads back in 12-hour time."}},{"@type":"Question","name":"Why does the description say \"and\" when both day fields are set?","acceptedAnswer":{"@type":"Answer","text":"This is the single most dangerous corner of cron. Enter 0 0 13 * 5 and you are told \"on day 13 of the month, and on Friday\", but Vixie cron — the implementation behind crontab on Linux and macOS — treats those two fields as an OR whenever both are restricted. The job runs on every 13th and on every Friday, which in a typical year is around sixty runs rather than one or two. If you mean a single day, leave one of the two fields as an asterisk."}},{"@type":"Question","name":"What do the special characters do?","acceptedAnswer":{"@type":"Answer","text":"An asterisk means every value. A comma builds a list, as in 1,15. A hyphen builds a range, as in MON-FRI. A slash sets a step, so */5 in the minute field fires at 0, 5, 10 and so on, and 0-20/2 restricts the step to part of the range. Quartz adds a question mark for \"no specific value\" in one of the day fields, L for last, and # for the nth weekday — 0 0 * * MON#2 is the second Monday of each month."}},{"@type":"Question","name":"Does it check that the date actually exists?","acceptedAnswer":{"@type":"Answer","text":"No. The parser describes the fields it is given without asking whether any calendar date satisfies them. Enter 0 0 30 2 * and you are told \"At 12:00 AM, on day 30 of the month, only in February\" — a date that never arrives, so the job never fires. February the 29th behaves similarly and only runs in leap years. If a scheduled task has mysteriously never executed, an impossible day-of-month value is worth ruling out first."}},{"@type":"Question","name":"Which timezone does the schedule use?","acceptedAnswer":{"@type":"Answer","text":"Whichever the runner uses, and this page cannot know that — a cron expression carries no zone of its own. System crontab follows the machine's local time and honours CRON_TZ or TZ at the top of the file. GitHub Actions, AWS EventBridge and most managed schedulers interpret expressions as UTC. Kubernetes CronJob defaults to the kube-controller-manager's zone unless timeZone is set. The practical hazard is daylight saving: on a local-time host, a 02:30 job can be skipped or run twice on changeover days."}},{"@type":"Question","name":"Will it tell me the next few run times?","acceptedAnswer":{"@type":"Answer","text":"No — this tool translates the expression into English and stops there. Predicting actual fire times means committing to a timezone, a DST policy and one platform's field ordering, and a wrong answer there would be worse than none. For a dry run, most schedulers can list upcoming executions themselves, and croniter or a cron library in your language will do it against a zone you choose."}}]}</script>
+  <!-- /prerender:head -->
 </head>
 
 <body>
-  <div id="root"></div>
+  <div id="root" data-prerendered="static"><div class="app-wrapper"><header class="site-header"><div class="container header-container"><a class="logo" href="/"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-rocket logo-icon"><path d="M4.5 16.5c-1.5 1.26-2 5-2 5s3.74-.5 5-2c.71-.84.7-2.13-.09-2.91a2.18 2.18 0 0 0-2.91-.09z"></path><path d="m12 15-3-3a22 22 0 0 1 2-3.95A12.88 12.88 0 0 1 22 2c0 2.72-.78 7.5-6 11a22.35 22.35 0 0 1-4 2z"></path><path d="M9 12H4s.55-3.03 2-4c1.62-1.08 5 0 5 0"></path><path d="M12 15v5s3.03-.55 4-2c1.08-1.62 0-5 0-5"></path></svg><span>OnlineToolsVault</span></a><nav class="nav-desktop"><a class="nav-link" href="/">Home</a><a class="nav-link" href="/about/">About</a><a class="nav-link" href="/contact/">Contact</a><div class="social-icons"><a href="https://x.com/sourcestrongai" target="_blank" rel="noopener noreferrer" class="social-icon" aria-label="Twitter"><svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-twitter "><path d="M22 4s-.7 2.1-2 3.4c1.6 10-9.4 17.3-18 11.6 2.2.1 4.4-.6 6-2C3 15.5.5 9.6 3 5c2.2 2.6 5.6 4.1 9 4-.9-4.2 4-6.6 7-3.8 1.1 0 3-1.2 3-1.2z"></path></svg></a><a href="https://www.linkedin.com/company/sourcestrongai" target="_blank" rel="noopener noreferrer" class="social-icon" aria-label="LinkedIn"><svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-linkedin "><path d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-2-2 2 2 0 0 0-2 2v7h-4v-7a6 6 0 0 1 6-6z"></path><rect width="4" height="12" x="2" y="9"></rect><circle cx="4" cy="4" r="2"></circle></svg></a></div></nav><button class="nav-mobile-btn" aria-label="Open menu" aria-expanded="false" aria-controls="mobile-menu"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-menu "><line x1="4" x2="20" y1="12" y2="12"></line><line x1="4" x2="20" y1="6" y2="6"></line><line x1="4" x2="20" y1="18" y2="18"></line></svg></button></div></header><main class="main-content"><!--$--><div class="container" style="padding: 3rem 1.5rem;"><div style="max-width: 1000px; margin: 0px auto;"><header style="margin-bottom: 3rem; text-align: center;"><h1 style="font-size: 2.5rem; font-weight: 800; margin-bottom: 0.5rem;">Cron Expression Parser</h1><p style="color: rgb(100, 116, 139);">Convert Cron expressions into human-readable descriptions.</p></header><div class="tool-workspace" style="min-height: 80vh; display: flex; flex-direction: column;"><div style="background: var(--card); border-radius: 1rem; border: 1px solid var(--border); padding: 2rem; box-shadow: rgba(0, 0, 0, 0.05) 0px 4px 6px -1px; max-width: 1000px; margin: 0px auto; width: 100%;"><div style="margin-bottom: 2rem;"><label for="cron-input" style="display: block; margin-bottom: 0.5rem; font-weight: bold;">Cron Expression</label><div style="position: relative; display: flex; align-items: center;"><input id="cron-input" type="text" placeholder="* * * * *" class="tool-input" value="* * * * *" style="width: 100%; padding: 1rem 6rem 1rem 1rem; border-radius: 0.5rem; border: 1px solid var(--border); font-size: 1.2rem; font-family: monospace;"><div style="position: absolute; right: 0.5rem; display: flex; gap: 0.5rem;"><button class="tool-action-btn-sm" title="Copy" style="padding: 0.5rem; background: transparent; border-width: medium; border-style: none; border-color: currentcolor; border-image: none; cursor: pointer; color: rgb(100, 116, 139);"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-copy "><rect width="14" height="14" x="8" y="8" rx="2" ry="2"></rect><path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"></path></svg></button><button class="tool-action-btn-sm" title="Reset" style="padding: 0.5rem; background: transparent; border-width: medium; border-style: none; border-color: currentcolor; border-image: none; cursor: pointer; color: rgb(100, 116, 139);"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-rotate-ccw "><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"></path><path d="M3 3v5h5"></path></svg></button></div></div><div style="margin-top: 0.5rem; font-size: 0.9rem; color: rgb(100, 116, 139);">Format: Minute Hour Day Month Weekday</div></div><div id="cron-result" style="padding: 1.5rem; background: rgb(240, 253, 244); border: 1px solid rgb(187, 247, 208); border-radius: 0.5rem; color: rgb(22, 101, 52); font-size: 1.2rem; font-weight: bold; text-align: center;">"Every minute"</div><div style="margin-top: 2rem; display: grid; grid-template-columns: repeat(auto-fit, minmax(110px, 1fr)); gap: 0.75rem;"><button id="cron-example-btn-0" class="tool-example-btn" style="padding: 0.5rem; border: 1px solid var(--border); background: white; border-radius: 0.25rem; cursor: pointer; font-size: 0.9rem;">*/5 * * * *</button><button id="cron-example-btn-1" class="tool-example-btn" style="padding: 0.5rem; border: 1px solid var(--border); background: white; border-radius: 0.25rem; cursor: pointer; font-size: 0.9rem;">0 0 * * *</button><button id="cron-example-btn-2" class="tool-example-btn" style="padding: 0.5rem; border: 1px solid var(--border); background: white; border-radius: 0.25rem; cursor: pointer; font-size: 0.9rem;">0 12 * * MON</button><button id="cron-example-btn-3" class="tool-example-btn" style="padding: 0.5rem; border: 1px solid var(--border); background: white; border-radius: 0.25rem; cursor: pointer; font-size: 0.9rem;">0 0 1 1 *</button><button id="cron-example-btn-4" class="tool-example-btn" style="padding: 0.5rem; border: 1px solid var(--border); background: white; border-radius: 0.25rem; cursor: pointer; font-size: 0.9rem;">0 9 * * 1-5</button><button id="cron-example-btn-5" class="tool-example-btn" style="padding: 0.5rem; border: 1px solid var(--border); background: white; border-radius: 0.25rem; cursor: pointer; font-size: 0.9rem;">*/15 * * * *</button><button id="cron-example-btn-6" class="tool-example-btn" style="padding: 0.5rem; border: 1px solid var(--border); background: white; border-radius: 0.25rem; cursor: pointer; font-size: 0.9rem;">0 0 1 * *</button><button id="cron-example-btn-7" class="tool-example-btn" style="padding: 0.5rem; border: 1px solid var(--border); background: white; border-radius: 0.25rem; cursor: pointer; font-size: 0.9rem;">0 23 * * 5</button><button id="cron-example-btn-8" class="tool-example-btn" style="padding: 0.5rem; border: 1px solid var(--border); background: white; border-radius: 0.25rem; cursor: pointer; font-size: 0.9rem;">30 8 * * *</button><button id="cron-example-btn-9" class="tool-example-btn" style="padding: 0.5rem; border: 1px solid var(--border); background: white; border-radius: 0.25rem; cursor: pointer; font-size: 0.9rem;">0 0 1,15 * *</button><button id="cron-example-btn-10" class="tool-example-btn" style="padding: 0.5rem; border: 1px solid var(--border); background: white; border-radius: 0.25rem; cursor: pointer; font-size: 0.9rem;">*/10 * * * 1-5</button><button id="cron-example-btn-11" class="tool-example-btn" style="padding: 0.5rem; border: 1px solid var(--border); background: white; border-radius: 0.25rem; cursor: pointer; font-size: 0.9rem;">0 0 * * 0</button><button id="cron-example-btn-12" class="tool-example-btn" style="padding: 0.5rem; border: 1px solid var(--border); background: white; border-radius: 0.25rem; cursor: pointer; font-size: 0.9rem;">0 8 1 * *</button><button id="cron-example-btn-13" class="tool-example-btn" style="padding: 0.5rem; border: 1px solid var(--border); background: white; border-radius: 0.25rem; cursor: pointer; font-size: 0.9rem;">0 22 * * 1-5</button></div></div><div class="tool-content" style="margin-top: 4rem;"><div class="related-tools-section" style="margin-top: 4rem; margin-bottom: 4rem;"><h2 style="font-size: 1.8rem; font-weight: 700; margin-bottom: 2rem; text-align: center; color: var(--text-primary);">More Useful Tools</h2><div class="tools-grid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(min(280px, 100%), 1fr)); gap: 1.5rem;"><a class="tool-card" href="/css-formatter/" style="text-decoration: none; color: inherit; background: var(--bg-card); border: 1px solid var(--border); border-radius: 1rem; padding: 1.5rem; transition: 0.2s; display: flex; flex-direction: column; gap: 1rem; cursor: pointer;"><div class="tool-card-header" style="display: flex; align-items: center; gap: 0.75rem;"><div class="tool-icon-wrapper" style="width: 40px; height: 40px; border-radius: 0.5rem; background: var(--primary-light); display: flex; align-items: center; justify-content: center; color: var(--primary);"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-code "><polyline points="16 18 22 12 16 6"></polyline><polyline points="8 6 2 12 8 18"></polyline></svg></div><h3 class="tool-title" style="font-size: 1.1rem; font-weight: 600; margin: 0px;">CSS Formatter</h3></div><p class="tool-description" style="font-size: 0.85rem; color: var(--text-secondary); margin: 0px; line-height: 1.5; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;">Beautify and re-indent CSS stylesheets.</p></a><a class="tool-card" href="/html-formatter/" style="text-decoration: none; color: inherit; background: var(--bg-card); border: 1px solid var(--border); border-radius: 1rem; padding: 1.5rem; transition: 0.2s; display: flex; flex-direction: column; gap: 1rem; cursor: pointer;"><div class="tool-card-header" style="display: flex; align-items: center; gap: 0.75rem;"><div class="tool-icon-wrapper" style="width: 40px; height: 40px; border-radius: 0.5rem; background: var(--primary-light); display: flex; align-items: center; justify-content: center; color: var(--primary);"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-code "><polyline points="16 18 22 12 16 6"></polyline><polyline points="8 6 2 12 8 18"></polyline></svg></div><h3 class="tool-title" style="font-size: 1.1rem; font-weight: 600; margin: 0px;">HTML Formatter</h3></div><p class="tool-description" style="font-size: 0.85rem; color: var(--text-secondary); margin: 0px; line-height: 1.5; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;">Format, indent, and beautify HTML code.</p></a><a class="tool-card" href="/js-formatter/" style="text-decoration: none; color: inherit; background: var(--bg-card); border: 1px solid var(--border); border-radius: 1rem; padding: 1.5rem; transition: 0.2s; display: flex; flex-direction: column; gap: 1rem; cursor: pointer;"><div class="tool-card-header" style="display: flex; align-items: center; gap: 0.75rem;"><div class="tool-icon-wrapper" style="width: 40px; height: 40px; border-radius: 0.5rem; background: var(--primary-light); display: flex; align-items: center; justify-content: center; color: var(--primary);"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-code "><polyline points="16 18 22 12 16 6"></polyline><polyline points="8 6 2 12 8 18"></polyline></svg></div><h3 class="tool-title" style="font-size: 1.1rem; font-weight: 600; margin: 0px;">JS Formatter</h3></div><p class="tool-description" style="font-size: 0.85rem; color: var(--text-secondary); margin: 0px; line-height: 1.5; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;">Format and beautify JavaScript code.</p></a><a class="tool-card" href="/json-formatter/" style="text-decoration: none; color: inherit; background: var(--bg-card); border: 1px solid var(--border); border-radius: 1rem; padding: 1.5rem; transition: 0.2s; display: flex; flex-direction: column; gap: 1rem; cursor: pointer;"><div class="tool-card-header" style="display: flex; align-items: center; gap: 0.75rem;"><div class="tool-icon-wrapper" style="width: 40px; height: 40px; border-radius: 0.5rem; background: var(--primary-light); display: flex; align-items: center; justify-content: center; color: var(--primary);"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-file-json "><path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z"></path><path d="M14 2v4a2 2 0 0 0 2 2h4"></path><path d="M10 12a1 1 0 0 0-1 1v1a1 1 0 0 1-1 1 1 1 0 0 1 1 1v1a1 1 0 0 0 1 1"></path><path d="M14 18a1 1 0 0 0 1-1v-1a1 1 0 0 1 1-1 1 1 0 0 1-1-1v-1a1 1 0 0 0-1-1"></path></svg></div><h3 class="tool-title" style="font-size: 1.1rem; font-weight: 600; margin: 0px;">JSON Formatter</h3></div><p class="tool-description" style="font-size: 0.85rem; color: var(--text-secondary); margin: 0px; line-height: 1.5; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;">Validate, pretty print, and minify JSON data.</p></a><a class="tool-card" href="/hash-generator/" style="text-decoration: none; color: inherit; background: var(--bg-card); border: 1px solid var(--border); border-radius: 1rem; padding: 1.5rem; transition: 0.2s; display: flex; flex-direction: column; gap: 1rem; cursor: pointer;"><div class="tool-card-header" style="display: flex; align-items: center; gap: 0.75rem;"><div class="tool-icon-wrapper" style="width: 40px; height: 40px; border-radius: 0.5rem; background: var(--primary-light); display: flex; align-items: center; justify-content: center; color: var(--primary);"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-lock "><rect width="18" height="11" x="3" y="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg></div><h3 class="tool-title" style="font-size: 1.1rem; font-weight: 600; margin: 0px;">Hash Generator</h3></div><p class="tool-description" style="font-size: 0.85rem; color: var(--text-secondary); margin: 0px; line-height: 1.5; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;">Generate MD5, SHA-1, SHA-256 and SHA-512 hashes.</p></a><a class="tool-card" href="/zip-file-creator/" style="text-decoration: none; color: inherit; background: var(--bg-card); border: 1px solid var(--border); border-radius: 1rem; padding: 1.5rem; transition: 0.2s; display: flex; flex-direction: column; gap: 1rem; cursor: pointer;"><div class="tool-card-header" style="display: flex; align-items: center; gap: 0.75rem;"><div class="tool-icon-wrapper" style="width: 40px; height: 40px; border-radius: 0.5rem; background: var(--primary-light); display: flex; align-items: center; justify-content: center; color: var(--primary);"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-archive "><rect width="20" height="5" x="2" y="3" rx="1"></rect><path d="M4 8v11a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8"></path><path d="M10 12h4"></path></svg></div><h3 class="tool-title" style="font-size: 1.1rem; font-weight: 600; margin: 0px;">ZIP Creator</h3></div><p class="tool-description" style="font-size: 0.85rem; color: var(--text-secondary); margin: 0px; line-height: 1.5; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;">Create ZIP archives from multiple files.</p></a></div></div><div class="about-section" style="background: var(--bg-card); padding: 2rem; border-radius: 1rem; border: 1px solid var(--border); margin-bottom: 2rem;"><h2 style="font-size: 1.8rem; margin-bottom: 1.5rem;">About Cron Expression Parser</h2><p style="line-height: 1.6; color: var(--text-secondary); margin-bottom: 1rem;">A cron expression packs a repeating schedule into a handful of space-separated fields. It is compact and it is unforgiving: a schedule that fires sixty times more often than intended looks almost identical to the one you meant. Type an expression above and it is translated into a sentence as you type, so the mistake surfaces before the job does.</p><h3 style="font-size: 1.15rem; font-weight: 600; margin: 1.75rem 0px 0.75rem;">Reading the translation critically</h3><p style="line-height: 1.6; color: var(--text-secondary); margin-bottom: 1rem;">The description is generated from the fields alone, so it reflects your intent rather than your scheduler's behaviour. Two gaps are worth holding in mind. When both the day-of-month and day-of-week fields are restricted, the sentence joins them with "and" while classic cron treats them as an alternative and runs on either. And nothing checks the calendar, so a February the 30th schedule is described as cheerfully as any other.</p><h3 style="font-size: 1.15rem; font-weight: 600; margin: 1.75rem 0px 0.75rem;">Field counts differ by platform</h3><p style="line-height: 1.6; color: var(--text-secondary); margin-bottom: 1rem;">Five fields is the Unix crontab standard, and it is what Kubernetes CronJob and GitHub Actions expect. Quartz and Spring add a seconds field at the front, making six. AWS EventBridge also uses six, but its extra field is a year at the end and it requires a question mark in one of the two day fields. Both shapes are handled here, along with the seven-field Quartz form, so <code>0 0 12 * * ?</code> reads as noon and <code>0 15 10 ? * 6L 2025</code> as the last Saturday of each month in 2025.</p><h3 style="font-size: 1.15rem; font-weight: 600; margin: 1.75rem 0px 0.75rem;">Shorthand, and what is not accepted</h3><p style="line-height: 1.6; color: var(--text-secondary); margin-bottom: 1rem;">The <code>@hourly</code>, <code>@daily</code>, <code>@weekly</code>, <code>@monthly</code>, <code>@yearly</code> and <code>@reboot</code> macros are understood — the last describes itself as running once at startup, a useful reminder that it is tied to boot rather than to a clock. Jenkins' hashed syntax is not supported: an <code>H</code> asks Jenkins to spread the job across the hour, which is a load-balancing instruction rather than a time, and an expression containing one is simply reported here as <em>Invalid cron expression</em>. The error line is the same for every failure — it names no field and no position — so when it appears, clear fields back to asterisks one at a time to find the one at fault.</p><h3 style="font-size: 1.15rem; font-weight: 600; margin: 1.75rem 0px 0.75rem;">Habits that prevent incidents</h3><p style="line-height: 1.6; color: var(--text-secondary);">Avoid the top of the hour for anything heavy — <code>0 * * * *</code> means every host in the fleet starts at the same instant, and offsetting to <code>7 * * * *</code> costs nothing. Assume overlapping runs are possible and take a lock, because cron starts the next instance whether or not the previous one has finished. Everything on this page is worked out in the tab with no expression stored or sent anywhere, so it is safe to paste a line straight out of a production crontab while you check it.</p></div><div class="features-section" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 2rem;"><div class="tool-feature-block" style="padding: 1.5rem; border-radius: 1rem; border: 1px solid var(--border); background: var(--bg-card);"><div style="width: 48px; height: 48px; background: var(--primary-light); border-radius: 0.75rem; display: flex; align-items: center; justify-content: center; margin-bottom: 1rem;"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="var(--primary)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-rotate-ccw "><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"></path><path d="M3 3v5h5"></path></svg></div><h3 style="font-size: 1.25rem; margin-bottom: 0.5rem;">Five, Six And Seven Fields</h3><p style="color: var(--text-secondary);">A Quartz expression with a leading seconds field reads correctly, and so does an EventBridge one ending in a year — 0 18 ? * MON-FRI * comes back as "At 06:00 PM, Monday through Friday".</p></div><div class="tool-feature-block" style="padding: 1.5rem; border-radius: 1rem; border: 1px solid var(--border); background: var(--bg-card);"><div style="width: 48px; height: 48px; background: var(--primary-light); border-radius: 0.75rem; display: flex; align-items: center; justify-content: center; margin-bottom: 1rem;"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="var(--primary)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-alert-circle "><circle cx="12" cy="12" r="10"></circle><line x1="12" x2="12" y1="8" y2="12"></line><line x1="12" x2="12.01" y1="16" y2="16"></line></svg></div><h3 style="font-size: 1.25rem; margin-bottom: 0.5rem;">Rejects What It Cannot Read</h3><p style="color: var(--text-secondary);">An unparseable field stops the translation rather than producing a silent guess: the green sentence disappears and a red "Invalid cron expression" line takes its place. Jenkins hashed syntax such as H/15 * * * * is rejected that way.</p></div><div class="tool-feature-block" style="padding: 1.5rem; border-radius: 1rem; border: 1px solid var(--border); background: var(--bg-card);"><div style="width: 48px; height: 48px; background: var(--primary-light); border-radius: 0.75rem; display: flex; align-items: center; justify-content: center; margin-bottom: 1rem;"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="var(--primary)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-copy "><rect width="14" height="14" x="8" y="8" rx="2" ry="2"></rect><path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"></path></svg></div><h3 style="font-size: 1.25rem; margin-bottom: 0.5rem;">Fourteen Schedules To Start From</h3><p style="color: var(--text-secondary);">The buttons below the input cover the patterns people actually write — every five minutes, weekday mornings, midnight on the 1st and 15th, Friday evenings — as a starting point to edit.</p></div></div></div></div><div style="max-width: 1000px; margin: 4rem auto 0px; border-top: 1px solid var(--border); padding-top: 3rem;"><h2 style="font-size: 1.8rem; font-weight: 700; margin-bottom: 2rem; text-align: center;">Frequently Asked Questions</h2><div style="display: grid; gap: 2rem;"><div><h3 style="font-size: 1.2rem; font-weight: 600; margin-bottom: 0.5rem; color: rgb(30, 41, 59);">Which field is which?</h3><p style="line-height: 1.6; color: rgb(71, 85, 105);">In the five-field form the order is minute (0-59), hour (0-23), day of month (1-31), month (1-12 or JAN-DEC) and day of week (0-6 or SUN-SAT, with 7 also accepted for Sunday). So 30 8 * * 1 is 08:30 every Monday. The two positions that trip people up are day of month and day of week sitting next to each other, and hour using a 24-hour clock while the description below reads back in 12-hour time.</p></div><div><h3 style="font-size: 1.2rem; font-weight: 600; margin-bottom: 0.5rem; color: rgb(30, 41, 59);">Why does the description say "and" when both day fields are set?</h3><p style="line-height: 1.6; color: rgb(71, 85, 105);">This is the single most dangerous corner of cron. Enter 0 0 13 * 5 and you are told "on day 13 of the month, and on Friday", but Vixie cron — the implementation behind crontab on Linux and macOS — treats those two fields as an OR whenever both are restricted. The job runs on every 13th and on every Friday, which in a typical year is around sixty runs rather than one or two. If you mean a single day, leave one of the two fields as an asterisk.</p></div><div><h3 style="font-size: 1.2rem; font-weight: 600; margin-bottom: 0.5rem; color: rgb(30, 41, 59);">What do the special characters do?</h3><p style="line-height: 1.6; color: rgb(71, 85, 105);">An asterisk means every value. A comma builds a list, as in 1,15. A hyphen builds a range, as in MON-FRI. A slash sets a step, so */5 in the minute field fires at 0, 5, 10 and so on, and 0-20/2 restricts the step to part of the range. Quartz adds a question mark for "no specific value" in one of the day fields, L for last, and # for the nth weekday — 0 0 * * MON#2 is the second Monday of each month.</p></div><div><h3 style="font-size: 1.2rem; font-weight: 600; margin-bottom: 0.5rem; color: rgb(30, 41, 59);">Does it check that the date actually exists?</h3><p style="line-height: 1.6; color: rgb(71, 85, 105);">No. The parser describes the fields it is given without asking whether any calendar date satisfies them. Enter 0 0 30 2 * and you are told "At 12:00 AM, on day 30 of the month, only in February" — a date that never arrives, so the job never fires. February the 29th behaves similarly and only runs in leap years. If a scheduled task has mysteriously never executed, an impossible day-of-month value is worth ruling out first.</p></div><div><h3 style="font-size: 1.2rem; font-weight: 600; margin-bottom: 0.5rem; color: rgb(30, 41, 59);">Which timezone does the schedule use?</h3><p style="line-height: 1.6; color: rgb(71, 85, 105);">Whichever the runner uses, and this page cannot know that — a cron expression carries no zone of its own. System crontab follows the machine's local time and honours CRON_TZ or TZ at the top of the file. GitHub Actions, AWS EventBridge and most managed schedulers interpret expressions as UTC. Kubernetes CronJob defaults to the kube-controller-manager's zone unless timeZone is set. The practical hazard is daylight saving: on a local-time host, a 02:30 job can be skipped or run twice on changeover days.</p></div><div><h3 style="font-size: 1.2rem; font-weight: 600; margin-bottom: 0.5rem; color: rgb(30, 41, 59);">Will it tell me the next few run times?</h3><p style="line-height: 1.6; color: rgb(71, 85, 105);">No — this tool translates the expression into English and stops there. Predicting actual fire times means committing to a timezone, a DST policy and one platform's field ordering, and a wrong answer there would be worse than none. For a dry run, most schedulers can list upcoming executions themselves, and croniter or a cron library in your language will do it against a zone you choose.</p></div></div></div></div></div><!--/$--></main><footer class="site-footer"><div class="container footer-content"><div class="footer-brand"><h3>OnlineToolsVault</h3><p>Premium, free-to-use online tools for everyone. Free, Fast, Secure and Privacy Focused<br>You can check the source code <a href="https://github.com/OnlineToolsVault/OnlineToolsVault.github.io" target="_blank" rel="noopener noreferrer" style="color: var(--primary); text-decoration: underline;">here</a>.</p></div><div class="footer-links"><div class="footer-col"><h4>Popular Tools</h4><ul><li><a href="/merge-pdf/">Merge PDF</a></li><li><a href="/compress-pdf/">Compress PDF</a></li><li><a href="/image-compressor/">Image Compressor</a></li><li><a href="/qr-generator/">QR Generator</a></li></ul></div><div class="footer-col"><h4>Company</h4><ul><li><a href="/about/">About Us</a></li><li><a href="/contact/">Contact</a></li><li><a href="/privacy/">Privacy Policy</a></li><li><a href="/terms/">Terms of Service</a></li></ul></div><div class="footer-col"><h4>Connect</h4><ul><li><a href="https://x.com/sourcestrongai" target="_blank" rel="noopener noreferrer">Twitter</a></li><li><a href="https://github.com/OnlineToolsVault" target="_blank" rel="noopener noreferrer">GitHub</a></li><li><a href="https://www.linkedin.com/company/sourcestrongai" target="_blank" rel="noopener noreferrer">LinkedIn</a></li></ul></div></div></div><div class="container footer-bottom"><p>© 2026 Source Strong AI. All Rights Reserved. Managed under <a href="/terms/" style="color: inherit; text-decoration: underline;">Proprietary License</a>.</p><p style="display: flex; align-items: center; gap: 0.25rem;">Made with <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-heart "><path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z"></path></svg> for the web</p></div></footer></div></div>
 </body>
 
 </html>

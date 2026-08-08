@@ -2,21 +2,20 @@
 <html lang="en">
 
 <head>
-  <script src="/coi-serviceworker.js"></script>
   <meta charset="UTF-8" />
   <link rel="icon" type="image/svg+xml" href="/vite.svg" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>PDF to Word | OnlineToolsVault</title>
-  <meta name="description" content="Convert PDF to Word (DOCX) online. Turn your PDFs into editable Microsoft Word documents with high accuracy." />
+  <title data-rh="true">PDF to Word Converter - Free Online Tool</title>
+  <meta data-rh="true" name="description" content="Turn the text layer of a PDF into a real .docx, one paragraph per line. Fonts, images, tables and columns are not carried over, and scans need OCR first." />
 
   <!-- SEO & Social Meta Tags -->
   <meta name="robots" content="index, follow" />
 
   <meta property="og:type" content="website" />
-  <meta property="og:title" content="PDF to Word | OnlineToolsVault" />
-  <meta property="og:description" content="Convert PDF to Word (DOCX) online. Turn your PDFs into editable Microsoft Word documents with high accuracy." />
-  <meta property="og:url" content="https://onlinetoolsvault.com/pdf-to-word" />
-  <meta property="og:site_name" content="FreeTools" />
+  <meta property="og:title" content="PDF to Word Converter - Free Online Tool" />
+  <meta property="og:description" content="Turn the text layer of a PDF into a real .docx, one paragraph per line. Fonts, images, tables and columns are not carried over, and scans need OCR first." />
+  <meta property="og:url" content="https://onlinetoolsvault.com/pdf-to-word/" />
+  <meta property="og:site_name" content="OnlineToolsVault" />
   <meta property="og:image" content="https://onlinetoolsvault.com/og/pdf-to-word.png" />
   <meta property="og:image:width" content="1200" />
   <meta property="og:image:height" content="630" />
@@ -24,8 +23,8 @@
 
   <meta name="twitter:card" content="summary_large_image" />
   <meta name="twitter:site" content="@sourcestrongai" />
-  <meta name="twitter:title" content="PDF to Word | OnlineToolsVault" />
-  <meta name="twitter:description" content="Convert PDF to Word (DOCX) online. Turn your PDFs into editable Microsoft Word documents with high accuracy." />
+  <meta name="twitter:title" content="PDF to Word Converter - Free Online Tool" />
+  <meta name="twitter:description" content="Turn the text layer of a PDF into a real .docx, one paragraph per line. Fonts, images, tables and columns are not carried over, and scans need OCR first." />
   <meta name="twitter:image" content="https://onlinetoolsvault.com/og/pdf-to-word.png" />
   <meta name="twitter:image:alt" content="PDF to Word — OnlineToolsVault" />
   <meta name="twitter:creator" content="@sourcestrongai" />
@@ -35,7 +34,7 @@
     {
       "@context": "https://schema.org",
       "@type": "WebApplication",
-      "name": "FreeTools",
+      "name": "OnlineToolsVault",
       "url": "https://onlinetoolsvault.com/",
       "description": "Collection of free online client-side tools for PDF and image processing.",
       "applicationCategory": "Utility",
@@ -48,10 +47,48 @@
     }
   </script>
 
-  <!-- Preconnect to Google Fonts -->
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <!--
+    Inter, served from this origin.
+
+    This used to be a <link> to fonts.googleapis.com, which made every one of the 89 routes open a
+    connection to Google (and then a second one to fonts.gstatic.com) before it could paint text —
+    the last off-origin request common to all pages, and one that handed a third party the IP of
+    every visitor on a site whose whole pitch is that nothing leaves the browser.
+
+    scripts/copy-runtime-assets.js stages the two woff2 files into public/fonts at build time.
+    Change a filename or a unicode-range here and change it there; the script re-checks the ranges
+    against what Google serves and warns when they drift.
+
+    These are the *variable* faces (`font-weight: 100 900`), which is what Google was already
+    serving: css2 answers `wght@400;500;600;700;800` with the same single file declared five times,
+    so all five weights come out of one 48 KB download exactly as before.
+
+    Only latin is preloaded. latin-ext is a further 83 KB that the unicode-range below keeps unread
+    unless a page actually contains one of its characters, which no page currently does — preloading
+    it would cost every visitor 83 KB for nothing. `crossorigin` is required even though the file is
+    same-origin: fonts are always fetched in CORS mode, and without it the preload is discarded and
+    the file downloaded twice.
+  -->
+  <link rel="preload" href="/fonts/inter-latin.woff2" as="font" type="font/woff2" crossorigin>
+  <style>
+    @font-face {
+      font-family: 'Inter';
+      font-style: normal;
+      font-weight: 100 900;
+      font-display: swap;
+      src: url('/fonts/inter-latin.woff2') format('woff2');
+      unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+    }
+
+    @font-face {
+      font-family: 'Inter';
+      font-style: normal;
+      font-weight: 100 900;
+      font-display: swap;
+      src: url('/fonts/inter-latin-ext.woff2') format('woff2');
+      unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF;
+    }
+  </style>
 
   <!-- Analytics & Ads -->
   <script async src="https://www.googletagmanager.com/gtag/js?id=G-EVGNTG49J7"></script>
@@ -64,6 +101,55 @@
   <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-4988388949365963"
     crossorigin="anonymous"></script>
 
+  <!--
+    Retire the old COOP/COEP service worker.
+
+    It was added for SharedArrayBuffer, but the FFmpeg tools load the single-threaded
+    @ffmpeg/core build, which never touches SharedArrayBuffer — verified by running a
+    conversion with crossOriginIsolated === false. Meanwhile cross-origin isolation blocked
+    every third-party image a user pastes into the Markdown Previewer, and forced a full page
+    reload on each visitor's first page view.
+
+    Returning visitors still have the worker installed and would keep getting the COEP headers
+    forever, so unregister it once and reload to drop out of the isolated context.
+  -->
+  <script>
+    (function () {
+      if (!('serviceWorker' in navigator)) return;
+      navigator.serviceWorker.getRegistrations().then(function (registrations) {
+        var removed = false;
+        for (var i = 0; i < registrations.length; i++) {
+          var url = (registrations[i].active && registrations[i].active.scriptURL) || '';
+          if (url.indexOf('coi-serviceworker') !== -1) {
+            registrations[i].unregister();
+            removed = true;
+          }
+        }
+        if (removed && window.crossOriginIsolated) window.location.reload();
+      }).catch(function () { /* nothing to clean up */ });
+    })();
+  </script>
+
+  <!--
+    Restore the URL that 404.html forwarded here, before React Router reads location.
+    GitHub Pages cannot rewrite unknown paths itself, so 404.html bounces them to
+    /?notfound=<path>; putting the real path back lets the app's "*" route render NotFound
+    at the address the visitor actually typed.
+  -->
+  <script>
+    (function () {
+      try {
+        var params = new URLSearchParams(window.location.search);
+        var requested = params.get('notfound');
+        if (requested && requested.charAt(0) === '/' && requested.charAt(1) !== '/') {
+          window.history.replaceState(null, '', requested);
+        }
+      } catch (error) {
+        console.error('[NotFound Restore] Error:', error);
+      }
+    })();
+  </script>
+
   <!-- Smart Hash URL Redirect (handles legacy #/ URLs) -->
   <script>
     (function () {
@@ -74,6 +160,18 @@
         if (hash && hash.startsWith('#/')) {
           var path = hash.slice(2); // Remove '#/'
           var search = window.location.search || '';
+
+          // A legacy link can carry its own query or fragment inside the hash
+          // (#/word-counter?tab=2). Split that off before the path is touched, otherwise the
+          // trailing slash below lands after the query string and produces "word-counter?tab=2/".
+          var extra = '';
+          var cut = path.search(/[?#]/);
+          if (cut !== -1) {
+            extra = path.slice(cut);
+            path = path.slice(0, cut);
+          }
+          // Two query strings concatenated would give "?a=1?b=2"; the second '?' becomes '&'.
+          if (search && extra.charAt(0) === '?') extra = '&' + extra.slice(1);
 
           // Auto-detect base path (works in dev and production)
           // In dev: localhost:5173 → base = '/'
@@ -88,13 +186,20 @@
           // Clean up the path (remove trailing/leading slashes)
           path = path.replace(/^\/+|\/+$/g, '');
 
-          // Build redirect URL
+          // Build redirect URL.
+          //
+          // The trailing slash is not cosmetic. GitHub Pages serves each route from
+          // dist/<route>/index.html, so /word-counter answers with a 301 to /word-counter/ —
+          // meaning the slash-less form this used to emit turned every legacy hash link into two
+          // navigations, and any of them that ended up in a canonical, a sitemap or an inbound
+          // link pointed at the redirecting URL rather than the real one. Every other internal
+          // link on the site was normalised to the trailing-slash form; this was the last hole.
           var redirectUrl;
           if (path) {
-            redirectUrl = base + path + search;
+            redirectUrl = base + path + '/' + search + extra;
           } else {
             // Just '#/' with no path - go to home
-            redirectUrl = base;
+            redirectUrl = base + search + extra;
           }
 
           // Redirect using replace (doesn't add to history)
@@ -106,13 +211,16 @@
       }
     })();
   </script>
-  <script type="module" crossorigin src="/assets/index-kvHMSlMz.js"></script>
-  <link rel="stylesheet" crossorigin href="/assets/index-CZAylM9v.css">
-  <link rel="canonical" href="https://onlinetoolsvault.com/pdf-to-word" />
+  <script type="module" crossorigin src="/assets/index-BtmU1OS0.js"></script>
+  <link rel="stylesheet" crossorigin href="/assets/index-Cv0roaG_.css">
+  <link data-rh="true" rel="canonical" href="https://onlinetoolsvault.com/pdf-to-word/" />
+  <!-- prerender:head -->
+  <script type="application/ld+json" data-rh="true">{"@context":"https://schema.org","@type":"FAQPage","mainEntity":[{"@type":"Question","name":"How faithful is the result?","acceptedAnswer":{"@type":"Answer","text":"It recovers the words and the line breaks, and nothing else. Every line of the original becomes its own Word paragraph in the reading order the geometry implies. Fonts, sizes, bold and italic, colours, indentation, headings, columns, tables, headers, footers and images are all dropped — the .docx contains plain default-styled text. Think of it as a clean starting point for rewriting rather than a replica you can hand straight on."}},{"@type":"Question","name":"Why is every line its own paragraph?","acceptedAnswer":{"@type":"Answer","text":"Because a PDF does not record where paragraphs begin. It records where each fragment of text sits on the page, and lines are inferred by watching the vertical position drop. Knowing whether a new line starts a new paragraph or continues the previous one requires guessing at indentation and spacing, and guessing wrong is worse than not guessing. In Word you can select a block and remove the breaks in seconds; recovering breaks that were never emitted is much harder."}},{"@type":"Question","name":"Can it convert a scanned document?","acceptedAnswer":{"@type":"Answer","text":"No. Conversion reads the text layer the PDF already contains; a scan has none, only page images, so you would get an empty .docx. That is a hard limit rather than a missing feature — there is no recognition step here. For a scanned original, render the pages with **PDF to PNG** at 3x and run them through **Image to Text**, then paste the recognised text into a document."}},{"@type":"Question","name":"What happens to tables?","acceptedAnswer":{"@type":"Answer","text":"They come out as lines of loose text, cell after cell, with no table structure at all. That is usually unusable. If the document is mainly tabular, **PDF to Excel** groups fragments by vertical position into spreadsheet rows, which is a much better fit for anything grid-shaped, and you can paste the result back into Word as a table afterwards."}},{"@type":"Question","name":"Are images carried across?","acceptedAnswer":{"@type":"Answer","text":"No. Only text is read; photographs, logos, charts and vector artwork are ignored. If you need the pictures, **Extract Images from PDF** pulls the embedded image objects out at their original resolution and you can place them into the document yourself."}},{"@type":"Question","name":"The lines came out in the wrong order.","acceptedAnswer":{"@type":"Answer","text":"Sorting is by vertical position first and horizontal position second, which is exactly right for a single-column page and wrong for a two-column one — a line from the left column and a line from the right at the same height will be merged into one. Multi-column journal articles, newsletters and anything with sidebars will need manual repair. There is no layout analysis, deliberately: a simple rule that fails predictably is easier to work with than a clever one that fails mysteriously."}},{"@type":"Question","name":"How are pages separated?","acceptedAnswer":{"@type":"Answer","text":"By an empty paragraph, not a page break. The text flows continuously so it reflows naturally when you edit, and you can insert real page breaks wherever they belong in the new document. Page numbers and running heads from the original will appear inline at the boundaries, since to the extractor they are just more text on the page."}},{"@type":"Question","name":"It refused my file.","acceptedAnswer":{"@type":"Answer","text":"If the message mentions a password, the PDF is encrypted and must go through **Unlock PDF** first, since an encrypted document cannot be parsed. Otherwise the file is likely damaged. Note also that conversion happens in two steps here: the document is processed first, then a Download button appears — nothing is written to disk until you press it, and the file is named after the original with a .docx extension."}}]}</script>
+  <!-- /prerender:head -->
 </head>
 
 <body>
-  <div id="root"></div>
+  <div id="root" data-prerendered="static"><div class="app-wrapper"><header class="site-header"><div class="container header-container"><a class="logo" href="/"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-rocket logo-icon"><path d="M4.5 16.5c-1.5 1.26-2 5-2 5s3.74-.5 5-2c.71-.84.7-2.13-.09-2.91a2.18 2.18 0 0 0-2.91-.09z"></path><path d="m12 15-3-3a22 22 0 0 1 2-3.95A12.88 12.88 0 0 1 22 2c0 2.72-.78 7.5-6 11a22.35 22.35 0 0 1-4 2z"></path><path d="M9 12H4s.55-3.03 2-4c1.62-1.08 5 0 5 0"></path><path d="M12 15v5s3.03-.55 4-2c1.08-1.62 0-5 0-5"></path></svg><span>OnlineToolsVault</span></a><nav class="nav-desktop"><a class="nav-link" href="/">Home</a><a class="nav-link" href="/about/">About</a><a class="nav-link" href="/contact/">Contact</a><div class="social-icons"><a href="https://x.com/sourcestrongai" target="_blank" rel="noopener noreferrer" class="social-icon" aria-label="Twitter"><svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-twitter "><path d="M22 4s-.7 2.1-2 3.4c1.6 10-9.4 17.3-18 11.6 2.2.1 4.4-.6 6-2C3 15.5.5 9.6 3 5c2.2 2.6 5.6 4.1 9 4-.9-4.2 4-6.6 7-3.8 1.1 0 3-1.2 3-1.2z"></path></svg></a><a href="https://www.linkedin.com/company/sourcestrongai" target="_blank" rel="noopener noreferrer" class="social-icon" aria-label="LinkedIn"><svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-linkedin "><path d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-2-2 2 2 0 0 0-2 2v7h-4v-7a6 6 0 0 1 6-6z"></path><rect width="4" height="12" x="2" y="9"></rect><circle cx="4" cy="4" r="2"></circle></svg></a></div></nav><button class="nav-mobile-btn" aria-label="Open menu" aria-expanded="false" aria-controls="mobile-menu"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-menu "><line x1="4" x2="20" y1="12" y2="12"></line><line x1="4" x2="20" y1="6" y2="6"></line><line x1="4" x2="20" y1="18" y2="18"></line></svg></button></div></header><main class="main-content"><!--$--><div class="container" style="padding: 3rem 1.5rem;"><div style="max-width: 1000px; margin: 0px auto;"><header style="margin-bottom: 3rem; text-align: center;"><h1 style="font-size: 2.5rem; font-weight: 800; margin-bottom: 0.5rem;">PDF to Word Converter</h1><p style="color: rgb(100, 116, 139);">Convert your PDF documents into editable Word (DOCX) files instantly.</p></header><div class="tool-workspace" style="max-width: 1000px; margin: 0px auto;"><div id="pdf-word-dropzone"><div class="tool-upload-area" role="presentation" tabindex="0" style="border: 2px dashed var(--border); border-radius: 1rem; padding: 4rem 2rem; text-align: center; cursor: pointer; background: white; min-height: 300px; display: flex; flex-direction: column; align-items: center; justify-content: center; transition: 0.2s;"><input accept="application/pdf,.pdf" type="file" tabindex="-1" aria-label="Drag &amp; Drop PDF here" style="border: 0px; clip: rect(0px, 0px, 0px, 0px); clip-path: inset(50%); height: 1px; margin: 0px -1px -1px 0px; overflow: hidden; padding: 0px; position: absolute; width: 1px; white-space: nowrap;"><div style="width: 64px; height: 64px; background: rgb(254, 226, 226); border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0px auto 1.5rem; color: rgb(220, 38, 38);"><svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-file-text "><path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z"></path><path d="M14 2v4a2 2 0 0 0 2 2h4"></path><path d="M10 9H8"></path><path d="M16 13H8"></path><path d="M16 17H8"></path></svg></div><h3 style="font-size: 1.25rem; font-weight: 600; margin-bottom: 0.5rem;">Drag &amp; Drop PDF here</h3><p style="color: rgb(100, 116, 139);">or click to select file</p></div></div><div class="tool-content" style="margin-top: 4rem;"><div class="related-tools-section" style="margin-top: 4rem; margin-bottom: 4rem;"><h2 style="font-size: 1.8rem; font-weight: 700; margin-bottom: 2rem; text-align: center; color: var(--text-primary);">More Useful Tools</h2><div class="tools-grid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(min(280px, 100%), 1fr)); gap: 1.5rem;"><a class="tool-card" href="/protect-pdf/" style="text-decoration: none; color: inherit; background: var(--bg-card); border: 1px solid var(--border); border-radius: 1rem; padding: 1.5rem; transition: 0.2s; display: flex; flex-direction: column; gap: 1rem; cursor: pointer;"><div class="tool-card-header" style="display: flex; align-items: center; gap: 0.75rem;"><div class="tool-icon-wrapper" style="width: 40px; height: 40px; border-radius: 0.5rem; background: var(--primary-light); display: flex; align-items: center; justify-content: center; color: var(--primary);"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-lock "><rect width="18" height="11" x="3" y="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg></div><h3 class="tool-title" style="font-size: 1.1rem; font-weight: 600; margin: 0px;">Protect PDF</h3></div><p class="tool-description" style="font-size: 0.85rem; color: var(--text-secondary); margin: 0px; line-height: 1.5; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;">Encrypt your PDF with a strong password.</p></a><a class="tool-card" href="/remove-pdf-metadata/" style="text-decoration: none; color: inherit; background: var(--bg-card); border: 1px solid var(--border); border-radius: 1rem; padding: 1.5rem; transition: 0.2s; display: flex; flex-direction: column; gap: 1rem; cursor: pointer;"><div class="tool-card-header" style="display: flex; align-items: center; gap: 0.75rem;"><div class="tool-icon-wrapper" style="width: 40px; height: 40px; border-radius: 0.5rem; background: var(--primary-light); display: flex; align-items: center; justify-content: center; color: var(--primary);"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-file-text "><path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z"></path><path d="M14 2v4a2 2 0 0 0 2 2h4"></path><path d="M10 9H8"></path><path d="M16 13H8"></path><path d="M16 17H8"></path></svg></div><h3 class="tool-title" style="font-size: 1.1rem; font-weight: 600; margin: 0px;">Remove PDF Metadata</h3></div><p class="tool-description" style="font-size: 0.85rem; color: var(--text-secondary); margin: 0px; line-height: 1.5; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;">Clean hidden metadata from PDF files.</p></a><a class="tool-card" href="/rotate-pdf/" style="text-decoration: none; color: inherit; background: var(--bg-card); border: 1px solid var(--border); border-radius: 1rem; padding: 1.5rem; transition: 0.2s; display: flex; flex-direction: column; gap: 1rem; cursor: pointer;"><div class="tool-card-header" style="display: flex; align-items: center; gap: 0.75rem;"><div class="tool-icon-wrapper" style="width: 40px; height: 40px; border-radius: 0.5rem; background: var(--primary-light); display: flex; align-items: center; justify-content: center; color: var(--primary);"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-refresh-cw "><path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8"></path><path d="M21 3v5h-5"></path><path d="M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16"></path><path d="M8 16H3v5"></path></svg></div><h3 class="tool-title" style="font-size: 1.1rem; font-weight: 600; margin: 0px;">Rotate PDF</h3></div><p class="tool-description" style="font-size: 0.85rem; color: var(--text-secondary); margin: 0px; line-height: 1.5; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;">Rotate every page in a PDF by 90, 180 or 270.</p></a><a class="tool-card" href="/split-pdf/" style="text-decoration: none; color: inherit; background: var(--bg-card); border: 1px solid var(--border); border-radius: 1rem; padding: 1.5rem; transition: 0.2s; display: flex; flex-direction: column; gap: 1rem; cursor: pointer;"><div class="tool-card-header" style="display: flex; align-items: center; gap: 0.75rem;"><div class="tool-icon-wrapper" style="width: 40px; height: 40px; border-radius: 0.5rem; background: var(--primary-light); display: flex; align-items: center; justify-content: center; color: var(--primary);"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-scissors "><circle cx="6" cy="6" r="3"></circle><path d="M8.12 8.12 12 12"></path><path d="M20 4 8.12 15.88"></path><circle cx="6" cy="18" r="3"></circle><path d="M14.8 14.8 20 20"></path></svg></div><h3 class="tool-title" style="font-size: 1.1rem; font-weight: 600; margin: 0px;">Split PDF</h3></div><p class="tool-description" style="font-size: 0.85rem; color: var(--text-secondary); margin: 0px; line-height: 1.5; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;">Extract pages or split PDF into multiple files.</p></a><a class="tool-card" href="/base64-decoder/" style="text-decoration: none; color: inherit; background: var(--bg-card); border: 1px solid var(--border); border-radius: 1rem; padding: 1.5rem; transition: 0.2s; display: flex; flex-direction: column; gap: 1rem; cursor: pointer;"><div class="tool-card-header" style="display: flex; align-items: center; gap: 0.75rem;"><div class="tool-icon-wrapper" style="width: 40px; height: 40px; border-radius: 0.5rem; background: var(--primary-light); display: flex; align-items: center; justify-content: center; color: var(--primary);"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-binary "><rect x="14" y="14" width="4" height="6" rx="2"></rect><rect x="6" y="4" width="4" height="6" rx="2"></rect><path d="M6 20h4"></path><path d="M14 10h4"></path><path d="M6 14h2v6"></path><path d="M14 4h2v6"></path></svg></div><h3 class="tool-title" style="font-size: 1.1rem; font-weight: 600; margin: 0px;">Base64 Decoder</h3></div><p class="tool-description" style="font-size: 0.85rem; color: var(--text-secondary); margin: 0px; line-height: 1.5; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;">Decode Base64 strings back to text.</p></a><a class="tool-card" href="/html-formatter/" style="text-decoration: none; color: inherit; background: var(--bg-card); border: 1px solid var(--border); border-radius: 1rem; padding: 1.5rem; transition: 0.2s; display: flex; flex-direction: column; gap: 1rem; cursor: pointer;"><div class="tool-card-header" style="display: flex; align-items: center; gap: 0.75rem;"><div class="tool-icon-wrapper" style="width: 40px; height: 40px; border-radius: 0.5rem; background: var(--primary-light); display: flex; align-items: center; justify-content: center; color: var(--primary);"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-code "><polyline points="16 18 22 12 16 6"></polyline><polyline points="8 6 2 12 8 18"></polyline></svg></div><h3 class="tool-title" style="font-size: 1.1rem; font-weight: 600; margin: 0px;">HTML Formatter</h3></div><p class="tool-description" style="font-size: 0.85rem; color: var(--text-secondary); margin: 0px; line-height: 1.5; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;">Format, indent, and beautify HTML code.</p></a></div></div><div class="about-section" style="background: var(--bg-card); padding: 2rem; border-radius: 1rem; border: 1px solid var(--border); margin-bottom: 2rem;"><h2 style="font-size: 1.8rem; margin-bottom: 1.5rem;">About PDF to Word</h2><p style="line-height: 1.6; color: var(--text-secondary); margin-bottom: 1rem;">This pulls the text out of a PDF, works out where the lines were, and writes a .docx you can edit in Word, LibreOffice, Pages or Google Docs. Processing runs in this browser tab; the document is never uploaded, and the .docx is only written to disk when you press Download.</p><h3 style="font-size: 1.15rem; margin-top: 1.75rem; margin-bottom: 0.75rem;">Why PDF to Word is genuinely hard</h3><p style="line-height: 1.6; color: var(--text-secondary); margin-bottom: 1rem;">The two formats describe documents in opposite directions. A .docx is a logical structure — headings, paragraphs, lists, tables — that a word processor lays out to fit whatever page it is given. A PDF is the finished layout with the structure thrown away: a set of instructions that put character codes at coordinates. Converting one to the other means inferring intent from geometry, and every converter in existence is guessing. The only question is how honestly it tells you where the guesses stop.</p><p style="line-height: 1.6; color: var(--text-secondary); margin-bottom: 1rem;">Here the guessing is deliberately shallow. Text fragments are collected page by page and sorted by vertical position, then by horizontal position within a band of five units. Whenever the vertical position drops by more than that, the accumulated fragments are closed off as a line and written as a Word paragraph. Pages are separated by an empty paragraph. Nothing else is attempted: no heading detection, no list reconstruction, no column analysis, no styling.</p><h3 style="font-size: 1.15rem; margin-top: 1.75rem; margin-bottom: 0.75rem;">What you get and what you lose</h3><ul style="line-height: 1.7; color: var(--text-secondary); margin-bottom: 1rem; padding-left: 1.25rem;"><li><strong>Recovered:</strong> all the words, in reading order for single-column layouts, with the original line breaks preserved as separate paragraphs.</li><li><strong>Lost:</strong> fonts, sizes, bold and italic, colour, alignment and indentation — every paragraph uses the default Word style.</li><li><strong>Lost:</strong> tables, images, headers, footers, footnote linkage, hyperlinks and bookmarks.</li><li><strong>Carried through as plain text:</strong> page numbers and running heads, appearing inline at each page boundary.</li></ul><h3 style="font-size: 1.15rem; margin-top: 1.75rem; margin-bottom: 0.75rem;">When this is the right tool</h3><p style="line-height: 1.6; color: var(--text-secondary); margin-bottom: 1rem;">When you want the content in order to rewrite it — quoting a report, reworking a proposal you no longer have the source for, updating last year's document. It is a good starting point, not a finished replica, and the honest workflow is to convert, then restyle in Word rather than expecting to find your original formatting waiting. When appearance matters more than editability, do not convert at all: keep the PDF, or turn the pages into images with <strong>PDF to JPG</strong>. When the content is a grid, <strong>PDF to Excel</strong> reconstructs rows properly and beats fighting a wall of loose cells in Word. When you only need the raw words for a script or a search, <strong>PDF to Text</strong> is faster and simpler.</p><h3 style="font-size: 1.15rem; margin-top: 1.75rem; margin-bottom: 0.75rem;">The scanned-document wall</h3><p style="line-height: 1.6; color: var(--text-secondary);">If the PDF came from a scanner or a phone camera, it holds page images and no text at all, and conversion produces an empty document. Nothing in this tool performs character recognition. The route for scans is <strong>PDF to PNG</strong> at 3x, then <strong>Image to Text</strong>, which runs OCR in the browser and gives you something to paste into a document. It is slower and less accurate than reading a real text layer, which is precisely why documents worth keeping are worth keeping in a searchable form.</p></div><div class="features-section" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 2rem;"><div class="tool-feature-block" style="padding: 1.5rem; border-radius: 1rem; border: 1px solid var(--border); background: var(--bg-card);"><div style="width: 48px; height: 48px; background: var(--primary-light); border-radius: 0.75rem; display: flex; align-items: center; justify-content: center; margin-bottom: 1rem;"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="var(--primary)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-file-text "><path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z"></path><path d="M14 2v4a2 2 0 0 0 2 2h4"></path><path d="M10 9H8"></path><path d="M16 13H8"></path><path d="M16 17H8"></path></svg></div><h3 style="font-size: 1.25rem; margin-bottom: 0.5rem;">A real .docx, not a rename</h3><p style="color: var(--text-secondary);">The output is a genuine Office Open XML document built paragraph by paragraph, so it opens natively in Word, LibreOffice Writer, Pages and Google Docs with no import warnings and no compatibility mode.</p></div><div class="tool-feature-block" style="padding: 1.5rem; border-radius: 1rem; border: 1px solid var(--border); background: var(--bg-card);"><div style="width: 48px; height: 48px; background: var(--primary-light); border-radius: 0.75rem; display: flex; align-items: center; justify-content: center; margin-bottom: 1rem;"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="var(--primary)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-align-left "><line x1="21" x2="3" y1="6" y2="6"></line><line x1="15" x2="3" y1="12" y2="12"></line><line x1="17" x2="3" y1="18" y2="18"></line></svg></div><h3 style="font-size: 1.25rem; margin-bottom: 0.5rem;">Line breaks rebuilt from geometry</h3><p style="color: var(--text-secondary);">Text fragments are sorted top-to-bottom then left-to-right and grouped into lines wherever the baseline shifts by more than five units, which recovers the line structure a plain text dump throws away.</p></div><div class="tool-feature-block" style="padding: 1.5rem; border-radius: 1rem; border: 1px solid var(--border); background: var(--bg-card);"><div style="width: 48px; height: 48px; background: var(--primary-light); border-radius: 0.75rem; display: flex; align-items: center; justify-content: center; margin-bottom: 1rem;"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="var(--primary)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-shield "><path d="M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1.17 1.17 0 0 1 1.52 0C14.51 3.81 17 5 19 5a1 1 0 0 1 1 1z"></path></svg></div><h3 style="font-size: 1.25rem; margin-bottom: 0.5rem;">Converted where the file lives</h3><p style="color: var(--text-secondary);">Parsing and document generation both run in this tab. A merger agreement or an appraisal never reaches a server, which is the difference that matters when the alternative is emailing it to a conversion service.</p></div></div></div></div><div style="max-width: 1000px; margin: 4rem auto 0px; border-top: 1px solid var(--border); padding-top: 3rem;"><h2 style="font-size: 1.8rem; font-weight: 700; margin-bottom: 2rem; text-align: center;">Frequently Asked Questions</h2><div style="display: grid; gap: 2rem;"><div><h3 style="font-size: 1.2rem; font-weight: 600; margin-bottom: 0.5rem; color: rgb(30, 41, 59);">How faithful is the result?</h3><p style="line-height: 1.6; color: rgb(71, 85, 105);">It recovers the words and the line breaks, and nothing else. Every line of the original becomes its own Word paragraph in the reading order the geometry implies. Fonts, sizes, bold and italic, colours, indentation, headings, columns, tables, headers, footers and images are all dropped — the .docx contains plain default-styled text. Think of it as a clean starting point for rewriting rather than a replica you can hand straight on.</p></div><div><h3 style="font-size: 1.2rem; font-weight: 600; margin-bottom: 0.5rem; color: rgb(30, 41, 59);">Why is every line its own paragraph?</h3><p style="line-height: 1.6; color: rgb(71, 85, 105);">Because a PDF does not record where paragraphs begin. It records where each fragment of text sits on the page, and lines are inferred by watching the vertical position drop. Knowing whether a new line starts a new paragraph or continues the previous one requires guessing at indentation and spacing, and guessing wrong is worse than not guessing. In Word you can select a block and remove the breaks in seconds; recovering breaks that were never emitted is much harder.</p></div><div><h3 style="font-size: 1.2rem; font-weight: 600; margin-bottom: 0.5rem; color: rgb(30, 41, 59);">Can it convert a scanned document?</h3><p style="line-height: 1.6; color: rgb(71, 85, 105);">No. Conversion reads the text layer the PDF already contains; a scan has none, only page images, so you would get an empty .docx. That is a hard limit rather than a missing feature — there is no recognition step here. For a scanned original, render the pages with <strong>PDF to PNG</strong> at 3x and run them through <strong>Image to Text</strong>, then paste the recognised text into a document.</p></div><div><h3 style="font-size: 1.2rem; font-weight: 600; margin-bottom: 0.5rem; color: rgb(30, 41, 59);">What happens to tables?</h3><p style="line-height: 1.6; color: rgb(71, 85, 105);">They come out as lines of loose text, cell after cell, with no table structure at all. That is usually unusable. If the document is mainly tabular, <strong>PDF to Excel</strong> groups fragments by vertical position into spreadsheet rows, which is a much better fit for anything grid-shaped, and you can paste the result back into Word as a table afterwards.</p></div><div><h3 style="font-size: 1.2rem; font-weight: 600; margin-bottom: 0.5rem; color: rgb(30, 41, 59);">Are images carried across?</h3><p style="line-height: 1.6; color: rgb(71, 85, 105);">No. Only text is read; photographs, logos, charts and vector artwork are ignored. If you need the pictures, <strong>Extract Images from PDF</strong> pulls the embedded image objects out at their original resolution and you can place them into the document yourself.</p></div><div><h3 style="font-size: 1.2rem; font-weight: 600; margin-bottom: 0.5rem; color: rgb(30, 41, 59);">The lines came out in the wrong order.</h3><p style="line-height: 1.6; color: rgb(71, 85, 105);">Sorting is by vertical position first and horizontal position second, which is exactly right for a single-column page and wrong for a two-column one — a line from the left column and a line from the right at the same height will be merged into one. Multi-column journal articles, newsletters and anything with sidebars will need manual repair. There is no layout analysis, deliberately: a simple rule that fails predictably is easier to work with than a clever one that fails mysteriously.</p></div><div><h3 style="font-size: 1.2rem; font-weight: 600; margin-bottom: 0.5rem; color: rgb(30, 41, 59);">How are pages separated?</h3><p style="line-height: 1.6; color: rgb(71, 85, 105);">By an empty paragraph, not a page break. The text flows continuously so it reflows naturally when you edit, and you can insert real page breaks wherever they belong in the new document. Page numbers and running heads from the original will appear inline at the boundaries, since to the extractor they are just more text on the page.</p></div><div><h3 style="font-size: 1.2rem; font-weight: 600; margin-bottom: 0.5rem; color: rgb(30, 41, 59);">It refused my file.</h3><p style="line-height: 1.6; color: rgb(71, 85, 105);">If the message mentions a password, the PDF is encrypted and must go through <strong>Unlock PDF</strong> first, since an encrypted document cannot be parsed. Otherwise the file is likely damaged. Note also that conversion happens in two steps here: the document is processed first, then a Download button appears — nothing is written to disk until you press it, and the file is named after the original with a .docx extension.</p></div></div></div></div></div><!--/$--></main><footer class="site-footer"><div class="container footer-content"><div class="footer-brand"><h3>OnlineToolsVault</h3><p>Premium, free-to-use online tools for everyone. Free, Fast, Secure and Privacy Focused<br>You can check the source code <a href="https://github.com/OnlineToolsVault/OnlineToolsVault.github.io" target="_blank" rel="noopener noreferrer" style="color: var(--primary); text-decoration: underline;">here</a>.</p></div><div class="footer-links"><div class="footer-col"><h4>Popular Tools</h4><ul><li><a href="/merge-pdf/">Merge PDF</a></li><li><a href="/compress-pdf/">Compress PDF</a></li><li><a href="/image-compressor/">Image Compressor</a></li><li><a href="/qr-generator/">QR Generator</a></li></ul></div><div class="footer-col"><h4>Company</h4><ul><li><a href="/about/">About Us</a></li><li><a href="/contact/">Contact</a></li><li><a href="/privacy/">Privacy Policy</a></li><li><a href="/terms/">Terms of Service</a></li></ul></div><div class="footer-col"><h4>Connect</h4><ul><li><a href="https://x.com/sourcestrongai" target="_blank" rel="noopener noreferrer">Twitter</a></li><li><a href="https://github.com/OnlineToolsVault" target="_blank" rel="noopener noreferrer">GitHub</a></li><li><a href="https://www.linkedin.com/company/sourcestrongai" target="_blank" rel="noopener noreferrer">LinkedIn</a></li></ul></div></div></div><div class="container footer-bottom"><p>© 2026 Source Strong AI. All Rights Reserved. Managed under <a href="/terms/" style="color: inherit; text-decoration: underline;">Proprietary License</a>.</p><p style="display: flex; align-items: center; gap: 0.25rem;">Made with <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-heart "><path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z"></path></svg> for the web</p></div></footer></div></div>
 </body>
 
 </html>

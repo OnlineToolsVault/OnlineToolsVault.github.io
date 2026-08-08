@@ -2,21 +2,20 @@
 <html lang="en">
 
 <head>
-  <script src="/coi-serviceworker.js"></script>
   <meta charset="UTF-8" />
   <link rel="icon" type="image/svg+xml" href="/vite.svg" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>JSON to CSV | OnlineToolsVault</title>
-  <meta name="description" content="JSON to CSV converter. flatten JSON objects into CSV rows for analysis in Excel or Google Sheets." />
+  <title data-rh="true">JSON to CSV Converter - Convert JSON to CSV Online</title>
+  <meta data-rh="true" name="description" content="Flatten JSON into CSV, turning nested objects into dotted columns such as address.city. The file carries a UTF-8 marker so Excel reads accents correctly." />
 
   <!-- SEO & Social Meta Tags -->
   <meta name="robots" content="index, follow" />
 
   <meta property="og:type" content="website" />
-  <meta property="og:title" content="JSON to CSV | OnlineToolsVault" />
-  <meta property="og:description" content="JSON to CSV converter. flatten JSON objects into CSV rows for analysis in Excel or Google Sheets." />
-  <meta property="og:url" content="https://onlinetoolsvault.com/json-to-csv" />
-  <meta property="og:site_name" content="FreeTools" />
+  <meta property="og:title" content="JSON to CSV Converter - Convert JSON to CSV Online" />
+  <meta property="og:description" content="Flatten JSON into CSV, turning nested objects into dotted columns such as address.city. The file carries a UTF-8 marker so Excel reads accents correctly." />
+  <meta property="og:url" content="https://onlinetoolsvault.com/json-to-csv/" />
+  <meta property="og:site_name" content="OnlineToolsVault" />
   <meta property="og:image" content="https://onlinetoolsvault.com/og/json-to-csv.png" />
   <meta property="og:image:width" content="1200" />
   <meta property="og:image:height" content="630" />
@@ -24,8 +23,8 @@
 
   <meta name="twitter:card" content="summary_large_image" />
   <meta name="twitter:site" content="@sourcestrongai" />
-  <meta name="twitter:title" content="JSON to CSV | OnlineToolsVault" />
-  <meta name="twitter:description" content="JSON to CSV converter. flatten JSON objects into CSV rows for analysis in Excel or Google Sheets." />
+  <meta name="twitter:title" content="JSON to CSV Converter - Convert JSON to CSV Online" />
+  <meta name="twitter:description" content="Flatten JSON into CSV, turning nested objects into dotted columns such as address.city. The file carries a UTF-8 marker so Excel reads accents correctly." />
   <meta name="twitter:image" content="https://onlinetoolsvault.com/og/json-to-csv.png" />
   <meta name="twitter:image:alt" content="JSON to CSV — OnlineToolsVault" />
   <meta name="twitter:creator" content="@sourcestrongai" />
@@ -35,7 +34,7 @@
     {
       "@context": "https://schema.org",
       "@type": "WebApplication",
-      "name": "FreeTools",
+      "name": "OnlineToolsVault",
       "url": "https://onlinetoolsvault.com/",
       "description": "Collection of free online client-side tools for PDF and image processing.",
       "applicationCategory": "Utility",
@@ -48,10 +47,48 @@
     }
   </script>
 
-  <!-- Preconnect to Google Fonts -->
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <!--
+    Inter, served from this origin.
+
+    This used to be a <link> to fonts.googleapis.com, which made every one of the 89 routes open a
+    connection to Google (and then a second one to fonts.gstatic.com) before it could paint text —
+    the last off-origin request common to all pages, and one that handed a third party the IP of
+    every visitor on a site whose whole pitch is that nothing leaves the browser.
+
+    scripts/copy-runtime-assets.js stages the two woff2 files into public/fonts at build time.
+    Change a filename or a unicode-range here and change it there; the script re-checks the ranges
+    against what Google serves and warns when they drift.
+
+    These are the *variable* faces (`font-weight: 100 900`), which is what Google was already
+    serving: css2 answers `wght@400;500;600;700;800` with the same single file declared five times,
+    so all five weights come out of one 48 KB download exactly as before.
+
+    Only latin is preloaded. latin-ext is a further 83 KB that the unicode-range below keeps unread
+    unless a page actually contains one of its characters, which no page currently does — preloading
+    it would cost every visitor 83 KB for nothing. `crossorigin` is required even though the file is
+    same-origin: fonts are always fetched in CORS mode, and without it the preload is discarded and
+    the file downloaded twice.
+  -->
+  <link rel="preload" href="/fonts/inter-latin.woff2" as="font" type="font/woff2" crossorigin>
+  <style>
+    @font-face {
+      font-family: 'Inter';
+      font-style: normal;
+      font-weight: 100 900;
+      font-display: swap;
+      src: url('/fonts/inter-latin.woff2') format('woff2');
+      unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+    }
+
+    @font-face {
+      font-family: 'Inter';
+      font-style: normal;
+      font-weight: 100 900;
+      font-display: swap;
+      src: url('/fonts/inter-latin-ext.woff2') format('woff2');
+      unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF;
+    }
+  </style>
 
   <!-- Analytics & Ads -->
   <script async src="https://www.googletagmanager.com/gtag/js?id=G-EVGNTG49J7"></script>
@@ -64,6 +101,55 @@
   <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-4988388949365963"
     crossorigin="anonymous"></script>
 
+  <!--
+    Retire the old COOP/COEP service worker.
+
+    It was added for SharedArrayBuffer, but the FFmpeg tools load the single-threaded
+    @ffmpeg/core build, which never touches SharedArrayBuffer — verified by running a
+    conversion with crossOriginIsolated === false. Meanwhile cross-origin isolation blocked
+    every third-party image a user pastes into the Markdown Previewer, and forced a full page
+    reload on each visitor's first page view.
+
+    Returning visitors still have the worker installed and would keep getting the COEP headers
+    forever, so unregister it once and reload to drop out of the isolated context.
+  -->
+  <script>
+    (function () {
+      if (!('serviceWorker' in navigator)) return;
+      navigator.serviceWorker.getRegistrations().then(function (registrations) {
+        var removed = false;
+        for (var i = 0; i < registrations.length; i++) {
+          var url = (registrations[i].active && registrations[i].active.scriptURL) || '';
+          if (url.indexOf('coi-serviceworker') !== -1) {
+            registrations[i].unregister();
+            removed = true;
+          }
+        }
+        if (removed && window.crossOriginIsolated) window.location.reload();
+      }).catch(function () { /* nothing to clean up */ });
+    })();
+  </script>
+
+  <!--
+    Restore the URL that 404.html forwarded here, before React Router reads location.
+    GitHub Pages cannot rewrite unknown paths itself, so 404.html bounces them to
+    /?notfound=<path>; putting the real path back lets the app's "*" route render NotFound
+    at the address the visitor actually typed.
+  -->
+  <script>
+    (function () {
+      try {
+        var params = new URLSearchParams(window.location.search);
+        var requested = params.get('notfound');
+        if (requested && requested.charAt(0) === '/' && requested.charAt(1) !== '/') {
+          window.history.replaceState(null, '', requested);
+        }
+      } catch (error) {
+        console.error('[NotFound Restore] Error:', error);
+      }
+    })();
+  </script>
+
   <!-- Smart Hash URL Redirect (handles legacy #/ URLs) -->
   <script>
     (function () {
@@ -74,6 +160,18 @@
         if (hash && hash.startsWith('#/')) {
           var path = hash.slice(2); // Remove '#/'
           var search = window.location.search || '';
+
+          // A legacy link can carry its own query or fragment inside the hash
+          // (#/word-counter?tab=2). Split that off before the path is touched, otherwise the
+          // trailing slash below lands after the query string and produces "word-counter?tab=2/".
+          var extra = '';
+          var cut = path.search(/[?#]/);
+          if (cut !== -1) {
+            extra = path.slice(cut);
+            path = path.slice(0, cut);
+          }
+          // Two query strings concatenated would give "?a=1?b=2"; the second '?' becomes '&'.
+          if (search && extra.charAt(0) === '?') extra = '&' + extra.slice(1);
 
           // Auto-detect base path (works in dev and production)
           // In dev: localhost:5173 → base = '/'
@@ -88,13 +186,20 @@
           // Clean up the path (remove trailing/leading slashes)
           path = path.replace(/^\/+|\/+$/g, '');
 
-          // Build redirect URL
+          // Build redirect URL.
+          //
+          // The trailing slash is not cosmetic. GitHub Pages serves each route from
+          // dist/<route>/index.html, so /word-counter answers with a 301 to /word-counter/ —
+          // meaning the slash-less form this used to emit turned every legacy hash link into two
+          // navigations, and any of them that ended up in a canonical, a sitemap or an inbound
+          // link pointed at the redirecting URL rather than the real one. Every other internal
+          // link on the site was normalised to the trailing-slash form; this was the last hole.
           var redirectUrl;
           if (path) {
-            redirectUrl = base + path + search;
+            redirectUrl = base + path + '/' + search + extra;
           } else {
             // Just '#/' with no path - go to home
-            redirectUrl = base;
+            redirectUrl = base + search + extra;
           }
 
           // Redirect using replace (doesn't add to history)
@@ -106,13 +211,16 @@
       }
     })();
   </script>
-  <script type="module" crossorigin src="/assets/index-kvHMSlMz.js"></script>
-  <link rel="stylesheet" crossorigin href="/assets/index-CZAylM9v.css">
-  <link rel="canonical" href="https://onlinetoolsvault.com/json-to-csv" />
+  <script type="module" crossorigin src="/assets/index-BtmU1OS0.js"></script>
+  <link rel="stylesheet" crossorigin href="/assets/index-Cv0roaG_.css">
+  <link data-rh="true" rel="canonical" href="https://onlinetoolsvault.com/json-to-csv/" />
+  <!-- prerender:head -->
+  <script type="application/ld+json" data-rh="true">{"@context":"https://schema.org","@type":"FAQPage","mainEntity":[{"@type":"Question","name":"What shape does my JSON need to be?","acceptedAnswer":{"@type":"Answer","text":"An array of objects converts most naturally, one row per element. A single object becomes a one-row table. The common API envelope, where the array sits under a key such as {\"users\": [ ... ]}, is unwrapped automatically as long as exactly one key holds a non-empty array — so you usually do not have to strip the wrapper first. An array of plain values with no objects at all becomes a single column headed value."}},{"@type":"Question","name":"How exactly does the flattening work?","acceptedAnswer":{"@type":"Answer","text":"Every leaf in the structure gets its own column, named by joining the path with dots. Object keys contribute their name and array elements contribute their index, so a row of [{\"id\":1,\"items\":[{\"sku\":\"A\"},{\"sku\":\"B\"}]}] produces columns id, items.0.sku and items.1.sku. Note that a top-level {\"items\":[ ... ]} is not flattened that way at all: it matches the envelope rule below, so the array supplies the rows and you get one plain sku column instead. Nothing is lost, but the shape can be surprising: a row with fifty line items generates a hundred columns, and because column names include indexes, two records with different array lengths do not line up."}},{"@type":"Question","name":"What do I get when records have different fields?","acceptedAnswer":{"@type":"Answer","text":"The header is the union of every key seen across all rows, in the order each first appears, and any record missing a key gets an empty cell. That is usually what you want for a slightly ragged export. It becomes unwieldy when the file mixes genuinely different record types, since the result is a wide, mostly blank sheet — splitting those into separate conversions gives a far more usable table."}},{"@type":"Question","name":"How are nulls, booleans and awkward strings written?","acceptedAnswer":{"@type":"Answer","text":"A null becomes an empty cell, indistinguishable from a missing key, so if that distinction matters in your data the CSV will not preserve it. Booleans are written as uppercase TRUE and FALSE. Strings containing a comma, a double quote or a line break are wrapped in quotes with any internal quotes doubled, which is standard CSV escaping — a value spanning two lines therefore occupies two physical lines in the file while remaining a single cell."}},{"@type":"Question","name":"My file will not convert. What is it complaining about?","acceptedAnswer":{"@type":"Answer","text":"Three messages are possible, and in practice you will only ever see the first. \"That file is not valid JSON\" means the parser rejected it — a trailing comma, a single-quoted key or an unescaped newline inside a string are the usual causes, and the JSON Formatter will point at the line. \"Could not read the file\" is a filesystem-level failure. \"Could not convert this JSON to a table\" is a fallback for the table builder itself failing; it is rare, because almost any valid JSON converts to something — a bare number, string or null becomes a single row under a column headed value, and an empty array produces an empty CSV with a note above the box rather than an error. Note that JSON Lines, with one document per line, is not valid JSON as a whole; wrap the lines in brackets and separate them with commas first."}},{"@type":"Question","name":"Does the copied text differ from the downloaded file?","acceptedAnswer":{"@type":"Answer","text":"Slightly. Download prepends a UTF-8 byte-order mark so that double-clicking the file opens it correctly in Excel; Copy puts the plain text on your clipboard without it, which is what you want when pasting into an editor or a terminal. The delimiter is a comma in both cases, with no option to change it, so a tool expecting semicolons will need the file adjusted afterwards."}}]}</script>
+  <!-- /prerender:head -->
 </head>
 
 <body>
-  <div id="root"></div>
+  <div id="root" data-prerendered="static"><div class="app-wrapper"><header class="site-header"><div class="container header-container"><a class="logo" href="/"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-rocket logo-icon"><path d="M4.5 16.5c-1.5 1.26-2 5-2 5s3.74-.5 5-2c.71-.84.7-2.13-.09-2.91a2.18 2.18 0 0 0-2.91-.09z"></path><path d="m12 15-3-3a22 22 0 0 1 2-3.95A12.88 12.88 0 0 1 22 2c0 2.72-.78 7.5-6 11a22.35 22.35 0 0 1-4 2z"></path><path d="M9 12H4s.55-3.03 2-4c1.62-1.08 5 0 5 0"></path><path d="M12 15v5s3.03-.55 4-2c1.08-1.62 0-5 0-5"></path></svg><span>OnlineToolsVault</span></a><nav class="nav-desktop"><a class="nav-link" href="/">Home</a><a class="nav-link" href="/about/">About</a><a class="nav-link" href="/contact/">Contact</a><div class="social-icons"><a href="https://x.com/sourcestrongai" target="_blank" rel="noopener noreferrer" class="social-icon" aria-label="Twitter"><svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-twitter "><path d="M22 4s-.7 2.1-2 3.4c1.6 10-9.4 17.3-18 11.6 2.2.1 4.4-.6 6-2C3 15.5.5 9.6 3 5c2.2 2.6 5.6 4.1 9 4-.9-4.2 4-6.6 7-3.8 1.1 0 3-1.2 3-1.2z"></path></svg></a><a href="https://www.linkedin.com/company/sourcestrongai" target="_blank" rel="noopener noreferrer" class="social-icon" aria-label="LinkedIn"><svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-linkedin "><path d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-2-2 2 2 0 0 0-2 2v7h-4v-7a6 6 0 0 1 6-6z"></path><rect width="4" height="12" x="2" y="9"></rect><circle cx="4" cy="4" r="2"></circle></svg></a></div></nav><button class="nav-mobile-btn" aria-label="Open menu" aria-expanded="false" aria-controls="mobile-menu"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-menu "><line x1="4" x2="20" y1="12" y2="12"></line><line x1="4" x2="20" y1="6" y2="6"></line><line x1="4" x2="20" y1="18" y2="18"></line></svg></button></div></header><main class="main-content"><!--$--><div class="container" style="padding: 3rem 1.5rem;"><div style="max-width: 1000px; margin: 0px auto;"><header style="margin-bottom: 3rem; text-align: center;"><h1 style="font-size: 2.5rem; font-weight: 800; margin-bottom: 0.5rem;">JSON to CSV Converter</h1><p style="color: rgb(100, 116, 139);">Convert JSON files to CSV format.</p></header><div class="tool-workspace" style="max-width: 1000px; margin: 0px auto;"><div class="tool-upload-area" role="presentation" tabindex="0" style="border: 2px dashed var(--border); border-radius: 1rem; padding: 4rem 2rem; text-align: center; cursor: pointer; background: white; min-height: 300px; display: flex; flex-direction: column; align-items: center; justify-content: center; transition: 0.2s;"><input accept="application/json,.json" type="file" tabindex="-1" id="json-upload" aria-label="Drop JSON file here" style="border: 0px; clip: rect(0px, 0px, 0px, 0px); clip-path: inset(50%); height: 1px; margin: 0px -1px -1px 0px; overflow: hidden; padding: 0px; position: absolute; width: 1px; white-space: nowrap;"><div style="width: 64px; height: 64px; background: rgb(254, 226, 226); border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0px auto 1.5rem; color: rgb(220, 38, 38);"><svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-file-json "><path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z"></path><path d="M14 2v4a2 2 0 0 0 2 2h4"></path><path d="M10 12a1 1 0 0 0-1 1v1a1 1 0 0 1-1 1 1 1 0 0 1 1 1v1a1 1 0 0 0 1 1"></path><path d="M14 18a1 1 0 0 0 1-1v-1a1 1 0 0 1 1-1 1 1 0 0 1-1-1v-1a1 1 0 0 0-1-1"></path></svg></div><h3 style="font-size: 1.25rem; font-weight: 600; margin-bottom: 0.5rem;">Drop JSON file here</h3><p style="color: rgb(100, 116, 139);">or click to select file</p></div><div class="tool-content" style="margin-top: 4rem;"><div class="related-tools-section" style="margin-top: 4rem; margin-bottom: 4rem;"><h2 style="font-size: 1.8rem; font-weight: 700; margin-bottom: 2rem; text-align: center; color: var(--text-primary);">More Useful Tools</h2><div class="tools-grid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(min(280px, 100%), 1fr)); gap: 1.5rem;"><a class="tool-card" href="/regular-expression-tester/" style="text-decoration: none; color: inherit; background: var(--bg-card); border: 1px solid var(--border); border-radius: 1rem; padding: 1.5rem; transition: 0.2s; display: flex; flex-direction: column; gap: 1rem; cursor: pointer;"><div class="tool-card-header" style="display: flex; align-items: center; gap: 0.75rem;"><div class="tool-icon-wrapper" style="width: 40px; height: 40px; border-radius: 0.5rem; background: var(--primary-light); display: flex; align-items: center; justify-content: center; color: var(--primary);"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-search "><circle cx="11" cy="11" r="8"></circle><path d="m21 21-4.3-4.3"></path></svg></div><h3 class="tool-title" style="font-size: 1.1rem; font-weight: 600; margin: 0px;">Regex Tester</h3></div><p class="tool-description" style="font-size: 0.85rem; color: var(--text-secondary); margin: 0px; line-height: 1.5; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;">Test and debug regular expressions.</p></a><a class="tool-card" href="/sql-formatter/" style="text-decoration: none; color: inherit; background: var(--bg-card); border: 1px solid var(--border); border-radius: 1rem; padding: 1.5rem; transition: 0.2s; display: flex; flex-direction: column; gap: 1rem; cursor: pointer;"><div class="tool-card-header" style="display: flex; align-items: center; gap: 0.75rem;"><div class="tool-icon-wrapper" style="width: 40px; height: 40px; border-radius: 0.5rem; background: var(--primary-light); display: flex; align-items: center; justify-content: center; color: var(--primary);"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-database "><ellipse cx="12" cy="5" rx="9" ry="3"></ellipse><path d="M3 5V19A9 3 0 0 0 21 19V5"></path><path d="M3 12A9 3 0 0 0 21 12"></path></svg></div><h3 class="tool-title" style="font-size: 1.1rem; font-weight: 600; margin: 0px;">SQL Formatter</h3></div><p class="tool-description" style="font-size: 0.85rem; color: var(--text-secondary); margin: 0px; line-height: 1.5; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;">Format SQL queries for better readability.</p></a><a class="tool-card" href="/xml-formatter/" style="text-decoration: none; color: inherit; background: var(--bg-card); border: 1px solid var(--border); border-radius: 1rem; padding: 1.5rem; transition: 0.2s; display: flex; flex-direction: column; gap: 1rem; cursor: pointer;"><div class="tool-card-header" style="display: flex; align-items: center; gap: 0.75rem;"><div class="tool-icon-wrapper" style="width: 40px; height: 40px; border-radius: 0.5rem; background: var(--primary-light); display: flex; align-items: center; justify-content: center; color: var(--primary);"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-code "><polyline points="16 18 22 12 16 6"></polyline><polyline points="8 6 2 12 8 18"></polyline></svg></div><h3 class="tool-title" style="font-size: 1.1rem; font-weight: 600; margin: 0px;">XML Formatter</h3></div><p class="tool-description" style="font-size: 0.85rem; color: var(--text-secondary); margin: 0px; line-height: 1.5; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;">Format and beautify XML strings.</p></a><a class="tool-card" href="/code-formatter/" style="text-decoration: none; color: inherit; background: var(--bg-card); border: 1px solid var(--border); border-radius: 1rem; padding: 1.5rem; transition: 0.2s; display: flex; flex-direction: column; gap: 1rem; cursor: pointer;"><div class="tool-card-header" style="display: flex; align-items: center; gap: 0.75rem;"><div class="tool-icon-wrapper" style="width: 40px; height: 40px; border-radius: 0.5rem; background: var(--primary-light); display: flex; align-items: center; justify-content: center; color: var(--primary);"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-code "><polyline points="16 18 22 12 16 6"></polyline><polyline points="8 6 2 12 8 18"></polyline></svg></div><h3 class="tool-title" style="font-size: 1.1rem; font-weight: 600; margin: 0px;">Code Formatter</h3></div><p class="tool-description" style="font-size: 0.85rem; color: var(--text-secondary); margin: 0px; line-height: 1.5; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;">Beautify code in nineteen languages.</p></a><a class="tool-card" href="/add-watermark-to-image/" style="text-decoration: none; color: inherit; background: var(--bg-card); border: 1px solid var(--border); border-radius: 1rem; padding: 1.5rem; transition: 0.2s; display: flex; flex-direction: column; gap: 1rem; cursor: pointer;"><div class="tool-card-header" style="display: flex; align-items: center; gap: 0.75rem;"><div class="tool-icon-wrapper" style="width: 40px; height: 40px; border-radius: 0.5rem; background: var(--primary-light); display: flex; align-items: center; justify-content: center; color: var(--primary);"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-wand2 "><path d="m21.64 3.64-1.28-1.28a1.21 1.21 0 0 0-1.72 0L2.36 18.64a1.21 1.21 0 0 0 0 1.72l1.28 1.28a1.2 1.2 0 0 0 1.72 0L21.64 5.36a1.2 1.2 0 0 0 0-1.72Z"></path><path d="m14 7 3 3"></path><path d="M5 6v4"></path><path d="M19 14v4"></path><path d="M10 2v2"></path><path d="M7 8H3"></path><path d="M21 16h-4"></path><path d="M11 3H9"></path></svg></div><h3 class="tool-title" style="font-size: 1.1rem; font-weight: 600; margin: 0px;">Watermark Image</h3></div><p class="tool-description" style="font-size: 0.85rem; color: var(--text-secondary); margin: 0px; line-height: 1.5; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;">Add a text watermark to your photos.</p></a><a class="tool-card" href="/excel-to-csv/" style="text-decoration: none; color: inherit; background: var(--bg-card); border: 1px solid var(--border); border-radius: 1rem; padding: 1.5rem; transition: 0.2s; display: flex; flex-direction: column; gap: 1rem; cursor: pointer;"><div class="tool-card-header" style="display: flex; align-items: center; gap: 0.75rem;"><div class="tool-icon-wrapper" style="width: 40px; height: 40px; border-radius: 0.5rem; background: var(--primary-light); display: flex; align-items: center; justify-content: center; color: var(--primary);"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-file-text "><path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z"></path><path d="M14 2v4a2 2 0 0 0 2 2h4"></path><path d="M10 9H8"></path><path d="M16 13H8"></path><path d="M16 17H8"></path></svg></div><h3 class="tool-title" style="font-size: 1.1rem; font-weight: 600; margin: 0px;">Excel to CSV</h3></div><p class="tool-description" style="font-size: 0.85rem; color: var(--text-secondary); margin: 0px; line-height: 1.5; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;">Convert Excel spreadsheets to CSV text.</p></a></div></div><div class="about-section" style="background: var(--bg-card); padding: 2rem; border-radius: 1rem; border: 1px solid var(--border); margin-bottom: 2rem;"><h2 style="font-size: 1.8rem; margin-bottom: 1.5rem;">About JSON to CSV Converter</h2><p style="line-height: 1.6; color: var(--text-secondary); margin-bottom: 1rem;">JSON is a tree; a spreadsheet is a rectangle. Converting between them means deciding what becomes a row and what becomes a column. Drop a <code>.json</code> file above and this page makes those decisions for you, then shows the resulting CSV so you can check it before downloading.</p><h3 style="font-size: 1.15rem; font-weight: 600; margin: 1.75rem 0px 0.75rem;">How rows and columns are chosen</h3><p style="line-height: 1.6; color: var(--text-secondary); margin-bottom: 1rem;">Rows come first. A top-level array gives one row per element. A top-level object whose only array is under a single key — the <code>{"data": [ … ]}</code> envelope most APIs return — is unwrapped so that array supplies the rows. Anything else is treated as one record. Columns then come from flattening each row: every nested key and array index is folded into a dotted path, so no leaf value is silently dropped the way a naive conversion would drop an object into a blank cell.</p><h3 style="font-size: 1.15rem; font-weight: 600; margin: 1.75rem 0px 0.75rem;">Where the tree does not fit the rectangle</h3><p style="line-height: 1.6; color: var(--text-secondary); margin-bottom: 1rem;">Arrays of sub-records are the hard case. Because each element gets its own indexed columns, an order containing three line items produces <code>items.0.sku</code> through <code>items.2.qty</code>, and an order with ten produces thirty. Nothing lines up between rows of different lengths, and the sheet grows sideways fast. When the nested array is the interesting part, you will get a far more useful result by extracting it and converting that instead, giving one row per line item with the order id repeated.</p><h3 style="font-size: 1.15rem; font-weight: 600; margin: 1.75rem 0px 0.75rem;">Encoding, quoting and Excel</h3><p style="line-height: 1.6; color: var(--text-secondary); margin-bottom: 1rem;">Values needing protection are quoted and internal quotes doubled, per the usual CSV convention, so text with commas or newlines survives intact. The downloaded file is prefixed with a UTF-8 byte-order mark, which is the difference between a name like Zoë opening correctly in Excel and arriving as <code>ZoÃ«</code>. Google Sheets and LibreOffice detect UTF-8 without the marker and handle either version.</p><h3 style="font-size: 1.15rem; font-weight: 600; margin: 1.75rem 0px 0.75rem;">Before and after this step</h3><p style="line-height: 1.6; color: var(--text-secondary);">If the file will not parse, the <strong>JSON Formatter</strong> reports where the syntax breaks down. To go back the other way, <strong>CSV to JSON</strong> rebuilds an array of objects from a table, though it will not reconstruct the nesting that flattening removed — dotted headings come back as literal key names. And if the real destination is a workbook rather than a text file, converting here and then running the result through <strong>CSV to Excel</strong> produces an <code>.xlsx</code>.</p></div><div class="features-section" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 2rem;"><div class="tool-feature-block" style="padding: 1.5rem; border-radius: 1rem; border: 1px solid var(--border); background: var(--bg-card);"><div style="width: 48px; height: 48px; background: var(--primary-light); border-radius: 0.75rem; display: flex; align-items: center; justify-content: center; margin-bottom: 1rem;"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="var(--primary)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-file-json "><path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z"></path><path d="M14 2v4a2 2 0 0 0 2 2h4"></path><path d="M10 12a1 1 0 0 0-1 1v1a1 1 0 0 1-1 1 1 1 0 0 1 1 1v1a1 1 0 0 0 1 1"></path><path d="M14 18a1 1 0 0 0 1-1v-1a1 1 0 0 1 1-1 1 1 0 0 1-1-1v-1a1 1 0 0 0-1-1"></path></svg></div><h3 style="font-size: 1.25rem; margin-bottom: 0.5rem;">Nesting Becomes Dotted Columns</h3><p style="color: var(--text-secondary);">An address object turns into address.city and address.zip; a tags array turns into tags.0 and tags.1. Every leaf value reaches the table instead of being dropped as an empty cell.</p></div><div class="tool-feature-block" style="padding: 1.5rem; border-radius: 1rem; border: 1px solid var(--border); background: var(--bg-card);"><div style="width: 48px; height: 48px; background: var(--primary-light); border-radius: 0.75rem; display: flex; align-items: center; justify-content: center; margin-bottom: 1rem;"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="var(--primary)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-check "><path d="M20 6 9 17l-5-5"></path></svg></div><h3 style="font-size: 1.25rem; margin-bottom: 0.5rem;">Downloads With A UTF-8 Marker</h3><p style="color: var(--text-secondary);">The saved file starts with a byte-order mark, so Excel reads accented names and non-Latin scripts correctly instead of guessing a legacy codepage and producing mojibake.</p></div><div class="tool-feature-block" style="padding: 1.5rem; border-radius: 1rem; border: 1px solid var(--border); background: var(--bg-card);"><div style="width: 48px; height: 48px; background: var(--primary-light); border-radius: 0.75rem; display: flex; align-items: center; justify-content: center; margin-bottom: 1rem;"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="var(--primary)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-shield "><path d="M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1.17 1.17 0 0 1 1.52 0C14.51 3.81 17 5 19 5a1 1 0 0 1 1 1z"></path></svg></div><h3 style="font-size: 1.25rem; margin-bottom: 0.5rem;">Parsed In The Page</h3><p style="color: var(--text-secondary);">JSON.parse and the table builder both run in this tab. An API dump full of customer records is never uploaded, and closing the tab is the whole of the cleanup.</p></div></div></div></div><div style="max-width: 1000px; margin: 4rem auto 0px; border-top: 1px solid var(--border); padding-top: 3rem;"><h2 style="font-size: 1.8rem; font-weight: 700; margin-bottom: 2rem; text-align: center;">Frequently Asked Questions</h2><div style="display: grid; gap: 2rem;"><div><h3 style="font-size: 1.2rem; font-weight: 600; margin-bottom: 0.5rem; color: rgb(30, 41, 59);">What shape does my JSON need to be?</h3><p style="line-height: 1.6; color: rgb(71, 85, 105);">An array of objects converts most naturally, one row per element. A single object becomes a one-row table. The common API envelope, where the array sits under a key such as {"users": [ ... ]}, is unwrapped automatically as long as exactly one key holds a non-empty array — so you usually do not have to strip the wrapper first. An array of plain values with no objects at all becomes a single column headed value.</p></div><div><h3 style="font-size: 1.2rem; font-weight: 600; margin-bottom: 0.5rem; color: rgb(30, 41, 59);">How exactly does the flattening work?</h3><p style="line-height: 1.6; color: rgb(71, 85, 105);">Every leaf in the structure gets its own column, named by joining the path with dots. Object keys contribute their name and array elements contribute their index, so a row of [{"id":1,"items":[{"sku":"A"},{"sku":"B"}]}] produces columns id, items.0.sku and items.1.sku. Note that a top-level {"items":[ ... ]} is not flattened that way at all: it matches the envelope rule below, so the array supplies the rows and you get one plain sku column instead. Nothing is lost, but the shape can be surprising: a row with fifty line items generates a hundred columns, and because column names include indexes, two records with different array lengths do not line up.</p></div><div><h3 style="font-size: 1.2rem; font-weight: 600; margin-bottom: 0.5rem; color: rgb(30, 41, 59);">What do I get when records have different fields?</h3><p style="line-height: 1.6; color: rgb(71, 85, 105);">The header is the union of every key seen across all rows, in the order each first appears, and any record missing a key gets an empty cell. That is usually what you want for a slightly ragged export. It becomes unwieldy when the file mixes genuinely different record types, since the result is a wide, mostly blank sheet — splitting those into separate conversions gives a far more usable table.</p></div><div><h3 style="font-size: 1.2rem; font-weight: 600; margin-bottom: 0.5rem; color: rgb(30, 41, 59);">How are nulls, booleans and awkward strings written?</h3><p style="line-height: 1.6; color: rgb(71, 85, 105);">A null becomes an empty cell, indistinguishable from a missing key, so if that distinction matters in your data the CSV will not preserve it. Booleans are written as uppercase TRUE and FALSE. Strings containing a comma, a double quote or a line break are wrapped in quotes with any internal quotes doubled, which is standard CSV escaping — a value spanning two lines therefore occupies two physical lines in the file while remaining a single cell.</p></div><div><h3 style="font-size: 1.2rem; font-weight: 600; margin-bottom: 0.5rem; color: rgb(30, 41, 59);">My file will not convert. What is it complaining about?</h3><p style="line-height: 1.6; color: rgb(71, 85, 105);">Three messages are possible, and in practice you will only ever see the first. "That file is not valid JSON" means the parser rejected it — a trailing comma, a single-quoted key or an unescaped newline inside a string are the usual causes, and the JSON Formatter will point at the line. "Could not read the file" is a filesystem-level failure. "Could not convert this JSON to a table" is a fallback for the table builder itself failing; it is rare, because almost any valid JSON converts to something — a bare number, string or null becomes a single row under a column headed value, and an empty array produces an empty CSV with a note above the box rather than an error. Note that JSON Lines, with one document per line, is not valid JSON as a whole; wrap the lines in brackets and separate them with commas first.</p></div><div><h3 style="font-size: 1.2rem; font-weight: 600; margin-bottom: 0.5rem; color: rgb(30, 41, 59);">Does the copied text differ from the downloaded file?</h3><p style="line-height: 1.6; color: rgb(71, 85, 105);">Slightly. Download prepends a UTF-8 byte-order mark so that double-clicking the file opens it correctly in Excel; Copy puts the plain text on your clipboard without it, which is what you want when pasting into an editor or a terminal. The delimiter is a comma in both cases, with no option to change it, so a tool expecting semicolons will need the file adjusted afterwards.</p></div></div></div></div></div><!--/$--></main><footer class="site-footer"><div class="container footer-content"><div class="footer-brand"><h3>OnlineToolsVault</h3><p>Premium, free-to-use online tools for everyone. Free, Fast, Secure and Privacy Focused<br>You can check the source code <a href="https://github.com/OnlineToolsVault/OnlineToolsVault.github.io" target="_blank" rel="noopener noreferrer" style="color: var(--primary); text-decoration: underline;">here</a>.</p></div><div class="footer-links"><div class="footer-col"><h4>Popular Tools</h4><ul><li><a href="/merge-pdf/">Merge PDF</a></li><li><a href="/compress-pdf/">Compress PDF</a></li><li><a href="/image-compressor/">Image Compressor</a></li><li><a href="/qr-generator/">QR Generator</a></li></ul></div><div class="footer-col"><h4>Company</h4><ul><li><a href="/about/">About Us</a></li><li><a href="/contact/">Contact</a></li><li><a href="/privacy/">Privacy Policy</a></li><li><a href="/terms/">Terms of Service</a></li></ul></div><div class="footer-col"><h4>Connect</h4><ul><li><a href="https://x.com/sourcestrongai" target="_blank" rel="noopener noreferrer">Twitter</a></li><li><a href="https://github.com/OnlineToolsVault" target="_blank" rel="noopener noreferrer">GitHub</a></li><li><a href="https://www.linkedin.com/company/sourcestrongai" target="_blank" rel="noopener noreferrer">LinkedIn</a></li></ul></div></div></div><div class="container footer-bottom"><p>© 2026 Source Strong AI. All Rights Reserved. Managed under <a href="/terms/" style="color: inherit; text-decoration: underline;">Proprietary License</a>.</p><p style="display: flex; align-items: center; gap: 0.25rem;">Made with <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-heart "><path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z"></path></svg> for the web</p></div></footer></div></div>
 </body>
 
 </html>

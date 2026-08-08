@@ -2,21 +2,20 @@
 <html lang="en">
 
 <head>
-  <script src="/coi-serviceworker.js"></script>
   <meta charset="UTF-8" />
   <link rel="icon" type="image/svg+xml" href="/vite.svg" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>URL Encoder | OnlineToolsVault</title>
-  <meta name="description" content="URL encode tool. Convert text into a valid URL format by encoding special characters safely." />
+  <title data-rh="true">URL Encoder - Online Percent Encoding</title>
+  <meta data-rh="true" name="description" content="Percent-encode text so it survives inside a URL or query string, using encodeURIComponent. Encoded in your browser, so nothing you paste is transmitted." />
 
   <!-- SEO & Social Meta Tags -->
   <meta name="robots" content="index, follow" />
 
   <meta property="og:type" content="website" />
-  <meta property="og:title" content="URL Encoder | OnlineToolsVault" />
-  <meta property="og:description" content="URL encode tool. Convert text into a valid URL format by encoding special characters safely." />
-  <meta property="og:url" content="https://onlinetoolsvault.com/url-encoder" />
-  <meta property="og:site_name" content="FreeTools" />
+  <meta property="og:title" content="URL Encoder - Online Percent Encoding" />
+  <meta property="og:description" content="Percent-encode text so it survives inside a URL or query string, using encodeURIComponent. Encoded in your browser, so nothing you paste is transmitted." />
+  <meta property="og:url" content="https://onlinetoolsvault.com/url-encoder/" />
+  <meta property="og:site_name" content="OnlineToolsVault" />
   <meta property="og:image" content="https://onlinetoolsvault.com/og/url-encoder.png" />
   <meta property="og:image:width" content="1200" />
   <meta property="og:image:height" content="630" />
@@ -24,8 +23,8 @@
 
   <meta name="twitter:card" content="summary_large_image" />
   <meta name="twitter:site" content="@sourcestrongai" />
-  <meta name="twitter:title" content="URL Encoder | OnlineToolsVault" />
-  <meta name="twitter:description" content="URL encode tool. Convert text into a valid URL format by encoding special characters safely." />
+  <meta name="twitter:title" content="URL Encoder - Online Percent Encoding" />
+  <meta name="twitter:description" content="Percent-encode text so it survives inside a URL or query string, using encodeURIComponent. Encoded in your browser, so nothing you paste is transmitted." />
   <meta name="twitter:image" content="https://onlinetoolsvault.com/og/url-encoder.png" />
   <meta name="twitter:image:alt" content="URL Encoder — OnlineToolsVault" />
   <meta name="twitter:creator" content="@sourcestrongai" />
@@ -35,7 +34,7 @@
     {
       "@context": "https://schema.org",
       "@type": "WebApplication",
-      "name": "FreeTools",
+      "name": "OnlineToolsVault",
       "url": "https://onlinetoolsvault.com/",
       "description": "Collection of free online client-side tools for PDF and image processing.",
       "applicationCategory": "Utility",
@@ -48,10 +47,48 @@
     }
   </script>
 
-  <!-- Preconnect to Google Fonts -->
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <!--
+    Inter, served from this origin.
+
+    This used to be a <link> to fonts.googleapis.com, which made every one of the 89 routes open a
+    connection to Google (and then a second one to fonts.gstatic.com) before it could paint text —
+    the last off-origin request common to all pages, and one that handed a third party the IP of
+    every visitor on a site whose whole pitch is that nothing leaves the browser.
+
+    scripts/copy-runtime-assets.js stages the two woff2 files into public/fonts at build time.
+    Change a filename or a unicode-range here and change it there; the script re-checks the ranges
+    against what Google serves and warns when they drift.
+
+    These are the *variable* faces (`font-weight: 100 900`), which is what Google was already
+    serving: css2 answers `wght@400;500;600;700;800` with the same single file declared five times,
+    so all five weights come out of one 48 KB download exactly as before.
+
+    Only latin is preloaded. latin-ext is a further 83 KB that the unicode-range below keeps unread
+    unless a page actually contains one of its characters, which no page currently does — preloading
+    it would cost every visitor 83 KB for nothing. `crossorigin` is required even though the file is
+    same-origin: fonts are always fetched in CORS mode, and without it the preload is discarded and
+    the file downloaded twice.
+  -->
+  <link rel="preload" href="/fonts/inter-latin.woff2" as="font" type="font/woff2" crossorigin>
+  <style>
+    @font-face {
+      font-family: 'Inter';
+      font-style: normal;
+      font-weight: 100 900;
+      font-display: swap;
+      src: url('/fonts/inter-latin.woff2') format('woff2');
+      unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+    }
+
+    @font-face {
+      font-family: 'Inter';
+      font-style: normal;
+      font-weight: 100 900;
+      font-display: swap;
+      src: url('/fonts/inter-latin-ext.woff2') format('woff2');
+      unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF;
+    }
+  </style>
 
   <!-- Analytics & Ads -->
   <script async src="https://www.googletagmanager.com/gtag/js?id=G-EVGNTG49J7"></script>
@@ -64,6 +101,55 @@
   <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-4988388949365963"
     crossorigin="anonymous"></script>
 
+  <!--
+    Retire the old COOP/COEP service worker.
+
+    It was added for SharedArrayBuffer, but the FFmpeg tools load the single-threaded
+    @ffmpeg/core build, which never touches SharedArrayBuffer — verified by running a
+    conversion with crossOriginIsolated === false. Meanwhile cross-origin isolation blocked
+    every third-party image a user pastes into the Markdown Previewer, and forced a full page
+    reload on each visitor's first page view.
+
+    Returning visitors still have the worker installed and would keep getting the COEP headers
+    forever, so unregister it once and reload to drop out of the isolated context.
+  -->
+  <script>
+    (function () {
+      if (!('serviceWorker' in navigator)) return;
+      navigator.serviceWorker.getRegistrations().then(function (registrations) {
+        var removed = false;
+        for (var i = 0; i < registrations.length; i++) {
+          var url = (registrations[i].active && registrations[i].active.scriptURL) || '';
+          if (url.indexOf('coi-serviceworker') !== -1) {
+            registrations[i].unregister();
+            removed = true;
+          }
+        }
+        if (removed && window.crossOriginIsolated) window.location.reload();
+      }).catch(function () { /* nothing to clean up */ });
+    })();
+  </script>
+
+  <!--
+    Restore the URL that 404.html forwarded here, before React Router reads location.
+    GitHub Pages cannot rewrite unknown paths itself, so 404.html bounces them to
+    /?notfound=<path>; putting the real path back lets the app's "*" route render NotFound
+    at the address the visitor actually typed.
+  -->
+  <script>
+    (function () {
+      try {
+        var params = new URLSearchParams(window.location.search);
+        var requested = params.get('notfound');
+        if (requested && requested.charAt(0) === '/' && requested.charAt(1) !== '/') {
+          window.history.replaceState(null, '', requested);
+        }
+      } catch (error) {
+        console.error('[NotFound Restore] Error:', error);
+      }
+    })();
+  </script>
+
   <!-- Smart Hash URL Redirect (handles legacy #/ URLs) -->
   <script>
     (function () {
@@ -74,6 +160,18 @@
         if (hash && hash.startsWith('#/')) {
           var path = hash.slice(2); // Remove '#/'
           var search = window.location.search || '';
+
+          // A legacy link can carry its own query or fragment inside the hash
+          // (#/word-counter?tab=2). Split that off before the path is touched, otherwise the
+          // trailing slash below lands after the query string and produces "word-counter?tab=2/".
+          var extra = '';
+          var cut = path.search(/[?#]/);
+          if (cut !== -1) {
+            extra = path.slice(cut);
+            path = path.slice(0, cut);
+          }
+          // Two query strings concatenated would give "?a=1?b=2"; the second '?' becomes '&'.
+          if (search && extra.charAt(0) === '?') extra = '&' + extra.slice(1);
 
           // Auto-detect base path (works in dev and production)
           // In dev: localhost:5173 → base = '/'
@@ -88,13 +186,20 @@
           // Clean up the path (remove trailing/leading slashes)
           path = path.replace(/^\/+|\/+$/g, '');
 
-          // Build redirect URL
+          // Build redirect URL.
+          //
+          // The trailing slash is not cosmetic. GitHub Pages serves each route from
+          // dist/<route>/index.html, so /word-counter answers with a 301 to /word-counter/ —
+          // meaning the slash-less form this used to emit turned every legacy hash link into two
+          // navigations, and any of them that ended up in a canonical, a sitemap or an inbound
+          // link pointed at the redirecting URL rather than the real one. Every other internal
+          // link on the site was normalised to the trailing-slash form; this was the last hole.
           var redirectUrl;
           if (path) {
-            redirectUrl = base + path + search;
+            redirectUrl = base + path + '/' + search + extra;
           } else {
             // Just '#/' with no path - go to home
-            redirectUrl = base;
+            redirectUrl = base + search + extra;
           }
 
           // Redirect using replace (doesn't add to history)
@@ -106,13 +211,16 @@
       }
     })();
   </script>
-  <script type="module" crossorigin src="/assets/index-kvHMSlMz.js"></script>
-  <link rel="stylesheet" crossorigin href="/assets/index-CZAylM9v.css">
-  <link rel="canonical" href="https://onlinetoolsvault.com/url-encoder" />
+  <script type="module" crossorigin src="/assets/index-BtmU1OS0.js"></script>
+  <link rel="stylesheet" crossorigin href="/assets/index-Cv0roaG_.css">
+  <link data-rh="true" rel="canonical" href="https://onlinetoolsvault.com/url-encoder/" />
+  <!-- prerender:head -->
+  <script type="application/ld+json" data-rh="true">{"@context":"https://schema.org","@type":"FAQPage","mainEntity":[{"@type":"Question","name":"Should I paste a whole URL in here?","acceptedAnswer":{"@type":"Answer","text":"Usually not. This encodes a component — one value that will sit inside a URL — so it escapes the delimiters too. Paste a full address and the colon and slashes after the scheme come back as %3A and %2F, giving you a string that is no longer a working link. That is correct when the URL is itself a parameter value, as with a redirect_uri or a share link; it is wrong if you were hoping to tidy up an address. For that, only the illegal characters need escaping, and your browser will do it when you paste the URL into the address bar."}},{"@type":"Question","name":"Exactly which characters survive untouched?","acceptedAnswer":{"@type":"Answer","text":"Letters, digits, and exactly nine punctuation marks: hyphen, underscore, full stop, exclamation mark, tilde, asterisk, apostrophe and the two round brackets. Everything else becomes a percent sign followed by two hex digits: a space is %20, an ampersand %26, an equals sign %3D, a slash %2F, a question mark %3F, a hash %23, a plus %2B and a colon %3A. Note that square brackets are not on the safe list — they become %5B and %5D."}},{"@type":"Question","name":"Why is my space %20 and not a plus sign?","acceptedAnswer":{"@type":"Answer","text":"Because they belong to different specifications. Percent-encoding, which governs URLs, represents a space as %20. The plus sign comes from HTML form submission, where a browser encodes a space that way when posting application/x-www-form-urlencoded data. Both appear in the wild and the receiving code has to know which it is reading. If your endpoint parses form data and treats a literal plus as a space, encode any real plus in your value as %2B — which this tool does automatically."}},{"@type":"Question","name":"What happens to accented characters and emoji?","acceptedAnswer":{"@type":"Answer","text":"They are converted to UTF-8 bytes first and each byte is then percent-encoded, which is why one character can produce several escapes. An e-acute becomes %C3%A9, a CJK character becomes three escapes, and an emoji becomes four. This matches what every modern server, language runtime and HTTP client expects, so the output round-trips cleanly."}},{"@type":"Question","name":"It said encoding failed. What did I paste?","acceptedAnswer":{"@type":"Answer","text":"Almost certainly a lone surrogate — half of a character that is normally stored as a pair, which arrives when text is truncated at the wrong byte or copied out of a mangled log. There is no valid UTF-8 representation for it, so the encoder refuses rather than emitting nonsense. Find the truncation point in your source data and fix it there."}},{"@type":"Question","name":"Are the apostrophe and brackets really safe to leave alone?","acceptedAnswer":{"@type":"Answer","text":"For ordinary web use, yes — browsers and servers handle them without complaint. There are two places where it matters that this tool leaves them unencoded. OAuth 1.0 signature base strings require the apostrophe, asterisk, exclamation mark and brackets to be escaped, so a signature computed on this output will not match. Some older systems also treat an apostrophe specially. In both cases, escape those characters by hand afterwards."}},{"@type":"Question","name":"Is there a length limit?","acceptedAnswer":{"@type":"Answer","text":"Nothing is capped here — the box will happily encode many kilobytes. The limit lives downstream. Browsers and servers impose their own caps on how long a URL may be, commonly around 2000 characters for broad compatibility and around 8000 before typical server configurations reject the request outright. If your encoded value is heading past that, send it in a request body instead of a query string."}},{"@type":"Question","name":"Is anything I paste transmitted?","acceptedAnswer":{"@type":"Answer","text":"No. Encoding is a single built-in browser function call with no network involvement, so the value never leaves this tab. Nothing is stored either. That makes it safe for tokens and internal URLs, subject to the usual caution that the value is visible on your screen and sits in your clipboard afterwards."}},{"@type":"Question","name":"How do I reverse it?","acceptedAnswer":{"@type":"Answer","text":"Use the URL Decoder, which applies the exact inverse and will return your original text. Note that decoding is not symmetric with form encoding: a plus sign in the input comes back as a plus sign, not as a space, because the decoder follows percent-encoding rules rather than form rules."}}]}</script>
+  <!-- /prerender:head -->
 </head>
 
 <body>
-  <div id="root"></div>
+  <div id="root" data-prerendered="static"><div class="app-wrapper"><header class="site-header"><div class="container header-container"><a class="logo" href="/"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-rocket logo-icon"><path d="M4.5 16.5c-1.5 1.26-2 5-2 5s3.74-.5 5-2c.71-.84.7-2.13-.09-2.91a2.18 2.18 0 0 0-2.91-.09z"></path><path d="m12 15-3-3a22 22 0 0 1 2-3.95A12.88 12.88 0 0 1 22 2c0 2.72-.78 7.5-6 11a22.35 22.35 0 0 1-4 2z"></path><path d="M9 12H4s.55-3.03 2-4c1.62-1.08 5 0 5 0"></path><path d="M12 15v5s3.03-.55 4-2c1.08-1.62 0-5 0-5"></path></svg><span>OnlineToolsVault</span></a><nav class="nav-desktop"><a class="nav-link" href="/">Home</a><a class="nav-link" href="/about/">About</a><a class="nav-link" href="/contact/">Contact</a><div class="social-icons"><a href="https://x.com/sourcestrongai" target="_blank" rel="noopener noreferrer" class="social-icon" aria-label="Twitter"><svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-twitter "><path d="M22 4s-.7 2.1-2 3.4c1.6 10-9.4 17.3-18 11.6 2.2.1 4.4-.6 6-2C3 15.5.5 9.6 3 5c2.2 2.6 5.6 4.1 9 4-.9-4.2 4-6.6 7-3.8 1.1 0 3-1.2 3-1.2z"></path></svg></a><a href="https://www.linkedin.com/company/sourcestrongai" target="_blank" rel="noopener noreferrer" class="social-icon" aria-label="LinkedIn"><svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-linkedin "><path d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-2-2 2 2 0 0 0-2 2v7h-4v-7a6 6 0 0 1 6-6z"></path><rect width="4" height="12" x="2" y="9"></rect><circle cx="4" cy="4" r="2"></circle></svg></a></div></nav><button class="nav-mobile-btn" aria-label="Open menu" aria-expanded="false" aria-controls="mobile-menu"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-menu "><line x1="4" x2="20" y1="12" y2="12"></line><line x1="4" x2="20" y1="6" y2="6"></line><line x1="4" x2="20" y1="18" y2="18"></line></svg></button></div></header><main class="main-content"><!--$--><div class="container" style="padding: 3rem 1.5rem;"><div style="max-width: 1000px; margin: 0px auto;"><header style="margin-bottom: 3rem; text-align: center;"><h1 style="font-size: 2.5rem; font-weight: 800; margin-bottom: 0.5rem;">URL Encoder</h1><p style="color: rgb(100, 116, 139);">Encode text for use in URLs (Percent encoding).</p></header><div class="tool-workspace" style="max-width: 1000px; margin: 0px auto;"><div style="margin-bottom: 2rem;"><label style="display: block; margin-bottom: 0.5rem; font-weight: bold;">Text to Encode</label><textarea placeholder="Type text here..." style="width: 100%; min-height: 120px; padding: 1rem; border-radius: 0.5rem; border: 1px solid var(--border); font-size: 1rem;"></textarea></div><div style="text-align: center; margin-bottom: 2rem;"><button class="tool-btn-primary" style="padding: 1rem 3rem; border-radius: 0.5rem; background: var(--primary); color: white; border-width: medium; border-style: none; border-color: currentcolor; border-image: none; cursor: pointer; font-weight: bold; display: inline-flex; align-items: center; gap: 0.5rem;">Encode <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-arrow-right "><path d="M5 12h14"></path><path d="m12 5 7 7-7 7"></path></svg></button></div></div><div class="tool-content" style="margin-top: 4rem;"><div class="related-tools-section" style="margin-top: 4rem; margin-bottom: 4rem;"><h2 style="font-size: 1.8rem; font-weight: 700; margin-bottom: 2rem; text-align: center; color: var(--text-primary);">More Useful Tools</h2><div class="tools-grid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(min(280px, 100%), 1fr)); gap: 1.5rem;"><a class="tool-card" href="/uuid-generator/" style="text-decoration: none; color: inherit; background: var(--bg-card); border: 1px solid var(--border); border-radius: 1rem; padding: 1.5rem; transition: 0.2s; display: flex; flex-direction: column; gap: 1rem; cursor: pointer;"><div class="tool-card-header" style="display: flex; align-items: center; gap: 0.75rem;"><div class="tool-icon-wrapper" style="width: 40px; height: 40px; border-radius: 0.5rem; background: var(--primary-light); display: flex; align-items: center; justify-content: center; color: var(--primary);"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-hash "><line x1="4" x2="20" y1="9" y2="9"></line><line x1="4" x2="20" y1="15" y2="15"></line><line x1="10" x2="8" y1="3" y2="21"></line><line x1="16" x2="14" y1="3" y2="21"></line></svg></div><h3 class="tool-title" style="font-size: 1.1rem; font-weight: 600; margin: 0px;">UUID Generator</h3></div><p class="tool-description" style="font-size: 0.85rem; color: var(--text-secondary); margin: 0px; line-height: 1.5; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;">Generate unique UUID v4 identifiers.</p></a><a class="tool-card" href="/base64-decoder/" style="text-decoration: none; color: inherit; background: var(--bg-card); border: 1px solid var(--border); border-radius: 1rem; padding: 1.5rem; transition: 0.2s; display: flex; flex-direction: column; gap: 1rem; cursor: pointer;"><div class="tool-card-header" style="display: flex; align-items: center; gap: 0.75rem;"><div class="tool-icon-wrapper" style="width: 40px; height: 40px; border-radius: 0.5rem; background: var(--primary-light); display: flex; align-items: center; justify-content: center; color: var(--primary);"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-binary "><rect x="14" y="14" width="4" height="6" rx="2"></rect><rect x="6" y="4" width="4" height="6" rx="2"></rect><path d="M6 20h4"></path><path d="M14 10h4"></path><path d="M6 14h2v6"></path><path d="M14 4h2v6"></path></svg></div><h3 class="tool-title" style="font-size: 1.1rem; font-weight: 600; margin: 0px;">Base64 Decoder</h3></div><p class="tool-description" style="font-size: 0.85rem; color: var(--text-secondary); margin: 0px; line-height: 1.5; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;">Decode Base64 strings back to text.</p></a><a class="tool-card" href="/base64-encoder/" style="text-decoration: none; color: inherit; background: var(--bg-card); border: 1px solid var(--border); border-radius: 1rem; padding: 1.5rem; transition: 0.2s; display: flex; flex-direction: column; gap: 1rem; cursor: pointer;"><div class="tool-card-header" style="display: flex; align-items: center; gap: 0.75rem;"><div class="tool-icon-wrapper" style="width: 40px; height: 40px; border-radius: 0.5rem; background: var(--primary-light); display: flex; align-items: center; justify-content: center; color: var(--primary);"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-binary "><rect x="14" y="14" width="4" height="6" rx="2"></rect><rect x="6" y="4" width="4" height="6" rx="2"></rect><path d="M6 20h4"></path><path d="M14 10h4"></path><path d="M6 14h2v6"></path><path d="M14 4h2v6"></path></svg></div><h3 class="tool-title" style="font-size: 1.1rem; font-weight: 600; margin: 0px;">Base64 Encoder</h3></div><p class="tool-description" style="font-size: 0.85rem; color: var(--text-secondary); margin: 0px; line-height: 1.5; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;">Convert text to Base64 format.</p></a><a class="tool-card" href="/bcrypt-generator/" style="text-decoration: none; color: inherit; background: var(--bg-card); border: 1px solid var(--border); border-radius: 1rem; padding: 1.5rem; transition: 0.2s; display: flex; flex-direction: column; gap: 1rem; cursor: pointer;"><div class="tool-card-header" style="display: flex; align-items: center; gap: 0.75rem;"><div class="tool-icon-wrapper" style="width: 40px; height: 40px; border-radius: 0.5rem; background: var(--primary-light); display: flex; align-items: center; justify-content: center; color: var(--primary);"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-lock "><rect width="18" height="11" x="3" y="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg></div><h3 class="tool-title" style="font-size: 1.1rem; font-weight: 600; margin: 0px;">Bcrypt Generator</h3></div><p class="tool-description" style="font-size: 0.85rem; color: var(--text-secondary); margin: 0px; line-height: 1.5; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;">Generate secure Bcrypt password hashes.</p></a><a class="tool-card" href="/flatten-pdf/" style="text-decoration: none; color: inherit; background: var(--bg-card); border: 1px solid var(--border); border-radius: 1rem; padding: 1.5rem; transition: 0.2s; display: flex; flex-direction: column; gap: 1rem; cursor: pointer;"><div class="tool-card-header" style="display: flex; align-items: center; gap: 0.75rem;"><div class="tool-icon-wrapper" style="width: 40px; height: 40px; border-radius: 0.5rem; background: var(--primary-light); display: flex; align-items: center; justify-content: center; color: var(--primary);"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-layers "><path d="m12.83 2.18a2 2 0 0 0-1.66 0L2.6 6.08a1 1 0 0 0 0 1.83l8.58 3.91a2 2 0 0 0 1.66 0l8.58-3.9a1 1 0 0 0 0-1.83Z"></path><path d="m22 17.65-9.17 4.16a2 2 0 0 1-1.66 0L2 17.65"></path><path d="m22 12.65-9.17 4.16a2 2 0 0 1-1.66 0L2 12.65"></path></svg></div><h3 class="tool-title" style="font-size: 1.1rem; font-weight: 600; margin: 0px;">Flatten PDF</h3></div><p class="tool-description" style="font-size: 0.85rem; color: var(--text-secondary); margin: 0px; line-height: 1.5; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;">Bake filled form fields into the page.</p></a><a class="tool-card" href="/pdf-to-excel/" style="text-decoration: none; color: inherit; background: var(--bg-card); border: 1px solid var(--border); border-radius: 1rem; padding: 1.5rem; transition: 0.2s; display: flex; flex-direction: column; gap: 1rem; cursor: pointer;"><div class="tool-card-header" style="display: flex; align-items: center; gap: 0.75rem;"><div class="tool-icon-wrapper" style="width: 40px; height: 40px; border-radius: 0.5rem; background: var(--primary-light); display: flex; align-items: center; justify-content: center; color: var(--primary);"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-file-spreadsheet "><path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z"></path><path d="M14 2v4a2 2 0 0 0 2 2h4"></path><path d="M8 13h2"></path><path d="M14 13h2"></path><path d="M8 17h2"></path><path d="M14 17h2"></path></svg></div><h3 class="tool-title" style="font-size: 1.1rem; font-weight: 600; margin: 0px;">PDF to Excel</h3></div><p class="tool-description" style="font-size: 0.85rem; color: var(--text-secondary); margin: 0px; line-height: 1.5; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;">Extract PDF text rows into an Excel spreadsheet.</p></a></div></div><div class="about-section" style="background: var(--bg-card); padding: 2rem; border-radius: 1rem; border: 1px solid var(--border); margin-bottom: 2rem;"><h2 style="font-size: 1.8rem; margin-bottom: 1.5rem;">About URL Encoder</h2><p style="line-height: 1.6; color: var(--text-secondary); margin-bottom: 1rem;">This page performs <strong>component</strong> encoding: it escapes everything that is not an unreserved character, including the delimiters that give a URL its structure. That is the right transformation for a single value you are about to drop into a query string, a path segment or a form field — and the wrong one for an entire address, which would come back with its own colons and slashes escaped.</p><h3 style="font-size: 1.15rem; font-weight: 600; margin: 1.75rem 0px 0.75rem;">What percent-encoding is for</h3><p style="line-height: 1.6; color: var(--text-secondary); margin-bottom: 1rem;">A URL is a structured string, and a handful of characters carry that structure: a question mark starts the query, an ampersand separates parameters, an equals sign splits a name from its value, a slash divides path segments and a hash begins the fragment. The moment one of those appears inside a value rather than between them, the parser on the other end reads it as punctuation. A search for <code>fish &amp; chips</code> dropped raw into <code>?q=</code> arrives as a parameter <code>q</code> holding <code>fish </code> plus a second, empty parameter called<code> chips</code>. Percent-encoding removes the ambiguity by replacing each such byte with a percent sign and its two hex digits, so the receiver knows it is data.</p><h3 style="font-size: 1.15rem; font-weight: 600; margin: 1.75rem 0px 0.75rem;">Component encoding versus whole-URL encoding</h3><p style="line-height: 1.6; color: var(--text-secondary); margin-bottom: 1rem;">The distinction catches people out constantly, so it is worth being concrete. Encoding the address<code> https://a.com/p q?x=1</code> as a component produces<code> https%3A%2F%2Fa.com%2Fp%20q%3Fx%3D1</code> — every structural character escaped, which is exactly what you want when that URL is going to be the value of a <code>redirect_uri</code> or a<code> url</code> parameter. Whole-URL encoding would instead leave the scheme, slashes and query marker intact and escape only the space. Deciding which you need comes down to one question: is this string a URL, or is it a value that happens to look like one?</p><h3 style="font-size: 1.15rem; font-weight: 600; margin: 1.75rem 0px 0.75rem;">Non-ASCII text becomes UTF-8 bytes</h3><p style="line-height: 1.6; color: var(--text-secondary); margin-bottom: 1rem;">Anything outside plain ASCII is converted to UTF-8 first and each resulting byte is escaped separately, so a single character can expand to several escapes — two for most accented Latin letters, three for CJK characters, four for an emoji. This is the behaviour every modern server and HTTP client expects, and it is why the output is safe to hand to a backend written in any language. The one input it will refuse is a lone surrogate, the orphaned half of a character pair that turns up when text has been cut at the wrong byte offset; there is no legal encoding for it, so the tool reports a failure instead of guessing.</p><h3 style="font-size: 1.15rem; font-weight: 600; margin: 1.75rem 0px 0.75rem;">Two traps: the plus sign and double encoding</h3><p style="line-height: 1.6; color: var(--text-secondary); margin-bottom: 1rem;">A space becomes <code>%20</code> here, never a plus. The plus convention belongs to HTML form submission, and mixing the two is a classic source of corrupted values — which is also why a literal plus in your input is escaped to <code>%2B</code>, so it cannot be read back as a space. The second trap is running text through an encoder twice: a percent sign is itself escaped, so<code> %20</code> becomes <code>%2520</code> and the recipient sees the literal text<code> %20</code> instead of a space. If a value arrives looking over-escaped, suspect an encode step happening in both your code and your HTTP library.</p><h3 style="font-size: 1.15rem; font-weight: 600; margin: 1.75rem 0px 0.75rem;">Scope, and where it runs</h3><p style="line-height: 1.6; color: var(--text-secondary);">Encoding happens in your browser through a built-in function, with no request made and nothing stored, so internal URLs and tokens stay local. Bear in mind what percent-encoding is not: it offers no confidentiality and no integrity, since anyone can decode it in one step. It is also not a security control on its own — escaping a value for a URL does nothing to make it safe inside HTML, SQL or a shell command, each of which needs its own escaping. Note finally that the apostrophe, asterisk, exclamation mark and brackets are deliberately left as-is, which is fine for the web but will break an OAuth 1.0 signature base string unless you escape them yourself.</p></div></div><div class="features-section" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 2rem;"><div class="tool-feature-block" style="padding: 1.5rem; border-radius: 1rem; border: 1px solid var(--border); background: var(--bg-card);"><div style="width: 48px; height: 48px; background: var(--primary-light); border-radius: 0.75rem; display: flex; align-items: center; justify-content: center; margin-bottom: 1rem;"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="var(--primary)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-type "><polyline points="4 7 4 4 20 4 20 7"></polyline><line x1="9" x2="15" y1="20" y2="20"></line><line x1="12" x2="12" y1="4" y2="20"></line></svg></div><h3 style="font-size: 1.25rem; margin-bottom: 0.5rem;">Escapes Delimiters Too</h3><p style="color: var(--text-secondary);">Ampersands, equals signs, slashes, question marks and hashes are all escaped, not just spaces — so a value containing them cannot be misread as extra parameters by whatever parses the URL at the other end.</p></div><div class="tool-feature-block" style="padding: 1.5rem; border-radius: 1rem; border: 1px solid var(--border); background: var(--bg-card);"><div style="width: 48px; height: 48px; background: var(--primary-light); border-radius: 0.75rem; display: flex; align-items: center; justify-content: center; margin-bottom: 1rem;"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="var(--primary)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-copy "><rect width="14" height="14" x="8" y="8" rx="2" ry="2"></rect><path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"></path></svg></div><h3 style="font-size: 1.25rem; margin-bottom: 0.5rem;">UTF-8 Byte Sequences</h3><p style="color: var(--text-secondary);">Accented letters, CJK text and emoji are converted to UTF-8 and escaped byte by byte, producing exactly what a modern server, framework or HTTP client expects to receive and decode.</p></div><div class="tool-feature-block" style="padding: 1.5rem; border-radius: 1rem; border: 1px solid var(--border); background: var(--bg-card);"><div style="width: 48px; height: 48px; background: var(--primary-light); border-radius: 0.75rem; display: flex; align-items: center; justify-content: center; margin-bottom: 1rem;"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="var(--primary)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-shield "><path d="M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1.17 1.17 0 0 1 1.52 0C14.51 3.81 17 5 19 5a1 1 0 0 1 1 1z"></path></svg></div><h3 style="font-size: 1.25rem; margin-bottom: 0.5rem;">A Built-In Browser Call</h3><p style="color: var(--text-secondary);">Encoding uses the platform’s own function with no network step at any point, so pasting an internal URL or a token here does not put it on anyone else’s server.</p></div></div><div style="max-width: 1000px; margin: 4rem auto 0px; border-top: 1px solid var(--border); padding-top: 3rem;"><h2 style="font-size: 1.8rem; font-weight: 700; margin-bottom: 2rem; text-align: center;">Frequently Asked Questions</h2><div style="display: grid; gap: 2rem;"><div><h3 style="font-size: 1.2rem; font-weight: 600; margin-bottom: 0.5rem; color: rgb(30, 41, 59);">Should I paste a whole URL in here?</h3><p style="line-height: 1.6; color: rgb(71, 85, 105);">Usually not. This encodes a component — one value that will sit inside a URL — so it escapes the delimiters too. Paste a full address and the colon and slashes after the scheme come back as %3A and %2F, giving you a string that is no longer a working link. That is correct when the URL is itself a parameter value, as with a redirect_uri or a share link; it is wrong if you were hoping to tidy up an address. For that, only the illegal characters need escaping, and your browser will do it when you paste the URL into the address bar.</p></div><div><h3 style="font-size: 1.2rem; font-weight: 600; margin-bottom: 0.5rem; color: rgb(30, 41, 59);">Exactly which characters survive untouched?</h3><p style="line-height: 1.6; color: rgb(71, 85, 105);">Letters, digits, and exactly nine punctuation marks: hyphen, underscore, full stop, exclamation mark, tilde, asterisk, apostrophe and the two round brackets. Everything else becomes a percent sign followed by two hex digits: a space is %20, an ampersand %26, an equals sign %3D, a slash %2F, a question mark %3F, a hash %23, a plus %2B and a colon %3A. Note that square brackets are not on the safe list — they become %5B and %5D.</p></div><div><h3 style="font-size: 1.2rem; font-weight: 600; margin-bottom: 0.5rem; color: rgb(30, 41, 59);">Why is my space %20 and not a plus sign?</h3><p style="line-height: 1.6; color: rgb(71, 85, 105);">Because they belong to different specifications. Percent-encoding, which governs URLs, represents a space as %20. The plus sign comes from HTML form submission, where a browser encodes a space that way when posting application/x-www-form-urlencoded data. Both appear in the wild and the receiving code has to know which it is reading. If your endpoint parses form data and treats a literal plus as a space, encode any real plus in your value as %2B — which this tool does automatically.</p></div><div><h3 style="font-size: 1.2rem; font-weight: 600; margin-bottom: 0.5rem; color: rgb(30, 41, 59);">What happens to accented characters and emoji?</h3><p style="line-height: 1.6; color: rgb(71, 85, 105);">They are converted to UTF-8 bytes first and each byte is then percent-encoded, which is why one character can produce several escapes. An e-acute becomes %C3%A9, a CJK character becomes three escapes, and an emoji becomes four. This matches what every modern server, language runtime and HTTP client expects, so the output round-trips cleanly.</p></div><div><h3 style="font-size: 1.2rem; font-weight: 600; margin-bottom: 0.5rem; color: rgb(30, 41, 59);">It said encoding failed. What did I paste?</h3><p style="line-height: 1.6; color: rgb(71, 85, 105);">Almost certainly a lone surrogate — half of a character that is normally stored as a pair, which arrives when text is truncated at the wrong byte or copied out of a mangled log. There is no valid UTF-8 representation for it, so the encoder refuses rather than emitting nonsense. Find the truncation point in your source data and fix it there.</p></div><div><h3 style="font-size: 1.2rem; font-weight: 600; margin-bottom: 0.5rem; color: rgb(30, 41, 59);">Are the apostrophe and brackets really safe to leave alone?</h3><p style="line-height: 1.6; color: rgb(71, 85, 105);">For ordinary web use, yes — browsers and servers handle them without complaint. There are two places where it matters that this tool leaves them unencoded. OAuth 1.0 signature base strings require the apostrophe, asterisk, exclamation mark and brackets to be escaped, so a signature computed on this output will not match. Some older systems also treat an apostrophe specially. In both cases, escape those characters by hand afterwards.</p></div><div><h3 style="font-size: 1.2rem; font-weight: 600; margin-bottom: 0.5rem; color: rgb(30, 41, 59);">Is there a length limit?</h3><p style="line-height: 1.6; color: rgb(71, 85, 105);">Nothing is capped here — the box will happily encode many kilobytes. The limit lives downstream. Browsers and servers impose their own caps on how long a URL may be, commonly around 2000 characters for broad compatibility and around 8000 before typical server configurations reject the request outright. If your encoded value is heading past that, send it in a request body instead of a query string.</p></div><div><h3 style="font-size: 1.2rem; font-weight: 600; margin-bottom: 0.5rem; color: rgb(30, 41, 59);">Is anything I paste transmitted?</h3><p style="line-height: 1.6; color: rgb(71, 85, 105);">No. Encoding is a single built-in browser function call with no network involvement, so the value never leaves this tab. Nothing is stored either. That makes it safe for tokens and internal URLs, subject to the usual caution that the value is visible on your screen and sits in your clipboard afterwards.</p></div><div><h3 style="font-size: 1.2rem; font-weight: 600; margin-bottom: 0.5rem; color: rgb(30, 41, 59);">How do I reverse it?</h3><p style="line-height: 1.6; color: rgb(71, 85, 105);">Use the URL Decoder, which applies the exact inverse and will return your original text. Note that decoding is not symmetric with form encoding: a plus sign in the input comes back as a plus sign, not as a space, because the decoder follows percent-encoding rules rather than form rules.</p></div></div></div></div></div><!--/$--></main><footer class="site-footer"><div class="container footer-content"><div class="footer-brand"><h3>OnlineToolsVault</h3><p>Premium, free-to-use online tools for everyone. Free, Fast, Secure and Privacy Focused<br>You can check the source code <a href="https://github.com/OnlineToolsVault/OnlineToolsVault.github.io" target="_blank" rel="noopener noreferrer" style="color: var(--primary); text-decoration: underline;">here</a>.</p></div><div class="footer-links"><div class="footer-col"><h4>Popular Tools</h4><ul><li><a href="/merge-pdf/">Merge PDF</a></li><li><a href="/compress-pdf/">Compress PDF</a></li><li><a href="/image-compressor/">Image Compressor</a></li><li><a href="/qr-generator/">QR Generator</a></li></ul></div><div class="footer-col"><h4>Company</h4><ul><li><a href="/about/">About Us</a></li><li><a href="/contact/">Contact</a></li><li><a href="/privacy/">Privacy Policy</a></li><li><a href="/terms/">Terms of Service</a></li></ul></div><div class="footer-col"><h4>Connect</h4><ul><li><a href="https://x.com/sourcestrongai" target="_blank" rel="noopener noreferrer">Twitter</a></li><li><a href="https://github.com/OnlineToolsVault" target="_blank" rel="noopener noreferrer">GitHub</a></li><li><a href="https://www.linkedin.com/company/sourcestrongai" target="_blank" rel="noopener noreferrer">LinkedIn</a></li></ul></div></div></div><div class="container footer-bottom"><p>© 2026 Source Strong AI. All Rights Reserved. Managed under <a href="/terms/" style="color: inherit; text-decoration: underline;">Proprietary License</a>.</p><p style="display: flex; align-items: center; gap: 0.25rem;">Made with <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-heart "><path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z"></path></svg> for the web</p></div></footer></div></div>
 </body>
 
 </html>
