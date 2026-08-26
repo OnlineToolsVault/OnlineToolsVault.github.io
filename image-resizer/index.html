@@ -50,14 +50,13 @@
   <!--
     Inter, served from this origin.
 
-    This used to be a <link> to fonts.googleapis.com, which made every one of the 89 routes open a
-    connection to Google (and then a second one to fonts.gstatic.com) before it could paint text —
-    the last off-origin request common to all pages, and one that handed a third party the IP of
-    every visitor on a site whose whole pitch is that nothing leaves the browser.
+    This used to be a <link> to fonts.googleapis.com, which made every route open a connection
+    to Google (and then a second one to fonts.gstatic.com) before it could paint text — the last
+    off-origin request common to all pages, and one that handed a third party the IP of every
+    visitor on a site whose whole pitch is that nothing leaves the browser.
 
-    scripts/copy-runtime-assets.js stages the two woff2 files into public/fonts at build time.
-    Change a filename or a unicode-range here and change it there; the script re-checks the ranges
-    against what Google serves and warns when they drift.
+    The two woff2 files are git-tracked under public/fonts. If a face or unicode-range here ever
+    changes, refresh those files by hand from a locally downloaded copy of the font.
 
     These are the *variable* faces (`font-weight: 100 900`), which is what Google was already
     serving: css2 answers `wght@400;500;600;700;800` with the same single file declared five times,
@@ -173,15 +172,10 @@
           // Two query strings concatenated would give "?a=1?b=2"; the second '?' becomes '&'.
           if (search && extra.charAt(0) === '?') extra = '&' + extra.slice(1);
 
-          // Auto-detect base path (works in dev and production)
-          // In dev: localhost:5173 → base = '/'
-          // In prod: .../Free-Tools → base = '/Free-Tools/'
+          // The site is served from the root of a domain — onlinetoolsvault.com via dist/CNAME,
+          // and the OnlineToolsVault.github.io user-pages root — so this is '/' in production
+          // and in dev. Honour a <base href> if one is ever added; do not sniff the pathname.
           var base = document.querySelector('base')?.getAttribute('href') || '/';
-
-          // If no base tag, check current path for /Free-Tools/
-          if (base === '/' && window.location.pathname.includes('/Free-Tools/')) {
-            base = '/Free-Tools/';
-          }
 
           // Clean up the path (remove trailing/leading slashes)
           path = path.replace(/^\/+|\/+$/g, '');
@@ -211,11 +205,11 @@
       }
     })();
   </script>
-  <script type="module" crossorigin src="/assets/index-BtmU1OS0.js"></script>
+  <script type="module" crossorigin src="/assets/index-OUpguYFg.js"></script>
   <link rel="stylesheet" crossorigin href="/assets/index-Cv0roaG_.css">
   <link data-rh="true" rel="canonical" href="https://onlinetoolsvault.com/image-resizer/" />
   <!-- prerender:head -->
-  <script type="application/ld+json" data-rh="true">{"@context":"https://schema.org","@type":"FAQPage","mainEntity":[{"@type":"Question","name":"How do I stop the image being stretched?","acceptedAnswer":{"@type":"Answer","text":"Leave the button reading **Aspect Ratio Locked**. In that state, typing a width recalculates the height from the proportions of the image you loaded, and typing a height recalculates the width. Unlocking is only useful when distortion is what you want — squeezing a 16:9 frame into a 4:3 slot, for example."}},{"@type":"Question","name":"Can I enlarge an image without it going soft?","acceptedAnswer":{"@type":"Answer","text":"Not really, and no browser tool can. Enlarging spreads the pixels you already have across a larger grid; the smoothing keeps it from looking blocky but the detail was never captured in the first place. If you need a bigger image, re-export from the original file or the raw photo rather than scaling up a small copy."}},{"@type":"Question","name":"What format will my download be?","acceptedAnswer":{"@type":"Answer","text":"JPEG, PNG and WebP files come back in the same format they went in. Everything else — GIF, BMP, SVG, or a file the browser reports no type for — is exported as PNG, because those three are the only formats a canvas can encode. A note appears above the download button whenever that substitution applies."}},{"@type":"Question","name":"Does it keep transparency?","acceptedAnswer":{"@type":"Answer","text":"Yes, for PNG and WebP. Transparent pixels stay transparent through the resize. This is also why the tool never quietly converts a transparent PNG to JPEG: JPEG has no alpha channel, so every transparent area would turn solid black."}},{"@type":"Question","name":"What happens to my animated GIF?","acceptedAnswer":{"@type":"Answer","text":"Only the first frame survives. A canvas holds one still image, so the resized download is a single-frame PNG. If you need to resize an animation while keeping the motion, this is the wrong tool — you need something that can decode and re-assemble every frame."}},{"@type":"Question","name":"Can I resize by percentage instead of pixels?","acceptedAnswer":{"@type":"Answer","text":"Not directly here — the boxes are absolute pixel values. The Image Converter has a scale slider that runs from 20% to 700% if you would rather work in proportions, and it can change the output format at the same time."}},{"@type":"Question","name":"How do I resize a folder of images to the same width?","acceptedAnswer":{"@type":"Answer","text":"Use the Bulk Image Resizer. It takes a multi-file selection, applies one rule to all of them — match this width, match this height, or force exact dimensions — and returns everything as a ZIP."}},{"@type":"Question","name":"Is resizing the same as cropping?","acceptedAnswer":{"@type":"Answer","text":"No, and it is worth being clear about it. Resizing keeps the whole frame and changes how many pixels it is drawn with. Cropping keeps the pixel density and throws away the parts of the frame you do not want. For the second, use the Image Cropper; for a specific social platform shape, the Social Media Resizer has the aspect ratios built in."}},{"@type":"Question","name":"Is my image uploaded to a server?","acceptedAnswer":{"@type":"Answer","text":"No. The file is decoded, redrawn and re-encoded inside this browser tab. There is no upload, no temporary copy on a server and nothing to delete afterwards — closing the tab is enough. The tool continues to work if you disconnect from the network after the page loads."}}]}</script>
+  <script type="application/ld+json" data-rh="true">{"@context":"https://schema.org","@type":"FAQPage","mainEntity":[{"@type":"Question","name":"How do I stop the image being stretched?","acceptedAnswer":{"@type":"Answer","text":"Leave the button reading Aspect Ratio Locked. In that state, typing a width recalculates the height from the proportions of the image you loaded, and typing a height recalculates the width. Unlocking is only useful when distortion is what you want — squeezing a 16:9 frame into a 4:3 slot, for example."}},{"@type":"Question","name":"Can I enlarge an image without it going soft?","acceptedAnswer":{"@type":"Answer","text":"Not really, and no browser tool can. Enlarging spreads the pixels you already have across a larger grid; the smoothing keeps it from looking blocky but the detail was never captured in the first place. If you need a bigger image, re-export from the original file or the raw photo rather than scaling up a small copy."}},{"@type":"Question","name":"What format will my download be?","acceptedAnswer":{"@type":"Answer","text":"JPEG, PNG and WebP files come back in the same format they went in. Everything else — GIF, BMP, SVG, or a file the browser reports no type for — is exported as PNG, because those three are the only formats a canvas can encode. A note appears above the download button whenever that substitution applies."}},{"@type":"Question","name":"Does it keep transparency?","acceptedAnswer":{"@type":"Answer","text":"Yes, for PNG and WebP. Transparent pixels stay transparent through the resize. This is also why the tool never quietly converts a transparent PNG to JPEG: JPEG has no alpha channel, so every transparent area would turn solid black."}},{"@type":"Question","name":"What happens to my animated GIF?","acceptedAnswer":{"@type":"Answer","text":"Only the first frame survives. A canvas holds one still image, so the resized download is a single-frame PNG. If you need to resize an animation while keeping the motion, this is the wrong tool — you need something that can decode and re-assemble every frame."}},{"@type":"Question","name":"Can I resize by percentage instead of pixels?","acceptedAnswer":{"@type":"Answer","text":"Not directly here — the boxes are absolute pixel values. The Image Converter has a scale slider that runs from 20% to 700% if you would rather work in proportions, and it can change the output format at the same time."}},{"@type":"Question","name":"How do I resize a folder of images to the same width?","acceptedAnswer":{"@type":"Answer","text":"Use the Bulk Image Resizer. It takes a multi-file selection, applies one rule to all of them — match this width, match this height, or force exact dimensions — and returns everything as a ZIP."}},{"@type":"Question","name":"Is resizing the same as cropping?","acceptedAnswer":{"@type":"Answer","text":"No, and it is worth being clear about it. Resizing keeps the whole frame and changes how many pixels it is drawn with. Cropping keeps the pixel density and throws away the parts of the frame you do not want. For the second, use the Image Cropper; for a specific social platform shape, the Social Media Resizer has the aspect ratios built in."}},{"@type":"Question","name":"Is my image uploaded to a server?","acceptedAnswer":{"@type":"Answer","text":"No. The file is decoded, redrawn and re-encoded inside this browser tab. There is no upload, no temporary copy on a server and nothing to delete afterwards — closing the tab is enough. The tool continues to work if you disconnect from the network after the page loads."}}]}</script>
   <!-- /prerender:head -->
 </head>
 

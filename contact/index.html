@@ -50,14 +50,13 @@
   <!--
     Inter, served from this origin.
 
-    This used to be a <link> to fonts.googleapis.com, which made every one of the 89 routes open a
-    connection to Google (and then a second one to fonts.gstatic.com) before it could paint text —
-    the last off-origin request common to all pages, and one that handed a third party the IP of
-    every visitor on a site whose whole pitch is that nothing leaves the browser.
+    This used to be a <link> to fonts.googleapis.com, which made every route open a connection
+    to Google (and then a second one to fonts.gstatic.com) before it could paint text — the last
+    off-origin request common to all pages, and one that handed a third party the IP of every
+    visitor on a site whose whole pitch is that nothing leaves the browser.
 
-    scripts/copy-runtime-assets.js stages the two woff2 files into public/fonts at build time.
-    Change a filename or a unicode-range here and change it there; the script re-checks the ranges
-    against what Google serves and warns when they drift.
+    The two woff2 files are git-tracked under public/fonts. If a face or unicode-range here ever
+    changes, refresh those files by hand from a locally downloaded copy of the font.
 
     These are the *variable* faces (`font-weight: 100 900`), which is what Google was already
     serving: css2 answers `wght@400;500;600;700;800` with the same single file declared five times,
@@ -173,15 +172,10 @@
           // Two query strings concatenated would give "?a=1?b=2"; the second '?' becomes '&'.
           if (search && extra.charAt(0) === '?') extra = '&' + extra.slice(1);
 
-          // Auto-detect base path (works in dev and production)
-          // In dev: localhost:5173 → base = '/'
-          // In prod: .../Free-Tools → base = '/Free-Tools/'
+          // The site is served from the root of a domain — onlinetoolsvault.com via dist/CNAME,
+          // and the OnlineToolsVault.github.io user-pages root — so this is '/' in production
+          // and in dev. Honour a <base href> if one is ever added; do not sniff the pathname.
           var base = document.querySelector('base')?.getAttribute('href') || '/';
-
-          // If no base tag, check current path for /Free-Tools/
-          if (base === '/' && window.location.pathname.includes('/Free-Tools/')) {
-            base = '/Free-Tools/';
-          }
 
           // Clean up the path (remove trailing/leading slashes)
           path = path.replace(/^\/+|\/+$/g, '');
@@ -211,7 +205,7 @@
       }
     })();
   </script>
-  <script type="module" crossorigin src="/assets/index-BtmU1OS0.js"></script>
+  <script type="module" crossorigin src="/assets/index-OUpguYFg.js"></script>
   <link rel="stylesheet" crossorigin href="/assets/index-Cv0roaG_.css">
   <link data-rh="true" rel="canonical" href="https://onlinetoolsvault.com/contact/" />
   <!-- prerender:head -->

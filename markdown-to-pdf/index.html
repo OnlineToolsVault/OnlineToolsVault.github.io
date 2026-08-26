@@ -1,0 +1,317 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <link rel="icon" type="image/svg+xml" href="/vite.svg" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title data-rh="true">Markdown to PDF Converter - Free Online Tool</title>
+  <meta data-rh="true" name="description" content="Convert GitHub-flavoured Markdown to PDF with tables, task lists and code blocks. Live preview, selectable text, converted entirely in your browser." />
+
+  <!-- SEO & Social Meta Tags -->
+  <meta name="robots" content="index, follow" />
+
+  <meta property="og:type" content="website" />
+  <meta property="og:title" content="Markdown to PDF Converter - Free Online Tool" />
+  <meta property="og:description" content="Convert GitHub-flavoured Markdown to PDF with tables, task lists and code blocks. Live preview, selectable text, converted entirely in your browser." />
+  <meta property="og:url" content="https://onlinetoolsvault.com/markdown-to-pdf/" />
+  <meta property="og:site_name" content="OnlineToolsVault" />
+  <meta property="og:image" content="https://onlinetoolsvault.com/og/markdown-to-pdf.png" />
+  <meta property="og:image:width" content="1200" />
+  <meta property="og:image:height" content="630" />
+  <meta property="og:image:alt" content="Markdown to PDF — OnlineToolsVault" />
+
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:site" content="@sourcestrongai" />
+  <meta name="twitter:title" content="Markdown to PDF Converter - Free Online Tool" />
+  <meta name="twitter:description" content="Convert GitHub-flavoured Markdown to PDF with tables, task lists and code blocks. Live preview, selectable text, converted entirely in your browser." />
+  <meta name="twitter:image" content="https://onlinetoolsvault.com/og/markdown-to-pdf.png" />
+  <meta name="twitter:image:alt" content="Markdown to PDF — OnlineToolsVault" />
+  <meta name="twitter:creator" content="@sourcestrongai" />
+
+  <!-- Structured Data (JSON-LD) -->
+  <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "WebApplication",
+      "name": "OnlineToolsVault",
+      "url": "https://onlinetoolsvault.com/",
+      "description": "Collection of free online client-side tools for PDF and image processing.",
+      "applicationCategory": "Utility",
+      "operatingSystem": "All",
+      "author": {
+        "@type": "Organization",
+        "name": "Source Strong AI",
+        "url": "https://sourcestrongai.com"
+      }
+    }
+  </script>
+
+  <!--
+    Inter, served from this origin.
+
+    This used to be a <link> to fonts.googleapis.com, which made every route open a connection
+    to Google (and then a second one to fonts.gstatic.com) before it could paint text — the last
+    off-origin request common to all pages, and one that handed a third party the IP of every
+    visitor on a site whose whole pitch is that nothing leaves the browser.
+
+    The two woff2 files are git-tracked under public/fonts. If a face or unicode-range here ever
+    changes, refresh those files by hand from a locally downloaded copy of the font.
+
+    These are the *variable* faces (`font-weight: 100 900`), which is what Google was already
+    serving: css2 answers `wght@400;500;600;700;800` with the same single file declared five times,
+    so all five weights come out of one 48 KB download exactly as before.
+
+    Only latin is preloaded. latin-ext is a further 83 KB that the unicode-range below keeps unread
+    unless a page actually contains one of its characters, which no page currently does — preloading
+    it would cost every visitor 83 KB for nothing. `crossorigin` is required even though the file is
+    same-origin: fonts are always fetched in CORS mode, and without it the preload is discarded and
+    the file downloaded twice.
+  -->
+  <link rel="preload" href="/fonts/inter-latin.woff2" as="font" type="font/woff2" crossorigin>
+  <style>
+    @font-face {
+      font-family: 'Inter';
+      font-style: normal;
+      font-weight: 100 900;
+      font-display: swap;
+      src: url('/fonts/inter-latin.woff2') format('woff2');
+      unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+    }
+
+    @font-face {
+      font-family: 'Inter';
+      font-style: normal;
+      font-weight: 100 900;
+      font-display: swap;
+      src: url('/fonts/inter-latin-ext.woff2') format('woff2');
+      unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF;
+    }
+  </style>
+
+  <!-- Analytics & Ads -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-EVGNTG49J7"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag() { dataLayer.push(arguments); }
+    gtag('js', new Date());
+    gtag('config', 'G-EVGNTG49J7');
+  </script>
+  <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-4988388949365963"
+    crossorigin="anonymous"></script>
+
+  <!--
+    Retire the old COOP/COEP service worker.
+
+    It was added for SharedArrayBuffer, but the FFmpeg tools load the single-threaded
+    @ffmpeg/core build, which never touches SharedArrayBuffer — verified by running a
+    conversion with crossOriginIsolated === false. Meanwhile cross-origin isolation blocked
+    every third-party image a user pastes into the Markdown Previewer, and forced a full page
+    reload on each visitor's first page view.
+
+    Returning visitors still have the worker installed and would keep getting the COEP headers
+    forever, so unregister it once and reload to drop out of the isolated context.
+  -->
+  <script>
+    (function () {
+      if (!('serviceWorker' in navigator)) return;
+      navigator.serviceWorker.getRegistrations().then(function (registrations) {
+        var removed = false;
+        for (var i = 0; i < registrations.length; i++) {
+          var url = (registrations[i].active && registrations[i].active.scriptURL) || '';
+          if (url.indexOf('coi-serviceworker') !== -1) {
+            registrations[i].unregister();
+            removed = true;
+          }
+        }
+        if (removed && window.crossOriginIsolated) window.location.reload();
+      }).catch(function () { /* nothing to clean up */ });
+    })();
+  </script>
+
+  <!--
+    Restore the URL that 404.html forwarded here, before React Router reads location.
+    GitHub Pages cannot rewrite unknown paths itself, so 404.html bounces them to
+    /?notfound=<path>; putting the real path back lets the app's "*" route render NotFound
+    at the address the visitor actually typed.
+  -->
+  <script>
+    (function () {
+      try {
+        var params = new URLSearchParams(window.location.search);
+        var requested = params.get('notfound');
+        if (requested && requested.charAt(0) === '/' && requested.charAt(1) !== '/') {
+          window.history.replaceState(null, '', requested);
+        }
+      } catch (error) {
+        console.error('[NotFound Restore] Error:', error);
+      }
+    })();
+  </script>
+
+  <!-- Smart Hash URL Redirect (handles legacy #/ URLs) -->
+  <script>
+    (function () {
+      try {
+        var hash = window.location.hash;
+
+        // Check if this is a hash-based route (e.g., #/word-counter)
+        if (hash && hash.startsWith('#/')) {
+          var path = hash.slice(2); // Remove '#/'
+          var search = window.location.search || '';
+
+          // A legacy link can carry its own query or fragment inside the hash
+          // (#/word-counter?tab=2). Split that off before the path is touched, otherwise the
+          // trailing slash below lands after the query string and produces "word-counter?tab=2/".
+          var extra = '';
+          var cut = path.search(/[?#]/);
+          if (cut !== -1) {
+            extra = path.slice(cut);
+            path = path.slice(0, cut);
+          }
+          // Two query strings concatenated would give "?a=1?b=2"; the second '?' becomes '&'.
+          if (search && extra.charAt(0) === '?') extra = '&' + extra.slice(1);
+
+          // The site is served from the root of a domain — onlinetoolsvault.com via dist/CNAME,
+          // and the OnlineToolsVault.github.io user-pages root — so this is '/' in production
+          // and in dev. Honour a <base href> if one is ever added; do not sniff the pathname.
+          var base = document.querySelector('base')?.getAttribute('href') || '/';
+
+          // Clean up the path (remove trailing/leading slashes)
+          path = path.replace(/^\/+|\/+$/g, '');
+
+          // Build redirect URL.
+          //
+          // The trailing slash is not cosmetic. GitHub Pages serves each route from
+          // dist/<route>/index.html, so /word-counter answers with a 301 to /word-counter/ —
+          // meaning the slash-less form this used to emit turned every legacy hash link into two
+          // navigations, and any of them that ended up in a canonical, a sitemap or an inbound
+          // link pointed at the redirecting URL rather than the real one. Every other internal
+          // link on the site was normalised to the trailing-slash form; this was the last hole.
+          var redirectUrl;
+          if (path) {
+            redirectUrl = base + path + '/' + search + extra;
+          } else {
+            // Just '#/' with no path - go to home
+            redirectUrl = base + search + extra;
+          }
+
+          // Redirect using replace (doesn't add to history)
+          window.location.replace(redirectUrl);
+        }
+      } catch (error) {
+        // Silently fail - the app will load normally
+        console.error('[Hash Redirect] Error:', error);
+      }
+    })();
+  </script>
+  <script type="module" crossorigin src="/assets/index-OUpguYFg.js"></script>
+  <link rel="stylesheet" crossorigin href="/assets/index-Cv0roaG_.css">
+  <link data-rh="true" rel="canonical" href="https://onlinetoolsvault.com/markdown-to-pdf/" />
+  <!-- prerender:head -->
+  <script type="application/ld+json" data-rh="true">{"@context":"https://schema.org","@type":"FAQPage","mainEntity":[{"@type":"Question","name":"Which parts of Markdown are supported?","acceptedAnswer":{"@type":"Answer","text":"CommonMark plus the GitHub extensions: headings, emphasis, strikethrough, ordered and unordered lists, task lists rendered as ticked or empty checkboxes, pipe tables with per-column alignment, blockquotes including nested ones, fenced and indented code blocks, inline code, horizontal rules, images, footnotes and bare URLs turned into links. Links are styled but not clickable in the downloaded PDF — the renderer writes text, not link annotations. The little return arrow at the end of a footnote is dropped from the PDF: it is a character the standard PDF fonts have no glyph for, and it would not be clickable in the file anyway. Not supported: LaTeX maths, which prints as literal dollar-sign text, definition lists, and Markdown extensions specific to a particular static-site generator."}},{"@type":"Question","name":"Can I put raw HTML in my Markdown?","acceptedAnswer":{"@type":"Answer","text":"No — HTML tags are printed as visible text rather than interpreted. Typing a bold tag around a word puts the angle brackets on the page. This is a deliberate safety property: because no markup from your document is ever inserted as live HTML, a pasted document cannot run anything in this page. If you already have HTML and want it laid out as a browser would, use HTML to PDF instead, which previews it inside a sandboxed frame."}},{"@type":"Question","name":"Are code blocks syntax highlighted?","acceptedAnswer":{"@type":"Answer","text":"No. A fenced block keeps its language label in the markup but is drawn in one colour in a monospace face on a light panel. Long lines inside a code block wrap in the PDF rather than running off the right edge, because a printed page cannot be scrolled sideways, whereas the preview pane lets the block scroll — that is the one place the PDF deliberately differs from the preview. Wide tables used to differ too; they no longer do, because the preview now uses the same fixed table layout as the page."}},{"@type":"Question","name":"What happens to images?","acceptedAnswer":{"@type":"Answer","text":"An image with an http or https address is fetched by your browser, shown in the preview, and re-encoded as a JPEG at roughly twice its printed size before it goes into the PDF — that keeps a screenshot to a few hundred kilobytes instead of the several megabytes of raw pixels it would otherwise add. The re-encode needs the host to serve the file and to allow a cross-origin read; an image that is missing, unreachable or refused is taken out of the document, the rest of the page is unaffected, and the number left out is reported after the download. A host that accepts the connection and then goes quiet is given twenty seconds before it counts as unreachable, and that twenty seconds belongs to the whole document rather than to each image: six load at a time and the clock is only restarted by an image that actually arrives, so a README full of dead badges costs one wait no matter how many of them there are, while a slow but working host is never cut off part-way down a long page. Note that loading such an image is a request from your machine to that server — nothing of your document is sent, but the image host does see the request. Data-URI images are dropped by the Markdown renderer and will not appear. For a PDF built out of pictures on your own disk, use Image to PDF."}},{"@type":"Question","name":"Which fonts and characters can the PDF use?","acceptedAnswer":{"@type":"Answer","text":"The output is drawn with the standard PDF font set — Helvetica for body text and Courier for code — with bold and italic variants. No font file is embedded, which keeps the file small and consistent everywhere, but it also limits the glyphs to the Latin-1 and Windows-1252 repertoire: ASCII, accented Latin letters, curly quotes, dashes, the ellipsis, the euro and so on. Accented letters are composed before anything is measured, so text that arrives decomposed — which is what macOS hands over when you copy from a native app — still prints as café rather than as cafe followed by a question mark. Cyrillic, Greek, Hebrew, Arabic, Devanagari, CJK and emoji have no glyph, so each character you can see becomes one question mark, counted once: a multi-part emoji costs one, not five. The number replaced is reported after the download rather than being quietly turned into look-alike Latin rubbish. Characters that draw nothing in the first place — zero-width joiners, bidi marks, a stray byte-order mark — are dropped rather than replaced, so they cannot leave a question mark inside a word that looked clean in the preview. For documents in those scripts, print the preview with your browser instead, since browser printing uses your system fonts."}},{"@type":"Question","name":"How are page breaks decided?","acceptedAnswer":{"@type":"Answer","text":"The rendered document is laid out as one long column at the page width minus a half-inch margin on each side, and the tool then measures every block in that column and inserts whitespace so that no paragraph, heading, list item, table row, code block or image sits across a page seam — a block that would straddle the break is moved down to start the next page instead. You cannot force a break at a chosen point. One thing cannot be moved: a single block that is itself taller than a page, such as a very long code block, an unusually long paragraph or a tall image. Those are split at the seam, the split is drawn on both pages, and the tool tells you how many such splits happened after the download. Nothing is ever dropped. On a document of well over a thousand pages the planner eventually runs out of the work budget it is given; if that happens it says so afterwards, and blocks past that point may sit across a seam. Sideways, nothing runs off the paper either: a table always fills the column, so extra columns make every cell narrower and the text inside them wraps, and an unbroken run of characters too long for the line is broken mid-word. Past roughly eight columns a table stops being readable that way — for wide tabular data, CSV to PDF sets it as a proper table and can print it landscape."}},{"@type":"Question","name":"Which files can I load, and what is the PDF called?","acceptedAnswer":{"@type":"Answer","text":"The drop zone accepts .md, .markdown and .txt files, read as UTF-8 text. Anything else — a PNG, a PDF, or a file with no extension at all, which is how a bare README often arrives — is rejected, and the tool says so instead of doing nothing. Rename such a file or paste its text into the editor, which is often quicker anyway. The download is named after the file you loaded — notes.md becomes notes.pdf — or markdown.pdf when you typed straight into the editor."}},{"@type":"Question","name":"Is any of this uploaded?","acceptedAnswer":{"@type":"Answer","text":"No. The Markdown is parsed in this tab, rendered into the preview you can see, cloned offscreen at the page width, and walked to produce the PDF, all inside the browser. Everything the converter needs is loaded with the page, so there is no server round trip when you press the button and the tool still works with the network off — the only exception is an image referenced by an http address, which your browser has to fetch from its host. That makes this a reasonable place to typeset notes you would not paste into an online editor."}}]}</script>
+  <!-- /prerender:head -->
+</head>
+
+<body>
+  <div id="root" data-prerendered="static"><div class="app-wrapper"><header class="site-header"><div class="container header-container"><a class="logo" href="/"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-rocket logo-icon"><path d="M4.5 16.5c-1.5 1.26-2 5-2 5s3.74-.5 5-2c.71-.84.7-2.13-.09-2.91a2.18 2.18 0 0 0-2.91-.09z"></path><path d="m12 15-3-3a22 22 0 0 1 2-3.95A12.88 12.88 0 0 1 22 2c0 2.72-.78 7.5-6 11a22.35 22.35 0 0 1-4 2z"></path><path d="M9 12H4s.55-3.03 2-4c1.62-1.08 5 0 5 0"></path><path d="M12 15v5s3.03-.55 4-2c1.08-1.62 0-5 0-5"></path></svg><span>OnlineToolsVault</span></a><nav class="nav-desktop"><a class="nav-link" href="/">Home</a><a class="nav-link" href="/about/">About</a><a class="nav-link" href="/contact/">Contact</a><div class="social-icons"><a href="https://x.com/sourcestrongai" target="_blank" rel="noopener noreferrer" class="social-icon" aria-label="Twitter"><svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-twitter "><path d="M22 4s-.7 2.1-2 3.4c1.6 10-9.4 17.3-18 11.6 2.2.1 4.4-.6 6-2C3 15.5.5 9.6 3 5c2.2 2.6 5.6 4.1 9 4-.9-4.2 4-6.6 7-3.8 1.1 0 3-1.2 3-1.2z"></path></svg></a><a href="https://www.linkedin.com/company/sourcestrongai" target="_blank" rel="noopener noreferrer" class="social-icon" aria-label="LinkedIn"><svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-linkedin "><path d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-2-2 2 2 0 0 0-2 2v7h-4v-7a6 6 0 0 1 6-6z"></path><rect width="4" height="12" x="2" y="9"></rect><circle cx="4" cy="4" r="2"></circle></svg></a></div></nav><button class="nav-mobile-btn" aria-label="Open menu" aria-expanded="false" aria-controls="mobile-menu"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-menu "><line x1="4" x2="20" y1="12" y2="12"></line><line x1="4" x2="20" y1="6" y2="6"></line><line x1="4" x2="20" y1="18" y2="18"></line></svg></button></div></header><main class="main-content"><!--$--><div class="container" style="padding: 3rem 1.5rem;"><div style="max-width: 1000px; margin: 0px auto;"><header style="margin-bottom: 3rem; text-align: center;"><h1 style="font-size: 2.5rem; font-weight: 800; margin-bottom: 0.5rem;">Markdown to PDF</h1><p style="color: rgb(100, 116, 139);">Write or drop in Markdown, see it rendered, and download it as a PDF.</p></header><div class="tool-workspace" style="max-width: 1000px; margin: 0px auto;"><div style="background: white; border: 1px solid var(--border); border-radius: 1rem; padding: 1.5rem;"><div role="presentation" tabindex="0" class="tool-upload-area" style="border: 2px dashed var(--border); border-radius: 0.75rem; padding: 1rem; text-align: center; cursor: pointer; background: rgb(248, 250, 252); margin-bottom: 1rem; display: flex; align-items: center; justify-content: center; gap: 0.6rem; color: rgb(71, 85, 105); font-size: 0.9rem;"><input accept="text/markdown,.md,.markdown,text/plain,.txt" type="file" tabindex="-1" aria-label="Choose a Markdown file" style="border: 0px; clip: rect(0px, 0px, 0px, 0px); clip-path: inset(50%); height: 1px; margin: 0px -1px -1px 0px; overflow: hidden; padding: 0px; position: absolute; width: 1px; white-space: nowrap;"><svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-upload "><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="17 8 12 3 7 8"></polyline><line x1="12" x2="12" y1="3" y2="15"></line></svg><span>Drop a <strong>.md</strong>, <strong>.markdown</strong> or <strong>.txt</strong> file here, or click to browse</span></div><div style="display: flex; flex-wrap: wrap; gap: 0.75rem; align-items: center; justify-content: space-between; margin-bottom: 1rem;"><div id="markdown-to-pdf-settings" style="display: flex; gap: 0.75rem; align-items: center;"><label for="markdown-to-pdf-size" style="font-size: 0.85rem; font-weight: 600; color: rgb(51, 65, 85);">Page size</label><select id="markdown-to-pdf-size" style="padding: 0.55rem 0.75rem; border-radius: 0.5rem; border: 1px solid var(--border); background: white; font-size: 0.9rem; color: rgb(15, 23, 42); cursor: pointer;"><option value="a4">A4 — 210 x 297 mm</option><option value="letter">Letter — 8.5 x 11 in</option></select></div><div style="display: flex; gap: 0.75rem; flex-wrap: wrap;"><button style="padding: 0.55rem 0.75rem; border-radius: 0.5rem; border: 1px solid var(--border); background: white; font-size: 0.9rem; color: rgb(185, 28, 28); cursor: pointer; display: flex; align-items: center; gap: 0.4rem;"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-trash2 "><path d="M3 6h18"></path><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"></path><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"></path><line x1="10" x2="10" y1="11" y2="17"></line><line x1="14" x2="14" y1="11" y2="17"></line></svg> Clear</button><button id="markdown-to-pdf-download-btn" class="tool-btn-primary" style="padding: 0.55rem 1.1rem; border-radius: 0.5rem; background: var(--primary); color: white; border-width: medium; border-style: none; border-color: currentcolor; border-image: none; cursor: pointer; font-weight: bold; display: flex; align-items: center; gap: 0.5rem;"><svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-download "><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" x2="12" y1="15" y2="3"></line></svg>Download PDF</button></div></div><style>@keyframes spin { 100% { transform: rotate(360deg); } }</style><div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 1rem;"><div><label for="markdown-to-pdf-source" style="display: block; margin-bottom: 0.4rem; font-weight: 600; font-size: 0.85rem; color: rgb(51, 65, 85);">Markdown</label><textarea id="markdown-to-pdf-source" placeholder="## Start typing Markdown here" style="width: 100%; height: 520px; padding: 1rem; border-radius: 0.5rem; border: 1px solid var(--border); font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 0.85rem; line-height: 1.6; resize: vertical; background: rgb(248, 250, 252); color: rgb(15, 23, 42);">## Release notes — v2.4
+
+A short sample so you can see how the preview maps onto the page. Replace it with your own text, or drop a `.md` file above.
+
+### What changed
+
+- **Bold** and *italic* and ~~struck through~~ text
+- `inline code` and [links](https://onlinetoolsvault.com/)
+- Nested lists:
+  - second level
+  - and a third
+
+1. Ordered lists work too
+2. Numbered from the source
+
+### A table
+
+| Component | Status | Owner |
+| --------- | ------ | ----- |
+| Importer  | Shipped | Ana  |
+| Exporter  | In review | Ben |
+| Scheduler | Blocked | Cai  |
+
+### A checklist
+
+- [x] Write the migration
+- [ ] Backfill the old rows
+
+&gt; Blockquotes are indented with a rule down the left.
+
+```js
+const total = rows.reduce((sum, row) =&gt; sum + row.amount, 0)
+console.log(total)
+```
+
+---
+
+Anything after a horizontal rule keeps flowing onto as many pages as it needs.
+</textarea></div><div><span id="markdown-to-pdf-preview-label" style="display: block; margin-bottom: 0.4rem; font-weight: 600; font-size: 0.85rem; color: rgb(51, 65, 85);">Preview</span><div class="mdpdf-body" tabindex="0" role="region" aria-labelledby="markdown-to-pdf-preview-label" style="height: 520px; overflow: auto; padding: 1.25rem; border-radius: 0.5rem; border: 1px solid var(--border); background: white;"><h2>Release notes — v2.4</h2>
+<p>A short sample so you can see how the preview maps onto the page. Replace it with your own text, or drop a <code>.md</code> file above.</p>
+<h3>What changed</h3>
+<ul>
+<li><strong>Bold</strong> and <em>italic</em> and <del>struck through</del> text</li>
+<li><code>inline code</code> and <a href="https://onlinetoolsvault.com/">links</a></li>
+<li>Nested lists:
+<ul>
+<li>second level</li>
+<li>and a third</li>
+</ul>
+</li>
+</ul>
+<ol>
+<li>Ordered lists work too</li>
+<li>Numbered from the source</li>
+</ol>
+<h3>A table</h3>
+<table><thead><tr><th>Component</th><th>Status</th><th>Owner</th></tr></thead><tbody><tr><td>Importer</td><td>Shipped</td><td>Ana</td></tr><tr><td>Exporter</td><td>In review</td><td>Ben</td></tr><tr><td>Scheduler</td><td>Blocked</td><td>Cai</td></tr></tbody></table>
+<h3>A checklist</h3>
+<ul class="contains-task-list">
+<li class="task-list-item"><input type="checkbox" disabled="" checked=""> Write the migration</li>
+<li class="task-list-item"><input type="checkbox" disabled=""> Backfill the old rows</li>
+</ul>
+<blockquote>
+<p>Blockquotes are indented with a rule down the left.</p>
+</blockquote>
+<pre><code class="language-js">const total = rows.reduce((sum, row) =&gt; sum + row.amount, 0)
+console.log(total)
+</code></pre>
+<hr>
+<p>Anything after a horizontal rule keeps flowing onto as many pages as it needs.</p></div></div></div></div><div class="tool-content" style="margin-top: 4rem;"><div class="related-tools-section" style="margin-top: 4rem; margin-bottom: 4rem;"><h2 style="font-size: 1.8rem; font-weight: 700; margin-bottom: 2rem; text-align: center; color: var(--text-primary);">More Useful Tools</h2><div class="tools-grid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(min(280px, 100%), 1fr)); gap: 1.5rem;"><a class="tool-card" href="/merge-pdf/" style="text-decoration: none; color: inherit; background: var(--bg-card); border: 1px solid var(--border); border-radius: 1rem; padding: 1.5rem; transition: 0.2s; display: flex; flex-direction: column; gap: 1rem; cursor: pointer;"><div class="tool-card-header" style="display: flex; align-items: center; gap: 0.75rem;"><div class="tool-icon-wrapper" style="width: 40px; height: 40px; border-radius: 0.5rem; background: var(--primary-light); display: flex; align-items: center; justify-content: center; color: var(--primary);"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-layers "><path d="m12.83 2.18a2 2 0 0 0-1.66 0L2.6 6.08a1 1 0 0 0 0 1.83l8.58 3.91a2 2 0 0 0 1.66 0l8.58-3.9a1 1 0 0 0 0-1.83Z"></path><path d="m22 17.65-9.17 4.16a2 2 0 0 1-1.66 0L2 17.65"></path><path d="m22 12.65-9.17 4.16a2 2 0 0 1-1.66 0L2 12.65"></path></svg></div><h3 class="tool-title" style="font-size: 1.1rem; font-weight: 600; margin: 0px;">Merge PDF</h3></div><p class="tool-description" style="font-size: 0.85rem; color: var(--text-secondary); margin: 0px; line-height: 1.5; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;">Combine multiple PDF files into one.</p></a><a class="tool-card" href="/ocr-pdf/" style="text-decoration: none; color: inherit; background: var(--bg-card); border: 1px solid var(--border); border-radius: 1rem; padding: 1.5rem; transition: 0.2s; display: flex; flex-direction: column; gap: 1rem; cursor: pointer;"><div class="tool-card-header" style="display: flex; align-items: center; gap: 0.75rem;"><div class="tool-icon-wrapper" style="width: 40px; height: 40px; border-radius: 0.5rem; background: var(--primary-light); display: flex; align-items: center; justify-content: center; color: var(--primary);"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-scan-text "><path d="M3 7V5a2 2 0 0 1 2-2h2"></path><path d="M17 3h2a2 2 0 0 1 2 2v2"></path><path d="M21 17v2a2 2 0 0 1-2 2h-2"></path><path d="M7 21H5a2 2 0 0 1-2-2v-2"></path><path d="M7 8h8"></path><path d="M7 12h10"></path><path d="M7 16h6"></path></svg></div><h3 class="tool-title" style="font-size: 1.1rem; font-weight: 600; margin: 0px;">OCR PDF</h3></div><p class="tool-description" style="font-size: 0.85rem; color: var(--text-secondary); margin: 0px; line-height: 1.5; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;">Make a scanned PDF searchable with an invisible text layer.</p></a><a class="tool-card" href="/organize-pdf/" style="text-decoration: none; color: inherit; background: var(--bg-card); border: 1px solid var(--border); border-radius: 1rem; padding: 1.5rem; transition: 0.2s; display: flex; flex-direction: column; gap: 1rem; cursor: pointer;"><div class="tool-card-header" style="display: flex; align-items: center; gap: 0.75rem;"><div class="tool-icon-wrapper" style="width: 40px; height: 40px; border-radius: 0.5rem; background: var(--primary-light); display: flex; align-items: center; justify-content: center; color: var(--primary);"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-layers "><path d="m12.83 2.18a2 2 0 0 0-1.66 0L2.6 6.08a1 1 0 0 0 0 1.83l8.58 3.91a2 2 0 0 0 1.66 0l8.58-3.9a1 1 0 0 0 0-1.83Z"></path><path d="m22 17.65-9.17 4.16a2 2 0 0 1-1.66 0L2 17.65"></path><path d="m22 12.65-9.17 4.16a2 2 0 0 1-1.66 0L2 12.65"></path></svg></div><h3 class="tool-title" style="font-size: 1.1rem; font-weight: 600; margin: 0px;">Organize PDF</h3></div><p class="tool-description" style="font-size: 0.85rem; color: var(--text-secondary); margin: 0px; line-height: 1.5; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;">Sort, reorder, and delete PDF pages.</p></a><a class="tool-card" href="/pdf-editor/" style="text-decoration: none; color: inherit; background: var(--bg-card); border: 1px solid var(--border); border-radius: 1rem; padding: 1.5rem; transition: 0.2s; display: flex; flex-direction: column; gap: 1rem; cursor: pointer;"><div class="tool-card-header" style="display: flex; align-items: center; gap: 0.75rem;"><div class="tool-icon-wrapper" style="width: 40px; height: 40px; border-radius: 0.5rem; background: var(--primary-light); display: flex; align-items: center; justify-content: center; color: var(--primary);"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-pen-line "><path d="M12 20h9"></path><path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4Z"></path></svg></div><h3 class="tool-title" style="font-size: 1.1rem; font-weight: 600; margin: 0px;">PDF Editor</h3></div><p class="tool-description" style="font-size: 0.85rem; color: var(--text-secondary); margin: 0px; line-height: 1.5; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;">Add text, images, shapes and drawings to a PDF.</p></a><a class="tool-card" href="/timestamp-converter/" style="text-decoration: none; color: inherit; background: var(--bg-card); border: 1px solid var(--border); border-radius: 1rem; padding: 1.5rem; transition: 0.2s; display: flex; flex-direction: column; gap: 1rem; cursor: pointer;"><div class="tool-card-header" style="display: flex; align-items: center; gap: 0.75rem;"><div class="tool-icon-wrapper" style="width: 40px; height: 40px; border-radius: 0.5rem; background: var(--primary-light); display: flex; align-items: center; justify-content: center; color: var(--primary);"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-clock "><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg></div><h3 class="tool-title" style="font-size: 1.1rem; font-weight: 600; margin: 0px;">Timestamp Converter</h3></div><p class="tool-description" style="font-size: 0.85rem; color: var(--text-secondary); margin: 0px; line-height: 1.5; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;">Convert Unix timestamps to human dates.</p></a><a class="tool-card" href="/base64-decoder/" style="text-decoration: none; color: inherit; background: var(--bg-card); border: 1px solid var(--border); border-radius: 1rem; padding: 1.5rem; transition: 0.2s; display: flex; flex-direction: column; gap: 1rem; cursor: pointer;"><div class="tool-card-header" style="display: flex; align-items: center; gap: 0.75rem;"><div class="tool-icon-wrapper" style="width: 40px; height: 40px; border-radius: 0.5rem; background: var(--primary-light); display: flex; align-items: center; justify-content: center; color: var(--primary);"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-binary "><rect x="14" y="14" width="4" height="6" rx="2"></rect><rect x="6" y="4" width="4" height="6" rx="2"></rect><path d="M6 20h4"></path><path d="M14 10h4"></path><path d="M6 14h2v6"></path><path d="M14 4h2v6"></path></svg></div><h3 class="tool-title" style="font-size: 1.1rem; font-weight: 600; margin: 0px;">Base64 Decoder</h3></div><p class="tool-description" style="font-size: 0.85rem; color: var(--text-secondary); margin: 0px; line-height: 1.5; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;">Decode Base64 strings back to text.</p></a></div></div><div class="about-section" style="background: var(--bg-card); padding: 2rem; border-radius: 1rem; border: 1px solid var(--border); margin-bottom: 2rem;"><h2 style="font-size: 1.8rem; margin-bottom: 1.5rem;">About Markdown to PDF</h2><p style="line-height: 1.6; color: var(--text-secondary); margin-bottom: 1rem;">Paste Markdown into the editor or drop a <code>.md</code> file onto the strip above, check the rendered result on the right, and download it as a PDF. The preview is not a rough approximation: the same stylesheet drives both, the preview is measured in the same Helvetica metrics and whole-point sizes the PDF is drawn with, and the file is built by copying that rendered document offscreen at the exact page width and walking it. Text is written into the PDF as text, so the result can be selected, searched and copied rather than being a picture of a page.</p><h3 style="font-size: 1.15rem; margin-top: 1.75rem; margin-bottom: 0.75rem;">What gets rendered</h3><p style="line-height: 1.6; color: var(--text-secondary); margin-bottom: 1rem;">The parser handles CommonMark plus the GitHub extensions, which covers nearly everything a README or a set of notes contains: six heading levels, bold and italic, strikethrough, ordered and unordered lists nested to any depth, task lists drawn as ticked and empty checkboxes, pipe tables that honour the alignment colons in the separator row, blockquotes including nested ones, fenced and indented code, inline code, horizontal rules, images, footnotes, and bare URLs recognised as links. Line breaks follow Markdown's rules — a single newline continues the paragraph, two spaces at the end of a line force a break, and a blank line starts a new paragraph. One caveat about links: in the preview they are clickable, but the PDF renderer writes text rather than link annotations, so in the downloaded file a link is coloured and underlined but not clickable and the address behind it is not stored. Write the URL out in the visible text when readers will need it. For the same reason the return arrow that closes a footnote is left out of the PDF — it would not be clickable, and it is not a character the standard PDF fonts can draw.</p><p style="line-height: 1.6; color: var(--text-secondary); margin-bottom: 1rem;">Two things are deliberately absent. Raw HTML embedded in the Markdown is printed as visible text rather than interpreted, which means a document from an untrusted source cannot inject anything into this page. And code blocks are not syntax highlighted; they are set in a monospace face on a light panel, with the language label carried in the markup but not coloured.</p><h3 style="font-size: 1.15rem; margin-top: 1.75rem; margin-bottom: 0.75rem;">How the page is put together</h3><p style="line-height: 1.6; color: var(--text-secondary); margin-bottom: 1rem;">Choosing A4 or Letter sets the render column to the page width less a half-inch margin on each side — 523 points for A4, 540 for Letter. The rendered document is laid out as one continuous column at that width, and before anything is drawn the tool measures every block in it and works down the page seams in order: a paragraph, heading, list item, table row, code block or image that would sit across a seam has whitespace inserted in front of it so that it starts the next page whole instead. That is why a long table breaks cleanly between rows rather than through one. There is no way to force a break at a particular point.</p><p style="line-height: 1.6; color: var(--text-secondary); margin-bottom: 1rem;">One case cannot be tidied away: a single block that is taller than a page on its own — a very long code block, an unusually long paragraph, or a tall image. It has to be cut somewhere, so it is drawn on both pages and clipped at the margins, and the tool reports how many such splits a document produced once the file is saved. Content is never dropped. (A tall image split this way also runs into the top and bottom margins on the pages in the middle of the run; that is a limitation of the underlying renderer.) Sideways, nothing runs off the paper: everything is made to fit the column instead. A table is always set to the full column width, so a twelve-column table simply gets twelve narrow cells with the text wrapping inside them; an unbroken run of characters longer than the line is broken mid-word; an oversized image is scaled down; and long lines inside code blocks, which scroll sideways in the preview, are re-wrapped for the PDF because a printed page has no horizontal scrollbar. The limit is legibility rather than clipping — past roughly eight columns a table becomes unreadable, and <strong>CSV to PDF</strong> is the better tool, since it lays the data out as a ruled table and can print it landscape.</p><h3 style="font-size: 1.15rem; margin-top: 1.75rem; margin-bottom: 0.75rem;">Fonts, glyphs and images</h3><p style="line-height: 1.6; color: var(--text-secondary); margin-bottom: 1rem;">Text is drawn with the standard PDF fonts every reader provides — Helvetica for prose, Courier for code, with bold and italic variants — so no font file is embedded and a long document stays small. The limit of that approach is the character set: only the Latin-1 and Windows-1252 repertoire has glyphs, which covers accented Latin, curly quotes, dashes, the ellipsis, the euro and so on. Accents are composed first, so decomposed text — the form macOS hands over — still prints as café. Cyrillic, Greek, Arabic, Hebrew, Devanagari, CJK and emoji have no glyph, so each visible character becomes one question mark and the tool tells you how many it replaced, which is better than the look-alike Latin rubbish those bytes would otherwise turn into; characters that draw nothing anyway, such as zero-width joiners and byte-order marks, are dropped instead of being replaced. Images referenced by an http or https URL are loaded by your browser, re-encoded as a right-sized JPEG so a screenshot costs a few hundred kilobytes rather than several megabytes, and embedded when the host serves them and allows a cross-origin read; one that is missing, unreachable or refused is left out and counted for you, and the renderer never touches the network itself, so a dead image URL cannot stall a conversion. Images written as data URIs are dropped by the Markdown renderer before they reach the page.</p><h3 style="font-size: 1.15rem; margin-top: 1.75rem; margin-bottom: 0.75rem;">Related tools and privacy</h3><p style="line-height: 1.6; color: var(--text-secondary);">For plain typed text with no formatting at all, <strong>Create PDF</strong> is simpler and produces a smaller file. For existing markup, <strong>HTML to PDF</strong> takes the same route from a sandboxed preview. <strong>Markdown Previewer</strong> is the place to edit and export standalone HTML, and <strong>Paste to Markdown</strong> converts rich text from a word processor into Markdown you can bring here. Once you have the PDF, <strong>Merge PDF</strong>, <strong>Add Page Numbers to PDF</strong> and <strong>Protect PDF</strong> pick up where this leaves off. Nothing you type or load is uploaded: parsing, rendering and PDF generation all run inside this browser tab.</p></div><div class="features-section" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 2rem;"><div class="tool-feature-block" style="padding: 1.5rem; border-radius: 1rem; border: 1px solid var(--border); background: var(--bg-card);"><div style="width: 48px; height: 48px; background: var(--primary-light); border-radius: 0.75rem; display: flex; align-items: center; justify-content: center; margin-bottom: 1rem;"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="var(--primary)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-table "><path d="M12 3v18"></path><rect width="18" height="18" x="3" y="3" rx="2"></rect><path d="M3 9h18"></path><path d="M3 15h18"></path></svg></div><h3 style="font-size: 1.25rem; margin-bottom: 0.5rem;">GitHub-flavoured Markdown</h3><p style="color: var(--text-secondary);">Headings, bold, italic, strikethrough, ordered and unordered lists, task lists with real checkboxes, pipe tables with column alignment, blockquotes, fenced code, horizontal rules, footnotes and bare-URL autolinks are all parsed and rendered.</p></div><div class="tool-feature-block" style="padding: 1.5rem; border-radius: 1rem; border: 1px solid var(--border); background: var(--bg-card);"><div style="width: 48px; height: 48px; background: var(--primary-light); border-radius: 0.75rem; display: flex; align-items: center; justify-content: center; margin-bottom: 1rem;"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="var(--primary)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-file-text "><path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z"></path><path d="M14 2v4a2 2 0 0 0 2 2h4"></path><path d="M10 9H8"></path><path d="M16 13H8"></path><path d="M16 17H8"></path></svg></div><h3 style="font-size: 1.25rem; margin-bottom: 0.5rem;">The preview is what gets printed</h3><p style="color: var(--text-secondary);">One stylesheet drives both the pane on the right and the offscreen copy that becomes the PDF, and the preview is measured in the same Helvetica metrics at the same whole-point sizes the file is drawn with, so words and punctuation land where you saw them. Mainly the line breaks move, because the pane is as wide as your window while the PDF column is fixed — 523 points on A4, 540 on Letter.</p></div><div class="tool-feature-block" style="padding: 1.5rem; border-radius: 1rem; border: 1px solid var(--border); background: var(--bg-card);"><div style="width: 48px; height: 48px; background: var(--primary-light); border-radius: 0.75rem; display: flex; align-items: center; justify-content: center; margin-bottom: 1rem;"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="var(--primary)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-shield "><path d="M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1.17 1.17 0 0 1 1.52 0C14.51 3.81 17 5 19 5a1 1 0 0 1 1 1z"></path></svg></div><h3 style="font-size: 1.25rem; margin-bottom: 0.5rem;">Selectable text, no upload</h3><p style="color: var(--text-secondary);">The renderer writes text-drawing operators rather than a screenshot, so the PDF can be searched and copied. Parsing, layout and file assembly all happen in this tab; your document is never transmitted.</p></div></div></div></div><style>
+.mdpdf-body { font-family: Helvetica, Arial, "Liberation Sans", sans-serif; line-height: 1.6; color: #1f2937; font-size: 15px; word-wrap: break-word; }
+.mdpdf-body h1 { font-size: 28px; font-weight: 700; margin: 0 0 1rem; padding-bottom: 0.3em; border-bottom: 1px solid #e2e8f0; }
+.mdpdf-body h2 { font-size: 22px; font-weight: 700; margin: 1.6rem 0 0.9rem; padding-bottom: 0.25em; border-bottom: 1px solid #e2e8f0; }
+.mdpdf-body h3 { font-size: 18px; font-weight: 600; margin: 1.4rem 0 0.7rem; }
+.mdpdf-body h4 { font-size: 16px; font-weight: 600; margin: 1.3rem 0 0.6rem; }
+.mdpdf-body h5 { font-size: 15px; font-weight: 600; margin: 1.2rem 0 0.5rem; }
+.mdpdf-body h6 { font-size: 14px; font-weight: 600; margin: 1.2rem 0 0.5rem; color: #64748b; }
+.mdpdf-body p { margin: 0 0 0.9rem; }
+.mdpdf-body ul { list-style: disc; padding-left: 1.6rem; margin: 0 0 0.9rem; }
+.mdpdf-body ol { list-style: decimal; padding-left: 1.6rem; margin: 0 0 0.9rem; }
+.mdpdf-body li { margin: 0 0 0.3rem; }
+.mdpdf-body ul ul, .mdpdf-body ol ol, .mdpdf-body ul ol, .mdpdf-body ol ul { margin-bottom: 0; }
+.mdpdf-body ul.contains-task-list { list-style: none; padding-left: 0.3rem; }
+.mdpdf-body li.task-list-item input { margin-right: 0.45rem; }
+.mdpdf-body a { color: #1d4ed8; text-decoration: underline; }
+.mdpdf-body img { max-width: 100%; height: auto; margin: 0.6rem 0; }
+.mdpdf-body table { border-collapse: collapse; table-layout: fixed; width: 100%; margin: 0 0 1.1rem; font-size: 13px; }
+.mdpdf-body th, .mdpdf-body td { border: 1px solid #cbd5e1; padding: 0.45rem 0.6rem; text-align: left; vertical-align: top; overflow-wrap: anywhere; }
+.mdpdf-body th { background: #f1f5f9; font-weight: 600; }
+.mdpdf-body code { background: #f1f5f9; border-radius: 3px; padding: 0.1em 0.35em; font-family: "Courier New", Courier, monospace; font-size: 13px; color: #b91c1c; }
+.mdpdf-body pre { background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; padding: 0.8rem; margin: 0 0 1rem; overflow-x: auto; }
+.mdpdf-body pre code { background: none; color: #0f172a; padding: 0; font-size: 13px; }
+.mdpdf-body blockquote { border-left: 3px solid #cbd5e1; padding: 0.15rem 0 0.15rem 0.9rem; margin: 0 0 1rem; color: #475569; }
+.mdpdf-body blockquote p:last-child { margin-bottom: 0; }
+.mdpdf-body hr { border: none; border-top: 1px solid #e2e8f0; margin: 1.5rem 0; height: 1px; }
+.mdpdf-body section.footnotes { border-top: 1px solid #e2e8f0; margin-top: 1.5rem; padding-top: 0.6rem; font-size: 13px; }
+.mdpdf-body .sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); }
+</style><div style="max-width: 1000px; margin: 4rem auto 0px; border-top: 1px solid var(--border); padding-top: 3rem;"><h2 style="font-size: 1.8rem; font-weight: 700; margin-bottom: 2rem; text-align: center;">Frequently Asked Questions</h2><div style="display: grid; gap: 2rem;"><div><h3 style="font-size: 1.2rem; font-weight: 600; margin-bottom: 0.5rem; color: rgb(30, 41, 59);">Which parts of Markdown are supported?</h3><p style="line-height: 1.6; color: rgb(71, 85, 105);">CommonMark plus the GitHub extensions: headings, emphasis, strikethrough, ordered and unordered lists, task lists rendered as ticked or empty checkboxes, pipe tables with per-column alignment, blockquotes including nested ones, fenced and indented code blocks, inline code, horizontal rules, images, footnotes and bare URLs turned into links. Links are styled but not clickable in the downloaded PDF — the renderer writes text, not link annotations. The little return arrow at the end of a footnote is dropped from the PDF: it is a character the standard PDF fonts have no glyph for, and it would not be clickable in the file anyway. Not supported: LaTeX maths, which prints as literal dollar-sign text, definition lists, and Markdown extensions specific to a particular static-site generator.</p></div><div><h3 style="font-size: 1.2rem; font-weight: 600; margin-bottom: 0.5rem; color: rgb(30, 41, 59);">Can I put raw HTML in my Markdown?</h3><p style="line-height: 1.6; color: rgb(71, 85, 105);">No — HTML tags are printed as visible text rather than interpreted. Typing a bold tag around a word puts the angle brackets on the page. This is a deliberate safety property: because no markup from your document is ever inserted as live HTML, a pasted document cannot run anything in this page. If you already have HTML and want it laid out as a browser would, use <strong>HTML to PDF</strong> instead, which previews it inside a sandboxed frame.</p></div><div><h3 style="font-size: 1.2rem; font-weight: 600; margin-bottom: 0.5rem; color: rgb(30, 41, 59);">Are code blocks syntax highlighted?</h3><p style="line-height: 1.6; color: rgb(71, 85, 105);">No. A fenced block keeps its language label in the markup but is drawn in one colour in a monospace face on a light panel. Long lines inside a code block wrap in the PDF rather than running off the right edge, because a printed page cannot be scrolled sideways, whereas the preview pane lets the block scroll — that is the one place the PDF deliberately differs from the preview. Wide tables used to differ too; they no longer do, because the preview now uses the same fixed table layout as the page.</p></div><div><h3 style="font-size: 1.2rem; font-weight: 600; margin-bottom: 0.5rem; color: rgb(30, 41, 59);">What happens to images?</h3><p style="line-height: 1.6; color: rgb(71, 85, 105);">An image with an http or https address is fetched by your browser, shown in the preview, and re-encoded as a JPEG at roughly twice its printed size before it goes into the PDF — that keeps a screenshot to a few hundred kilobytes instead of the several megabytes of raw pixels it would otherwise add. The re-encode needs the host to serve the file and to allow a cross-origin read; an image that is missing, unreachable or refused is taken out of the document, the rest of the page is unaffected, and the number left out is reported after the download. A host that accepts the connection and then goes quiet is given twenty seconds before it counts as unreachable, and that twenty seconds belongs to the whole document rather than to each image: six load at a time and the clock is only restarted by an image that actually arrives, so a README full of dead badges costs one wait no matter how many of them there are, while a slow but working host is never cut off part-way down a long page. Note that loading such an image is a request from your machine to that server — nothing of your document is sent, but the image host does see the request. Data-URI images are dropped by the Markdown renderer and will not appear. For a PDF built out of pictures on your own disk, use <strong>Image to PDF</strong>.</p></div><div><h3 style="font-size: 1.2rem; font-weight: 600; margin-bottom: 0.5rem; color: rgb(30, 41, 59);">Which fonts and characters can the PDF use?</h3><p style="line-height: 1.6; color: rgb(71, 85, 105);">The output is drawn with the standard PDF font set — Helvetica for body text and Courier for code — with bold and italic variants. No font file is embedded, which keeps the file small and consistent everywhere, but it also limits the glyphs to the Latin-1 and Windows-1252 repertoire: ASCII, accented Latin letters, curly quotes, dashes, the ellipsis, the euro and so on. Accented letters are composed before anything is measured, so text that arrives decomposed — which is what macOS hands over when you copy from a native app — still prints as café rather than as cafe followed by a question mark. Cyrillic, Greek, Hebrew, Arabic, Devanagari, CJK and emoji have no glyph, so each character you can see becomes one question mark, counted once: a multi-part emoji costs one, not five. The number replaced is reported after the download rather than being quietly turned into look-alike Latin rubbish. Characters that draw nothing in the first place — zero-width joiners, bidi marks, a stray byte-order mark — are dropped rather than replaced, so they cannot leave a question mark inside a word that looked clean in the preview. For documents in those scripts, print the preview with your browser instead, since browser printing uses your system fonts.</p></div><div><h3 style="font-size: 1.2rem; font-weight: 600; margin-bottom: 0.5rem; color: rgb(30, 41, 59);">How are page breaks decided?</h3><p style="line-height: 1.6; color: rgb(71, 85, 105);">The rendered document is laid out as one long column at the page width minus a half-inch margin on each side, and the tool then measures every block in that column and inserts whitespace so that no paragraph, heading, list item, table row, code block or image sits across a page seam — a block that would straddle the break is moved down to start the next page instead. You cannot force a break at a chosen point. One thing cannot be moved: a single block that is itself taller than a page, such as a very long code block, an unusually long paragraph or a tall image. Those are split at the seam, the split is drawn on both pages, and the tool tells you how many such splits happened after the download. Nothing is ever dropped. On a document of well over a thousand pages the planner eventually runs out of the work budget it is given; if that happens it says so afterwards, and blocks past that point may sit across a seam. Sideways, nothing runs off the paper either: a table always fills the column, so extra columns make every cell narrower and the text inside them wraps, and an unbroken run of characters too long for the line is broken mid-word. Past roughly eight columns a table stops being readable that way — for wide tabular data, <strong>CSV to PDF</strong> sets it as a proper table and can print it landscape.</p></div><div><h3 style="font-size: 1.2rem; font-weight: 600; margin-bottom: 0.5rem; color: rgb(30, 41, 59);">Which files can I load, and what is the PDF called?</h3><p style="line-height: 1.6; color: rgb(71, 85, 105);">The drop zone accepts .md, .markdown and .txt files, read as UTF-8 text. Anything else — a PNG, a PDF, or a file with no extension at all, which is how a bare README often arrives — is rejected, and the tool says so instead of doing nothing. Rename such a file or paste its text into the editor, which is often quicker anyway. The download is named after the file you loaded — notes.md becomes notes.pdf — or markdown.pdf when you typed straight into the editor.</p></div><div><h3 style="font-size: 1.2rem; font-weight: 600; margin-bottom: 0.5rem; color: rgb(30, 41, 59);">Is any of this uploaded?</h3><p style="line-height: 1.6; color: rgb(71, 85, 105);">No. The Markdown is parsed in this tab, rendered into the preview you can see, cloned offscreen at the page width, and walked to produce the PDF, all inside the browser. Everything the converter needs is loaded with the page, so there is no server round trip when you press the button and the tool still works with the network off — the only exception is an image referenced by an http address, which your browser has to fetch from its host. That makes this a reasonable place to typeset notes you would not paste into an online editor.</p></div></div></div></div></div><!--/$--></main><footer class="site-footer"><div class="container footer-content"><div class="footer-brand"><h3>OnlineToolsVault</h3><p>Premium, free-to-use online tools for everyone. Free, Fast, Secure and Privacy Focused<br>You can check the source code <a href="https://github.com/OnlineToolsVault/OnlineToolsVault.github.io" target="_blank" rel="noopener noreferrer" style="color: var(--primary); text-decoration: underline;">here</a>.</p></div><div class="footer-links"><div class="footer-col"><h4>Popular Tools</h4><ul><li><a href="/merge-pdf/">Merge PDF</a></li><li><a href="/compress-pdf/">Compress PDF</a></li><li><a href="/image-compressor/">Image Compressor</a></li><li><a href="/qr-generator/">QR Generator</a></li></ul></div><div class="footer-col"><h4>Company</h4><ul><li><a href="/about/">About Us</a></li><li><a href="/contact/">Contact</a></li><li><a href="/privacy/">Privacy Policy</a></li><li><a href="/terms/">Terms of Service</a></li></ul></div><div class="footer-col"><h4>Connect</h4><ul><li><a href="https://x.com/sourcestrongai" target="_blank" rel="noopener noreferrer">Twitter</a></li><li><a href="https://github.com/OnlineToolsVault" target="_blank" rel="noopener noreferrer">GitHub</a></li><li><a href="https://www.linkedin.com/company/sourcestrongai" target="_blank" rel="noopener noreferrer">LinkedIn</a></li></ul></div></div></div><div class="container footer-bottom"><p>© 2026 Source Strong AI. All Rights Reserved. Managed under <a href="/terms/" style="color: inherit; text-decoration: underline;">Proprietary License</a>.</p><p style="display: flex; align-items: center; gap: 0.25rem;">Made with <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-heart "><path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z"></path></svg> for the web</p></div></footer></div></div>
+</body>
+
+</html>
