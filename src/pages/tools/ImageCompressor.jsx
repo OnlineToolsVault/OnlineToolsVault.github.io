@@ -15,7 +15,7 @@ import { Upload, Download, Zap, ShieldCheck, Layers } from 'lucide-react'
  * `https://cdn.jsdelivr.net/npm/browser-image-compression@2.0.2/dist/browser-image-compression.js`.
  * That is why this page hit a CDN on a normal visit despite the package being an npm dependency.
  *
- * `libURL` overrides it. scripts/copy-runtime-assets.js stages the UMD build into
+ * `libURL` overrides it. The UMD build is git-tracked at
  * public/vendor/browser-image-compression.js; change one and change the other, and keep this in
  * step with the identical constant in BulkImageCompressor.jsx.
  *

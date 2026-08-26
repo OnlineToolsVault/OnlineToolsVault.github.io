@@ -45,14 +45,28 @@ function extractSitemapRoutes() {
     return routes;
 }
 
+// `node scripts/validate-routes.js --count` prints the route total on stdout and nothing else.
+// .github/workflows/deploy.yml uses it to assert that dist really contains one prerendered page
+// and one sitemap <loc> per route, instead of carrying a hard-coded floor that goes stale the
+// moment a tool is added — which is exactly how a batch of new routes could go missing from the
+// artifact while the deploy stayed green. The consistency checks below still run first: a count
+// only one of the two sources agrees with would be worse than no count at all.
+const countOnly = process.argv.includes('--count');
+// --list prints the App.jsx route paths one per line (after the same consistency check), so the
+// deploy verify step can assert the SET of routes in dist, not just the count — a count cannot
+// notice one route vanishing while another appears.
+const listOnly = process.argv.includes('--list');
+
 try {
-    console.log('🔍 Validating routes...');
+    if (!countOnly && !listOnly) console.log('🔍 Validating routes...');
 
     const appRoutes = extractAppRoutes();
     const sitemapRoutes = extractSitemapRoutes();
 
-    console.log(`Found ${appRoutes.length} routes in App.jsx`);
-    console.log(`Found ${sitemapRoutes.length} routes in generate-sitemap.js`);
+    if (!countOnly && !listOnly) {
+        console.log(`Found ${appRoutes.length} routes in App.jsx`);
+        console.log(`Found ${sitemapRoutes.length} routes in generate-sitemap.js`);
+    }
 
     const missingInSitemap = appRoutes.filter(r => !sitemapRoutes.includes(r));
     const missingInApp = sitemapRoutes.filter(r => !appRoutes.includes(r));
@@ -69,7 +83,14 @@ try {
         process.exit(1);
     }
 
-    console.log('✅ Success: Route configuration is consistent!');
+    if (countOnly) {
+        // Bare number, no decoration — the workflow reads this with a command substitution.
+        console.log(appRoutes.length);
+    } else if (listOnly) {
+        appRoutes.forEach(r => console.log(r));
+    } else {
+        console.log('✅ Success: Route configuration is consistent!');
+    }
 
 } catch (err) {
     console.error('❌ Validation failed:', err.message);

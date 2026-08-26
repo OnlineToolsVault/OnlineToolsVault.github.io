@@ -120,7 +120,27 @@ const ImageToPdf = () => {
                 const x = (pageWidth - finalWidth) / 2
                 const y = (pageHeight - finalHeight) / 2
 
-                doc.addImage(img.preview, 'JPEG', x, y, finalWidth, finalHeight)
+                // JPEG files embed as-is; everything else (PNG/WebP/GIF/BMP) is re-encoded to JPEG
+                // on a white canvas first — jsPDF otherwise stores non-JPEG input as raw pixels,
+                // which turned a 38 KB PNG into a 4.3 MB page.
+                if (img.type === 'image/jpeg') {
+                    doc.addImage(img.preview, 'JPEG', x, y, finalWidth, finalHeight)
+                } else {
+                    const bitmap = await new Promise((resolve, reject) => {
+                        const el = new Image()
+                        el.onload = () => resolve(el)
+                        el.onerror = () => reject(new Error(`Could not decode ${img.name}`))
+                        el.src = img.preview
+                    })
+                    const canvas = document.createElement('canvas')
+                    canvas.width = bitmap.naturalWidth
+                    canvas.height = bitmap.naturalHeight
+                    const ctx = canvas.getContext('2d')
+                    ctx.fillStyle = '#ffffff' // transparency flattens to white on the PDF page
+                    ctx.fillRect(0, 0, canvas.width, canvas.height)
+                    ctx.drawImage(bitmap, 0, 0)
+                    doc.addImage(canvas.toDataURL('image/jpeg', 0.92), 'JPEG', x, y, finalWidth, finalHeight)
+                }
             }
 
             doc.save('converted-images.pdf')

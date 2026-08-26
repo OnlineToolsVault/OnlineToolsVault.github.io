@@ -1,8 +1,8 @@
-# 🚀 FreeTools (OnlineToolsVault)
+# 🚀 OnlineToolsVault (OnlineToolsVault)
 
 <div align="center">
   <a href="https://onlinetoolsvault.com">
-    <img src="docs/images/desktop-preview.png" alt="FreeTools Desktop Preview" width="100%" style="border-radius: 10px; box-shadow: 0 4px 8px rgba(0,0,0,0.1);">
+    <img src="docs/images/desktop-preview.png" alt="OnlineToolsVault Desktop Preview" width="100%" style="border-radius: 10px; box-shadow: 0 4px 8px rgba(0,0,0,0.1);">
   </a>
 
   <h3 align="center">Premium Quality. 100% Free. Privacy Focused.</h3>
@@ -67,7 +67,7 @@ ZIP Creator / Viewer · File Size Calculator · Batch File Renamer · File Metad
 Video → Audio · Audio Converter
 
 <div align="center">
-  <img src="docs/images/mobile-preview.png" alt="FreeTools Mobile Preview" width="300" style="border-radius: 20px; box-shadow: 0 4px 15px rgba(0,0,0,0.15);">
+  <img src="docs/images/mobile-preview.png" alt="OnlineToolsVault Mobile Preview" width="300" style="border-radius: 20px; box-shadow: 0 4px 15px rgba(0,0,0,0.15);">
 </div>
 
 ## 🛠️ Tech Stack

@@ -1,8 +1,17 @@
+import { useEffect } from 'react'
 import { Link } from 'react-router-dom'
 import { Helmet } from 'react-helmet-async'
 import { Home, AlertTriangle } from 'lucide-react'
 
 const NotFound = () => {
+    // index.html ships a static "index, follow" robots meta on every prerendered page. Helmet
+    // adds our noindex but cannot remove a tag it does not own, so the 404 view would carry BOTH
+    // directives — and Google resolves conflicts toward the more permissive one. Drop the static
+    // tag here so noindex stands alone.
+    useEffect(() => {
+        document.querySelector('meta[name="robots"]:not([data-rh])')?.remove()
+    }, [])
+
     return (
         <>
             <Helmet>

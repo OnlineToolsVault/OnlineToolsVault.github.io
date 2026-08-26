@@ -5,6 +5,13 @@ import { tools } from '../../data/tools'
 // Route -> catalogue entry, keyed by the slash-less `path` the catalogue stores.
 const toolByPath = new Map(tools.map((tool) => [tool.path, tool]))
 
+// The visible FAQ renderer styles inline markdown (**bold**, [links](url)); the JSON-LD copy of
+// the same answers must be plain text — search engines index the markup characters literally.
+const plainText = (value) => String(value || '')
+    .replace(/\[([^\]]+)\]\([^)]*\)/g, '$1')
+    .replace(/\*\*([^*]+)\*\*/g, '$1')
+    .replace(/`([^`]+)`/g, '$1')
+
 const ToolLayout = ({
     title,
     description,
@@ -59,7 +66,7 @@ const ToolLayout = ({
                                 "name": faq.question,
                                 "acceptedAnswer": {
                                     "@type": "Answer",
-                                    "text": faq.answer
+                                    "text": plainText(faq.answer)
                                 }
                             }))
                         })}

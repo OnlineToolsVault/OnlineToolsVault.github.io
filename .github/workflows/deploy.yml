@@ -18,8 +18,8 @@ concurrency:
 jobs:
   deploy:
     runs-on: ubuntu-latest
-    # Cold-cache worst case is a ~117 MB model download plus a headless Chrome pass over 89
-    # routes. 45 minutes is generous for that; the point is that a wedged browser cannot sit
+    # Cold-cache worst case is a ~117 MB model download plus a headless Chrome pass over every
+    # route. 45 minutes is generous for that; the point is that a wedged browser cannot sit
     # on the runner for the default six hours.
     timeout-minutes: 45
 
@@ -85,13 +85,16 @@ jobs:
       #                     scripts/copy-monaco-assets.js -> public/monaco/vs
       #          vite build                               -> dist/ (publicDir copied verbatim)
       #          postbuild: scripts/prune-dead-assets.js  -> drops unreachable ORT wasm
-      #     3. node generate-sitemap.js  -> dist/<route>/index.html x89, sitemap.xml,
+      #     3. node generate-sitemap.js  -> one dist/<route>/index.html per route, sitemap.xml,
       #                                     .nojekyll, 404.html
       #     4. npm run prerender         -> fills every dist/<route>/index.html #root
       #
       # Step 4 is the one CI used to skip entirely, which is why every deploy before this
       # shipped `<div id="root"></div>` to crawlers. PRERENDER_OPTIONAL is deliberately NOT
       # set: a missing browser must fail the build, not quietly downgrade the output.
+      - name: Lint
+        run: npm run lint
+
       - name: Build, generate sitemap and prerender
         run: npm run prepare-deploy
 
@@ -110,16 +113,36 @@ jobs:
           done
 
           echo "── Route pages ──────────────────────────────────────────────"
-          # Exactly the set scripts/prerender.js walks: every index.html under dist except
-          # those inside dist/assets or a dot-directory. 89 today = home + 88 tool/legal routes.
-          # Built with a read loop rather than `mapfile` so this block stays runnable on any
-          # POSIX-ish bash, which is what let it be tested outside CI.
+          # How many there should be is DERIVED, never typed here. validate-routes.js --count
+          # parses the authoritative route list out of src/App.jsx, cross-checks it against
+          # generate-sitemap.js (the same check prepare-deploy runs as its first step) and
+          # prints the total. Adding a tool therefore moves this gate on its own.
+          #
+          # This used to be a hard-coded `-ge 89` floor, and it rotted: with the site at 112
+          # routes, every route added after the number was written could vanish from dist and
+          # the gate still passed. It is now a per-route SET check (below), because even an
+          # equality count cannot see a route that went missing while another appeared.
+          expected_routes=$(node scripts/validate-routes.js --count)
+          case "$expected_routes" in
+            ''|*[!0-9]*) fail "validate-routes.js --count printed '$expected_routes', which is not a number" ;;
+          esac
+          echo "   src/App.jsx declares $expected_routes routes"
+          # SET comparison, not a count: every route App.jsx declares must have its own
+          # dist/<route>/index.html. A count is blind to a rename — one route vanishing while
+          # another appears leaves the total unchanged; checking each path by name cannot miss it.
+          # A read loop rather than `mapfile` so this block stays runnable on macOS bash 3.2 too.
+          missing=0
+          while IFS= read -r route; do
+            if [ "$route" = "/" ]; then page="dist/index.html"; else page="dist${route}/index.html"; fi
+            if [ ! -f "$page" ]; then echo "   MISSING: $page"; missing=$((missing + 1)); fi
+          done < <(node scripts/validate-routes.js --list)
+          [ "$missing" -eq 0 ] || fail "$missing declared route(s) have no index.html in dist"
           pages=()
           while IFS= read -r page; do
             pages+=("$page")
           done < <(find dist \( -name assets -o -name '.*' \) -prune -o -type f -name index.html -print | sort)
-          echo "   found ${#pages[@]} route index.html files"
-          [ "${#pages[@]}" -ge 89 ] || fail "expected at least 89 route pages, found ${#pages[@]} — generate-sitemap.js did not emit them all"
+          echo "   found ${#pages[@]} route index.html files, all $expected_routes declared routes present"
+          [ "${#pages[@]}" -eq "$expected_routes" ] || fail "dist holds ${#pages[@]} route pages but App.jsx declares $expected_routes — extra/orphan pages in the artifact"
 
           echo "── Prerendered markup ───────────────────────────────────────"
           # Two complementary checks, because either alone has a blind spot.
@@ -147,7 +170,7 @@ jobs:
 
           echo "── Self-hosted Monaco ───────────────────────────────────────"
           # src/utils/monacoLoader.js repoints @monaco-editor/loader at /monaco/vs. If that
-          # payload is absent the eight editor routes silently fall back to cdn.jsdelivr.net,
+          # payload is absent the Monaco-backed editor routes silently fall back to cdn.jsdelivr.net,
           # which is the off-origin dependency the audit removed.
           [ -f dist/monaco/vs/loader.js ] || fail "dist/monaco/vs/loader.js missing — editor routes would fall back to cdn.jsdelivr.net"
           [ -f dist/monaco/vs/editor/editor.main.js ] || fail "dist/monaco/vs/editor/editor.main.js missing — the Monaco copy is incomplete"
@@ -163,9 +186,12 @@ jobs:
           [ "$monaco_files" -ge 90 ] || fail "Monaco payload has only $monaco_files files (expected ~108) — the copy is incomplete"
 
           echo "── Sitemap ──────────────────────────────────────────────────"
+          # Same derived number as the route-page gate above: generate-sitemap.js emits one
+          # <loc> per route, so anything other than equality means a route is unlisted or
+          # listed twice.
           loc_count=$( { grep -o '<loc>' dist/sitemap.xml || true; } | wc -l | tr -d ' ')
           echo "   found $loc_count <loc> entries"
-          [ "$loc_count" -ge 89 ] || fail "dist/sitemap.xml has $loc_count <loc> entries (expected 89)"
+          [ "$loc_count" -eq "$expected_routes" ] || fail "dist/sitemap.xml has $loc_count <loc> entries, expected $expected_routes"
 
           echo "✅ All deployment invariants hold"
 

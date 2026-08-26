@@ -343,7 +343,9 @@ const BulkImageResizer = () => {
                     <div style={{ display: 'grid', gap: '1rem' }}>
                         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                             <h3>Queued Images ({files.length})</h3>
-                            {files.some(f => f.status === 'done') && (
+                            {/* Only offered once every file has settled — mid-run the ZIP would
+                                silently contain just the files that happened to be finished. */}
+                            {files.some(f => f.status === 'done') && !files.some(f => f.status === 'pending') && (
                                 <button
                                     id="download-all-resized-btn"
                                     onClick={downloadAll}

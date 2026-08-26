@@ -46,6 +46,27 @@ const ExtractImagesFromPdf = lazy(() => import('./pages/tools/ExtractImagesFromP
 const OrganizePdf = lazy(() => import('./pages/tools/OrganizePdf'))
 const PdfToTxt = lazy(() => import('./pages/tools/PdfToTxt'))
 const PdfThumbnailGenerator = lazy(() => import('./pages/tools/PdfThumbnailGenerator'))
+const CropPdf = lazy(() => import('./pages/tools/CropPdf'))
+const PdfHeaderFooter = lazy(() => import('./pages/tools/PdfHeaderFooter'))
+const InvertPdfColors = lazy(() => import('./pages/tools/InvertPdfColors'))
+const PdfToZip = lazy(() => import('./pages/tools/PdfToZip'))
+const OcrPdf = lazy(() => import('./pages/tools/OcrPdf'))
+const RedactPdf = lazy(() => import('./pages/tools/RedactPdf'))
+const PdfPrivacyScanner = lazy(() => import('./pages/tools/PdfPrivacyScanner'))
+const RepairPdf = lazy(() => import('./pages/tools/RepairPdf'))
+const FingerprintPdf = lazy(() => import('./pages/tools/FingerprintPdf'))
+const ComparePdf = lazy(() => import('./pages/tools/ComparePdf'))
+const CreatePdf = lazy(() => import('./pages/tools/CreatePdf'))
+const MarkdownToPdf = lazy(() => import('./pages/tools/MarkdownToPdf'))
+const HtmlToPdf = lazy(() => import('./pages/tools/HtmlToPdf'))
+const CsvToPdf = lazy(() => import('./pages/tools/CsvToPdf'))
+const ExcelToPdf = lazy(() => import('./pages/tools/ExcelToPdf'))
+const ScanToPdf = lazy(() => import('./pages/tools/ScanToPdf'))
+const PdfToPowerpoint = lazy(() => import('./pages/tools/PdfToPowerpoint'))
+const PdfToEpub = lazy(() => import('./pages/tools/PdfToEpub'))
+const EpubToPdf = lazy(() => import('./pages/tools/EpubToPdf'))
+const PdfToHtml = lazy(() => import('./pages/tools/PdfToHtml'))
+const PdfReadAloud = lazy(() => import('./pages/tools/PdfReadAloud'))
 
 // Audio/Video Tools
 const VideoToAudio = lazy(() => import('./pages/tools/VideoToAudio'))
@@ -112,6 +133,8 @@ const ZipViewer = lazy(() => import('./pages/tools/ZipViewer'))
 const FileSizeCalculator = lazy(() => import('./pages/tools/FileSizeCalculator'))
 const BatchFileRenamer = lazy(() => import('./pages/tools/BatchFileRenamer'))
 const FileMetadataViewer = lazy(() => import('./pages/tools/FileMetadataViewer'))
+const GstInvoiceGenerator = lazy(() => import('./pages/tools/GstInvoiceGenerator'))
+const PosBilling = lazy(() => import('./pages/tools/PosBilling'))
 
 // Simple Loading Component
 const Loading = () => (
@@ -169,6 +192,27 @@ function App() {
                                 <Route path="/organize-pdf" element={<OrganizePdf />} />
                                 <Route path="/pdf-to-txt" element={<PdfToTxt />} />
                                 <Route path="/pdf-thumbnail-generator" element={<PdfThumbnailGenerator />} />
+                                <Route path="/crop-pdf" element={<CropPdf />} />
+                                <Route path="/pdf-header-footer" element={<PdfHeaderFooter />} />
+                                <Route path="/invert-pdf-colors" element={<InvertPdfColors />} />
+                                <Route path="/pdf-to-zip" element={<PdfToZip />} />
+                                <Route path="/ocr-pdf" element={<OcrPdf />} />
+                                <Route path="/redact-pdf" element={<RedactPdf />} />
+                                <Route path="/pdf-privacy-scanner" element={<PdfPrivacyScanner />} />
+                                <Route path="/repair-pdf" element={<RepairPdf />} />
+                                <Route path="/fingerprint-pdf" element={<FingerprintPdf />} />
+                                <Route path="/compare-pdf" element={<ComparePdf />} />
+                                <Route path="/create-pdf" element={<CreatePdf />} />
+                                <Route path="/markdown-to-pdf" element={<MarkdownToPdf />} />
+                                <Route path="/html-to-pdf" element={<HtmlToPdf />} />
+                                <Route path="/csv-to-pdf" element={<CsvToPdf />} />
+                                <Route path="/excel-to-pdf" element={<ExcelToPdf />} />
+                                <Route path="/scan-to-pdf" element={<ScanToPdf />} />
+                                <Route path="/pdf-to-powerpoint" element={<PdfToPowerpoint />} />
+                                <Route path="/pdf-to-epub" element={<PdfToEpub />} />
+                                <Route path="/epub-to-pdf" element={<EpubToPdf />} />
+                                <Route path="/pdf-to-html" element={<PdfToHtml />} />
+                                <Route path="/pdf-read-aloud" element={<PdfReadAloud />} />
 
                                 {/* Audio/Video */}
                                 <Route path="/video-to-audio" element={<VideoToAudio />} />
@@ -235,6 +279,8 @@ function App() {
                                 <Route path="/file-size-calculator" element={<FileSizeCalculator />} />
                                 <Route path="/batch-file-renamer" element={<BatchFileRenamer />} />
                                 <Route path="/file-metadata-viewer" element={<FileMetadataViewer />} />
+                                <Route path="/gst-invoice-generator" element={<GstInvoiceGenerator />} />
+                                <Route path="/pos-billing" element={<PosBilling />} />
 
                                 {/* Footer Pages */}
                                 <Route path="/terms" element={<Terms />} />
