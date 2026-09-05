@@ -15,6 +15,17 @@ const Contact = lazy(() => import('./pages/Contact'))
 const PrivacyPolicy = lazy(() => import('./pages/PrivacyPolicy'))
 const NotFound = lazy(() => import('./pages/NotFound'))
 
+// Category Hubs
+// One crawlable page per category, listing every tool in it. The URL for each is defined once, in
+// `categoryHubs` in src/data/tools.js — the paths below must match the `path` field there, and
+// generate-sitemap.js reads the same array to prerender and list them.
+const PdfToolsHub = lazy(() => import('./pages/hubs/PdfToolsHub'))
+const ImageToolsHub = lazy(() => import('./pages/hubs/ImageToolsHub'))
+const TextToolsHub = lazy(() => import('./pages/hubs/TextToolsHub'))
+const DeveloperToolsHub = lazy(() => import('./pages/hubs/DeveloperToolsHub'))
+const SecurityToolsHub = lazy(() => import('./pages/hubs/SecurityToolsHub'))
+const ConvertersHub = lazy(() => import('./pages/hubs/ConvertersHub'))
+
 // Text Tools
 const WordCounter = lazy(() => import('./pages/tools/WordCounter'))
 const HumanizeAi = lazy(() => import('./pages/tools/HumanizeAi'))
@@ -160,6 +171,14 @@ function App() {
                         <Suspense fallback={<Loading />}>
                             <Routes>
                                 <Route path="/" element={<Home />} />
+
+                                {/* Category hubs */}
+                                <Route path="/pdf-tools" element={<PdfToolsHub />} />
+                                <Route path="/image-tools" element={<ImageToolsHub />} />
+                                <Route path="/text-tools" element={<TextToolsHub />} />
+                                <Route path="/developer-tools" element={<DeveloperToolsHub />} />
+                                <Route path="/security-tools" element={<SecurityToolsHub />} />
+                                <Route path="/converters" element={<ConvertersHub />} />
 
                                 {/* Text */}
                                 <Route path="/word-counter" element={<WordCounter />} />

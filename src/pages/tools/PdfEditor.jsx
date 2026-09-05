@@ -1,5 +1,4 @@
 import { useState, useEffect, useRef } from 'react'
-import { useLocation } from 'react-router-dom'
 import { Helmet } from 'react-helmet-async'
 import { useDropzone } from 'react-dropzone'
 import * as pdfjsLib from 'pdfjs-dist'
@@ -9,6 +8,7 @@ import pdfWorkerUrl from 'pdfjs-dist/build/pdf.worker.min.mjs?url'
 import { PDFDocument, degrees } from '@cantoo/pdf-lib' // For saving (this fork can decrypt permission-encrypted PDFs)
 import { Upload } from 'lucide-react'
 import RelatedTools from '../../components/tools/RelatedTools'
+import { ToolBreadcrumbs, renderStyledText, toolJsonLdScripts, useToolPageSchema } from '../../components/tools/toolPageSchema'
 import { EditorProvider, useEditor } from '../../components/pdf-editor/EditorContext'
 import Toolbar from '../../components/pdf-editor/Toolbar'
 import Sidebar from '../../components/pdf-editor/Sidebar'
@@ -109,7 +109,7 @@ const PDF_EDITOR_FAQS = [
     }
 ]
 
-const PdfEditorContent = () => {
+const PdfEditorContent = ({ crumbs }) => {
     const {
         setPages, pages, setIsProcessing,
         canvasRefs, setFileName, setActiveTool,
@@ -404,6 +404,10 @@ const PdfEditorContent = () => {
     if (!file) {
         return (
             <div className="tool-workspace" style={{ padding: '4rem 1.5rem', minHeight: '80vh', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
+                {/* The visible half of the BreadcrumbList in <Helmet> below. It belongs on the
+                    landing view rather than in the editor chrome: this is the state a crawler and a
+                    first-time visitor see, and the editor view fills the window with a toolbar. */}
+                <ToolBreadcrumbs crumbs={crumbs} style={{ width: '100%', maxWidth: '1000px' }} />
                 <header style={{ marginBottom: '3rem', textAlign: 'center' }}>
                     <h1 style={{ fontSize: '3rem', fontWeight: '800', marginBottom: '1rem', background: 'linear-gradient(to right, var(--primary), #818cf8)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>
                         Professional PDF Editor
@@ -475,7 +479,7 @@ const PdfEditorContent = () => {
                         {PDF_EDITOR_FAQS.map((faq, i) => (
                             <details key={i} style={{ background: 'white', borderRadius: '0.75rem', border: '1px solid var(--border)', overflow: 'hidden' }}>
                                 <summary style={{ padding: '1rem 1.25rem', fontWeight: '600', cursor: 'pointer', fontSize: '1rem' }}>{faq.q}</summary>
-                                <p style={{ padding: '0 1.25rem 1rem', color: '#64748b', fontSize: '0.95rem', lineHeight: 1.6 }}>{faq.a}</p>
+                                <p style={{ padding: '0 1.25rem 1rem', color: '#64748b', fontSize: '0.95rem', lineHeight: 1.6 }}>{renderStyledText(faq.a)}</p>
                             </details>
                         ))}
                     </div>
@@ -528,14 +532,19 @@ const PdfEditorContent = () => {
 }
 
 const PdfEditor = () => {
-    // This page renders its own <Helmet> instead of going through ToolLayout, so it has to declare
-    // the canonical itself. Helmet owns every head tag marked data-rh="true" (generate-sitemap.js
-    // stamps that on the prerendered canonical) and deletes the ones the mounted page does not
-    // re-declare — omit this and the built-in canonical disappears the moment React hydrates.
-    // Derivation is copied verbatim from ToolLayout so both emit the same trailing-slash URL, which
-    // is the only form GitHub Pages answers 200 on.
-    const location = useLocation()
-    const canonicalUrl = `https://onlinetoolsvault.com${location.pathname.replace(/\/+$/, '')}/`
+    // This page is a full-bleed workspace with its own header, so it renders its own <Helmet>
+    // instead of going through ToolLayout. Everything that is about *being a tool page* rather than
+    // about ToolLayout's visual shell still comes from the shared module: the canonical, the
+    // SoftwareApplication and BreadcrumbList nodes, the FAQPage built from the same array the
+    // visible list renders, and the crumb array behind ToolBreadcrumbs.
+    //
+    // Declaring the canonical here is not optional. Helmet owns every head tag marked
+    // data-rh="true" (generate-sitemap.js stamps that on the prerendered canonical) and deletes the
+    // ones the mounted page does not re-declare — omit it and the built-in canonical disappears the
+    // moment React hydrates.
+    const { canonicalUrl, crumbs, jsonLd } = useToolPageSchema({
+        faqs: PDF_EDITOR_FAQS.map((faq) => ({ question: faq.q, answer: faq.a }))
+    })
 
     return (
         <EditorProvider>
@@ -543,21 +552,9 @@ const PdfEditor = () => {
                 <title>Free Online PDF Editor - Edit PDFs Securely</title>
                 <meta name="description" content="Professional PDF Editor. Add text, images, shapes, and freehand drawings to your PDF documents online. 100% free and client-side secure." />
                 <link rel="canonical" href={canonicalUrl} />
-                {/* Same FAQPage markup ToolLayout emits for the other 83 tools, built from the
-                    array that renders the visible list so the two cannot disagree. */}
-                <script type="application/ld+json">
-                    {JSON.stringify({
-                        '@context': 'https://schema.org',
-                        '@type': 'FAQPage',
-                        mainEntity: PDF_EDITOR_FAQS.map(faq => ({
-                            '@type': 'Question',
-                            name: faq.q,
-                            acceptedAnswer: { '@type': 'Answer', text: faq.a }
-                        }))
-                    })}
-                </script>
+                {toolJsonLdScripts(jsonLd)}
             </Helmet>
-            <PdfEditorContent />
+            <PdfEditorContent crumbs={crumbs} />
         </EditorProvider>
     )
 }

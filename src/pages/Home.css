@@ -88,6 +88,12 @@
 }
 
 .category-btn {
+    /* 44px is the minimum comfortable touch target; these came out 34px tall, and on a phone they
+       are the primary means of filtering the grid. inline-flex keeps the label centred now that the
+       box is taller than its line. */
+    display: inline-flex;
+    align-items: center;
+    min-height: 44px;
     padding: 0.5rem 1.25rem;
     border-radius: 99px;
     border: 1px solid var(--border);

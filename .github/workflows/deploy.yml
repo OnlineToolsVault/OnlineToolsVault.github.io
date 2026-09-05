@@ -171,7 +171,7 @@ jobs:
           echo "── Self-hosted Monaco ───────────────────────────────────────"
           # src/utils/monacoLoader.js repoints @monaco-editor/loader at /monaco/vs. If that
           # payload is absent the Monaco-backed editor routes silently fall back to cdn.jsdelivr.net,
-          # which is the off-origin dependency the audit removed.
+          # the off-origin dependency this site no longer carries.
           [ -f dist/monaco/vs/loader.js ] || fail "dist/monaco/vs/loader.js missing — editor routes would fall back to cdn.jsdelivr.net"
           [ -f dist/monaco/vs/editor/editor.main.js ] || fail "dist/monaco/vs/editor/editor.main.js missing — the Monaco copy is incomplete"
           monaco_files=$(find dist/monaco/vs -type f | wc -l | tr -d ' ')
@@ -192,6 +192,205 @@ jobs:
           loc_count=$( { grep -o '<loc>' dist/sitemap.xml || true; } | wc -l | tr -d ' ')
           echo "   found $loc_count <loc> entries"
           [ "$loc_count" -eq "$expected_routes" ] || fail "dist/sitemap.xml has $loc_count <loc> entries, expected $expected_routes"
+
+          # Every *.html the deploy publishes, not just the route pages: dist/404.html is served
+          # for a mis-typed URL and is just as capable of shipping a bad link or a stale icon tag.
+          html_files=()
+          while IFS= read -r f; do
+            html_files+=("$f")
+          done < <(find dist -name assets -prune -o -type f -name '*.html' -print | sort)
+          [ "${#html_files[@]}" -gt 0 ] || fail "no .html files found under dist — nothing to verify"
+
+          echo "── Internal links keep their trailing slash ─────────────────"
+          # Every route is published as a directory index, so /merge-pdf answers with a 301 to
+          # /merge-pdf/ and an internal link written without the slash spends a redirect — and
+          # splits crawl signals across two URLs — on every single click. The forbidden forms are
+          # DERIVED from src/App.jsx, so a route added tomorrow is covered without touching this file.
+          #
+          # The route list is materialised first and checked. `node ... | while read` inside a process
+          # substitution hides a non-zero exit, and `grep -F -f` with an EMPTY pattern file matches
+          # nothing on GNU grep — so a broken route list would turn this whole gate into a green no-op.
+          route_list=$(mktemp)
+          node scripts/validate-routes.js --list > "$route_list" || fail "scripts/validate-routes.js --list failed; the route-derived link gate cannot run"
+          route_total=$(wc -l < "$route_list" | tr -d ' ')
+          [ "$route_total" -ge 2 ] || fail "validate-routes.js --list printed $route_total route(s); the link gate would check nothing"
+
+          link_patterns=$(mktemp)
+          while IFS= read -r route; do
+            if [ "$route" = "/" ]; then continue; fi
+            printf 'href="%s"\n' "$route"
+            printf 'href="%s?\n' "$route"
+            printf 'href="%s#\n' "$route"
+          done < "$route_list" > "$link_patterns"
+          non_root=$( { grep -c -v '^/$' "$route_list" || true; } | tr -d ' ')
+          pattern_total=$(wc -l < "$link_patterns" | tr -d ' ')
+          [ "$pattern_total" -eq $(( non_root * 3 )) ] || fail "derived $pattern_total link patterns from $non_root non-root routes, expected $(( non_root * 3 ))"
+          echo "   $pattern_total forbidden link forms derived from $route_total routes in src/App.jsx"
+          bad_links=$( { grep -o -H -F -f "$link_patterns" "${html_files[@]}" || true; } | sort -u)
+          if [ -n "$bad_links" ]; then
+            echo "$bad_links" | sed 's/^/     /'
+            fail "$(echo "$bad_links" | wc -l | tr -d ' ') slash-less internal link(s) above — write the route with its trailing slash"
+          fi
+          echo "   ✓ no slash-less internal links in any published page"
+
+          # The scan above only sees links that are in the markup at prerender time. A <Link> behind a
+          # tab, a modal or a conditional never reaches the HTML, so check the source for the same forms.
+          src_patterns=$(mktemp)
+          while IFS= read -r route; do
+            if [ "$route" = "/" ]; then continue; fi
+            printf 'to="%s"\n' "$route"
+            printf 'href="%s"\n' "$route"
+          done < "$route_list" > "$src_patterns"
+          [ -s "$src_patterns" ] || fail "derived no source link patterns from $route_list"
+          bad_src=$(grep -r -n -H -F -f "$src_patterns" --include='*.jsx' --include='*.js' src || true)
+          if [ -n "$bad_src" ]; then
+            echo "$bad_src" | cut -c1-160 | sed 's/^/     /'
+            fail "$(echo "$bad_src" | wc -l | tr -d ' ') source line(s) above link to a route without its trailing slash"
+          fi
+          echo "   ✓ no slash-less route links in src"
+
+          echo "── Icon set ─────────────────────────────────────────────────"
+          # These three live at fixed addresses that browsers and crawlers request whether or not the
+          # markup declares them. When they 404, mobile search results fall back to a generic globe.
+          for f in dist/favicon.ico dist/apple-touch-icon.png dist/site.webmanifest; do
+            [ -s "$f" ] || fail "$f is missing or empty — public/ did not stage the icon set"
+            echo "   ✓ $f ($(wc -c < "$f" | tr -d ' ') bytes)"
+          done
+          # A manifest that does not parse, or that points at icons the build never emitted, is worse
+          # than no manifest: the browser reports an install error instead of silently using the favicon.
+          node - <<'JS' || fail "dist/site.webmanifest is unusable — see the lines above"
+          const fs = require('fs');
+          const path = require('path');
+          const file = 'dist/site.webmanifest';
+          let manifest;
+          try {
+            manifest = JSON.parse(fs.readFileSync(file, 'utf8'));
+          } catch (error) {
+            console.error(`     ${file} is not valid JSON: ${error.message}`);
+            process.exit(1);
+          }
+          const icons = Array.isArray(manifest.icons) ? manifest.icons : [];
+          if (icons.length === 0) {
+            console.error(`     ${file} declares no icons[] — nothing to install with`);
+            process.exit(1);
+          }
+          let bad = 0;
+          for (const icon of icons) {
+            const src = icon && icon.src;
+            if (typeof src !== 'string' || src === '') {
+              console.error(`     ${file} has an icons[] entry with no src`);
+              bad += 1;
+              continue;
+            }
+            // Off-origin and inline icons are the manifest's business, not this build's.
+            if (/^(https?:)?\/\//.test(src) || src.startsWith('data:')) continue;
+            const onDisk = path.join('dist', src.replace(/^\//, ''));
+            if (!fs.existsSync(onDisk)) {
+              console.error(`     ${file} references "${src}" but ${onDisk} does not exist`);
+              bad += 1;
+            }
+          }
+          if (bad > 0) process.exit(1);
+          console.log(`   ✓ dist/site.webmanifest parses; all ${icons.length} declared icon(s) exist in dist`);
+          JS
+          # Declared as well as present: a favicon.ico alone gets picked up by some crawlers and missed
+          # by others, and neither the touch icon nor the manifest is ever requested without a <link>.
+          # Scoped to "$pages" — the indexable route pages, which all descend from index.html — rather
+          # than every .html: dist/404.html is a standalone redirect shim from public/404.html that
+          # nothing indexes and that never renders long enough to want an icon.
+          for ref in /favicon.ico /apple-touch-icon.png /site.webmanifest; do
+            unref=$( { grep -L -F "$ref" "${pages[@]}" || true; } )
+            if [ -n "$unref" ]; then
+              echo "$unref" | head -10 | sed 's/^/     /'
+              fail "$(echo "$unref" | wc -l | tr -d ' ') page(s) above never declare $ref — add the <link> to index.html"
+            fi
+            echo "   ✓ all ${#pages[@]} route pages declare $ref"
+          done
+
+          echo "── Markup and structured data ───────────────────────────────"
+          # One pass over every published page for three defects that all ship silently: structured data
+          # a crawler rejects, a heading that renders with nothing in it, and a third-party script on the
+          # critical path. Each is reported with the file that carries it.
+          sd_checker=$(mktemp)
+          cat > "$sd_checker" <<'JS'
+          const fs = require('fs');
+
+          const files = process.argv.slice(2);
+          const problems = [];
+
+          // prerender.js writes JSON-LD with the closing slash escaped so a "</script" inside a string
+          // cannot end the element early; undo that before parsing.
+          const LD_JSON = /<script\b[^>]*type\s*=\s*["']application\/ld\+json["'][^>]*>([\s\S]*?)<\/script>/gi;
+          // Only the opening tag, never a script's body. Analytics and ads are attached after the
+          // page has painted by an inline loader that holds their URLs in string literals; those
+          // strings are not script elements on the render path and must not read as violations.
+          const SCRIPT_TAG = /<script\b[^>]*>/gi;
+          const SRC_ATTR = /\ssrc\s*=\s*["']([^"']+)["']/i;
+          const EMPTY_HEADING = /<(h[1-6])\b[^>]*>\s*<\/\1>/i;
+
+          function checkFaq(file, node) {
+            if (!node || node['@type'] !== 'FAQPage') return;
+            const questions = Array.isArray(node.mainEntity) ? node.mainEntity : [];
+            if (questions.length === 0) {
+              problems.push(`${file}: FAQPage has an empty mainEntity`);
+              return;
+            }
+            questions.forEach((question, index) => {
+              const name = question && question.name;
+              const answer = question && question.acceptedAnswer && question.acceptedAnswer.text;
+              if (typeof name !== 'string' || name.trim() === '') {
+                problems.push(`${file}: FAQPage entry ${index + 1} has no question text`);
+              }
+              if (typeof answer !== 'string' || answer.trim() === '') {
+                problems.push(`${file}: FAQPage entry ${index + 1} has no answer text`);
+              }
+            });
+          }
+
+          for (const file of files) {
+            const html = fs.readFileSync(file, 'utf8');
+
+            LD_JSON.lastIndex = 0;
+            let match;
+            let block = 0;
+            while ((match = LD_JSON.exec(html)) !== null) {
+              block += 1;
+              let data;
+              try {
+                data = JSON.parse(match[1].replace(/<\\\//g, '</'));
+              } catch (error) {
+                problems.push(`${file}: JSON-LD block ${block} does not parse (${error.message})`);
+                continue;
+              }
+              for (const node of (Array.isArray(data) ? data : [data])) checkFaq(file, node);
+            }
+
+            const empty = EMPTY_HEADING.exec(html);
+            if (empty) {
+              problems.push(`${file}: renders an empty <${empty[1]}></${empty[1]}>`);
+            }
+
+            SCRIPT_TAG.lastIndex = 0;
+            while ((match = SCRIPT_TAG.exec(html)) !== null) {
+              const src = SRC_ATTR.exec(match[0]);
+              if (!src) continue;
+              if (/^(https?:)?\/\//i.test(src[1])) {
+                problems.push(`${file}: ships an off-origin <script src="${src[1]}"> in the initial HTML`);
+              }
+            }
+          }
+
+          if (problems.length > 0) {
+            const unique = [...new Set(problems)];
+            for (const problem of unique.slice(0, 40)) console.error(`     ${problem}`);
+            if (unique.length > 40) console.error(`     … and ${unique.length - 40} more of the same kind`);
+            console.error(`     ${unique.length} problem(s) total`);
+            process.exit(1);
+          }
+
+          console.log(`   ✓ ${files.length} pages: JSON-LD parses, FAQ entries complete, no empty headings, no off-origin script tags`);
+          JS
+          node "$sd_checker" "${html_files[@]}" || fail "published markup carries the defects listed above"
 
           echo "✅ All deployment invariants hold"
 

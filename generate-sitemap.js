@@ -16,6 +16,15 @@ const publicPath = path.resolve(__dirname, 'public');
  */
 const routes = [
   '/',
+  // Category hubs. Defined once in `categoryHubs` in src/data/tools.js — these six strings are the
+  // `path` field of that array, repeated here because scripts/validate-routes.js reads this literal
+  // array to compare against src/App.jsx.
+  '/pdf-tools',
+  '/image-tools',
+  '/text-tools',
+  '/developer-tools',
+  '/security-tools',
+  '/converters',
   '/word-counter',
   '/humanize-text',
   '/paste-to-markdown',
@@ -167,7 +176,23 @@ for (const [route, m] of Object.entries(STATIC_META)) {
   };
 }
 try {
-  const { tools } = await import(new URL('./src/data/tools.js', import.meta.url));
+  const { tools, categoryHubs } = await import(new URL('./src/data/tools.js', import.meta.url));
+
+  // Category hubs first, so a tool could never be shadowed by one (the paths do not collide, but
+  // ordering it this way makes the tool catalogue authoritative if that ever changed).
+  // src/pages/hubs/CategoryHub.jsx feeds the identical strings to Helmet on mount, for the same
+  // reason ToolLayout does: the prerendered <head> and the hydrated <head> must not differ.
+  for (const hub of categoryHubs) {
+    metaByPath[hub.path] = {
+      title: hub.seoTitle,
+      description: hub.seoDescription,
+      url: canonicalUrlFor(hub.path),
+      image: `${baseUrl}/og/default.png`,
+      imageAlt: `${hub.name} — OnlineToolsVault`,
+    };
+  }
+  console.log(`🔖 Loaded social meta for ${categoryHubs.length} category hubs`);
+
   for (const tool of tools) {
     // `seoTitle` — not `${tool.name} | OnlineToolsVault` — because src/components/tools/ToolLayout.jsx
     // reads that same field out of the catalogue and hands it to Helmet on mount. Deriving the
@@ -225,10 +250,35 @@ function injectMeta(html, m) {
 // absent: Google documents that it ignores both, and shipping them invites a stale sitemap to
 // contradict reality for no benefit.
 //
-// <lastmod> is only useful if it is true. A build-time "now" stamped on all 89 URLs is the exact
-// pattern that makes crawlers stop trusting the field, so the date published for a route is the
-// commit date of the component that renders it. Uncommitted edits are ignored on purpose — CI
-// builds from a clean checkout, and this keeps rebuilds of the same commit byte-identical.
+// <lastmod> is only useful if it is true. A build-time "now" stamped on every URL is the exact
+// pattern that makes crawlers stop trusting the field — but so is the opposite mistake, which this
+// file used to make: the date came from the commit that last touched the ROUTE COMPONENT alone.
+// That understated reality badly. 84 of 112 URLs were published as 2026-08-08 (the last commit to
+// src/pages/tools/*.jsx) while the pages themselves had visibly changed on 2026-08-26, because the
+// commit that day rewrote src/data/tools.js — which is where every tool page's <title>, meta
+// description and <h1> come from — and src/components/tools/ToolLayout.jsx, the shell all of them
+// render through. Neither file is a route component, so neither counted.
+//
+// The date is therefore taken over everything that renders into the page:
+//
+//   1. the transitive closure of relative imports starting at the route component. That picks up
+//      ToolLayout.jsx, RelatedTools.jsx, data/tools.js and each page's stylesheet automatically,
+//      and it cannot drift, because it is read from the same imports Vite bundles.
+//   2. a floor from PAGE_SHELL below — the header, footer and global stylesheet, which render into
+//      every page's markup no matter which route it is.
+//
+// Two files that affect every page are deliberately NOT counted, because counting them would
+// collapse all 112 dates onto one and destroy the per-page signal for no indexing benefit:
+//
+//   - src/App.jsx, which changes whenever ANY route is added. A new tool must not restamp the
+//     other 111 pages as freshly modified.
+//   - index.html, whose per-route <head> this script rewrites anyway; an analytics or favicon edit
+//     there changes no indexable body content.
+//
+// Uncommitted edits to a tracked file are still ignored on purpose — CI builds from a clean
+// checkout, and this keeps rebuilds of the same commit byte-identical. A file with no commit at
+// all (a page added but not yet committed) has no commit date to use, so its route falls back to
+// the build date rather than borrowing an older one from its dependencies.
 
 /** W3C Datetime in UTC at second precision — the format <lastmod> is specified in. */
 const toW3CDate = (date) => date.toISOString().replace(/\.\d{3}Z$/, 'Z');
@@ -290,32 +340,137 @@ function buildRouteSourceMap() {
   return map;
 }
 
-/** Route -> W3C lastmod, falling back to the build date where no commit date can be derived. */
+/**
+ * Files that render into EVERY page's markup regardless of route: the chrome around the outlet,
+ * and the stylesheet that paints all of it. A commit to any of them really does change all 112
+ * pages, so their newest commit is a floor under every route's lastmod.
+ *
+ * src/App.jsx and index.html are excluded — see the STEP 1 note above for why.
+ */
+const PAGE_SHELL = [
+  'src/components/layout/Layout.jsx',
+  'src/components/layout/Header.jsx',
+  'src/components/layout/Footer.jsx',
+  'src/components/layout/Layout.css',
+  'src/index.css',
+];
+
+/** Resolve one relative import the way Vite does, or null for a bare (node_modules) specifier. */
+function resolveRelativeImport(fromFile, specifier) {
+  if (!specifier.startsWith('.')) return null;
+  const base = path.resolve(path.dirname(fromFile), specifier);
+  // '' first: './Home.css' and './CategoryHub.jsx' already carry their extension.
+  return (
+    ['', '.jsx', '.js', '.tsx', '.ts', '.css', '/index.jsx', '/index.js']
+      .map((ext) => base + ext)
+      .find((file) => fs.existsSync(file) && fs.statSync(file).isFile()) || null
+  );
+}
+
+// `from './x'`, `import('./x')` and the side-effect form `import './x.css'`, which is how every
+// page pulls in its stylesheet.
+const IMPORT_PATTERNS = [
+  /\bfrom\s*['"]([^'"]+)['"]/g,
+  /\bimport\s*\(\s*['"]([^'"]+)['"]\s*\)/g,
+  /^[ \t]*import\s+['"]([^'"]+)['"]/gm,
+];
+
+// A closure this large means something is wrong with the walk, not with the app; stopping keeps a
+// pathological case from turning a build into a git-log storm.
+const MAX_CLOSURE_FILES = 400;
+
+/**
+ * Every project file that contributes to one route's rendered output: the route component plus the
+ * transitive closure of its relative imports. Bare specifiers (react, lucide-react, pdf-lib) stop
+ * the walk — a dependency bump is not a content change, and node_modules has no commit history
+ * here anyway.
+ */
+function collectSources(entryFile, closureCache) {
+  if (closureCache.has(entryFile)) return closureCache.get(entryFile);
+
+  const seen = new Set();
+  const queue = [entryFile];
+
+  while (queue.length > 0 && seen.size < MAX_CLOSURE_FILES) {
+    const file = queue.shift();
+    if (seen.has(file)) continue;
+    seen.add(file);
+
+    // Stylesheets are counted but not parsed: @import between our own CSS files is not used here.
+    if (file.endsWith('.css')) continue;
+
+    let source;
+    try {
+      source = fs.readFileSync(file, 'utf8');
+    } catch {
+      continue;
+    }
+
+    for (const pattern of IMPORT_PATTERNS) {
+      pattern.lastIndex = 0;
+      for (const [, specifier] of source.matchAll(pattern)) {
+        const resolved = resolveRelativeImport(file, specifier);
+        if (resolved && !seen.has(resolved)) queue.push(resolved);
+      }
+    }
+  }
+
+  const files = [...seen];
+  closureCache.set(entryFile, files);
+  return files;
+}
+
+/** Newest commit date of a file as a W3C string, or null if git has never seen it. */
+function committedDate(file, cache) {
+  if (!cache.has(file)) {
+    const committed = git('log', '-1', '--format=%cI', '--', file);
+    const parsed = committed ? new Date(committed) : null;
+    cache.set(file, parsed && !Number.isNaN(parsed.getTime()) ? toW3CDate(parsed) : null);
+  }
+  return cache.get(file);
+}
+
+/**
+ * Route -> W3C lastmod: the newest commit across everything that renders into that page, floored
+ * by the shared page shell. Falls back to the build date whenever any contributing file has never
+ * been committed, since the page is then genuinely newer than any commit in the history.
+ */
 function buildLastmodMap() {
   const sources = buildRouteSourceMap();
-  const cache = new Map();
+  const dateCache = new Map();
+  const closureCache = new Map();
   const lastmod = {};
   let derived = 0;
 
+  // W3C dates from toW3CDate are fixed-width UTC, so a string compare is a chronological compare.
+  const shellFiles = PAGE_SHELL.map((relative) => path.resolve(__dirname, relative)).filter((file) =>
+    fs.existsSync(file)
+  );
+  const shellDates = shellFiles.map((file) => committedDate(file, dateCache));
+  const shellFloor = shellDates.some((date) => !date) ? null : shellDates.sort().pop() || null;
+
   for (const route of routes) {
-    const file = sources[route];
-    if (!file) {
+    const entry = sources[route];
+    if (!entry) {
       lastmod[route] = buildDate;
       continue;
     }
 
-    if (!cache.has(file)) {
-      const committed = git('log', '-1', '--format=%cI', '--', file);
-      const parsed = committed ? new Date(committed) : null;
-      cache.set(file, parsed && !Number.isNaN(parsed.getTime()) ? toW3CDate(parsed) : null);
-    }
+    const contributing = collectSources(entry, closureCache);
+    const dates = contributing.map((file) => committedDate(file, dateCache));
 
-    const date = cache.get(file);
+    // One never-committed file (a page added in this working tree) means no commit describes what
+    // is about to be published, so claim the build date rather than an older, wrong one.
+    const date = dates.some((value) => !value) || shellFloor === null
+      ? null
+      : [...dates, shellFloor].sort().pop();
+
     lastmod[route] = date || buildDate;
     if (date) derived++;
   }
 
   console.log(`   ↳ lastmod: ${derived}/${routes.length} from git history, ${routes.length - derived} from build date`);
+  console.log(`   ↳ lastmod: ${new Set(Object.values(lastmod)).size} distinct date(s) across ${routes.length} URLs`);
 
   // A depth-1 checkout (actions/checkout's default) has one grafted commit that looks like it
   // added every file, so every date above collapses to the tip commit. Still a real date, but the

@@ -1,6 +1,6 @@
 import React, { useState } from 'react'
-import { useLocation } from 'react-router-dom'
 import RelatedTools from '../../components/tools/RelatedTools'
+import { ToolBreadcrumbs, renderStyledText, toolJsonLdScripts, useToolPageSchema } from '../../components/tools/toolPageSchema'
 import { Helmet } from 'react-helmet-async'
 import ReactMarkdown from 'react-markdown'
 import remarkGfm from 'remark-gfm'
@@ -45,6 +45,20 @@ const MARKDOWN_CSS = `
 `
 
 
+// The FAQ list, at module scope so the visible section and the FAQPage structured data are built
+// from one array and cannot drift apart.
+const MARKDOWN_PREVIEWER_FAQS = [
+    // Written without any markup: the visible answer and the FAQPage copy of it are rendered by
+    // two different code paths, and asterisks meant literally would be styled by one and stripped
+    // by the other.
+    { q: 'How do I make text bold?', a: 'Put two asterisks on each side of the words, or two underscores.' },
+    { q: 'Can I export to PDF?', a: "Yes. Click the 'Save as PDF' button to open the browser's print dialog, then choose 'Save as PDF'." },
+    { q: 'Is GitHub Flavored Markdown supported?', a: 'Yes. GFM is supported, which includes tables, strikethrough and task lists.' },
+    { q: 'Can I work offline?', a: 'Yes. Once the page is loaded, the whole editor works offline in your browser.' },
+    { q: 'Does it support HTML tags?', a: 'Yes. Markdown allows inline HTML, so you can add things like <div> or <span> if needed.' },
+    { q: 'Is there a limit on length?', a: 'No hard limit. You can edit very long documents, but extremely large files might slow down the live preview.' }
+]
+
 const MarkdownPreviewer = () => {
     // This page renders its own <Helmet> instead of going through ToolLayout, so it has to declare
     // the canonical itself. Helmet owns every head tag marked data-rh="true" (generate-sitemap.js
@@ -52,8 +66,19 @@ const MarkdownPreviewer = () => {
     // re-declare — omit this and the built-in canonical disappears the moment React hydrates.
     // Derivation is copied verbatim from ToolLayout so both emit the same trailing-slash URL, which
     // is the only form GitHub Pages answers 200 on.
-    const location = useLocation()
-    const canonicalUrl = `https://onlinetoolsvault.com${location.pathname.replace(/\/+$/, '')}/`
+    // This page is a full-bleed workspace with its own header, so it renders its own <Helmet>
+    // instead of going through ToolLayout. Everything that is about *being a tool page* rather than
+    // about ToolLayout's visual shell still comes from the shared module: the canonical, the
+    // SoftwareApplication and BreadcrumbList nodes, the FAQPage built from the same array the
+    // visible list below renders, and the crumb array behind ToolBreadcrumbs.
+    //
+    // Declaring the canonical here is not optional. Helmet owns every head tag marked
+    // data-rh="true" (generate-sitemap.js stamps that on the prerendered canonical) and deletes the
+    // ones the mounted page does not re-declare — omit it and the built-in canonical disappears the
+    // moment React hydrates.
+    const { canonicalUrl, crumbs, jsonLd } = useToolPageSchema({
+        faqs: MARKDOWN_PREVIEWER_FAQS.map((faq) => ({ question: faq.q, answer: faq.a }))
+    })
 
     // The seeded sample deliberately starts at `##`, and the level-1 example lives inside a fenced
     // code block instead of being rendered. The preview pane is real DOM inside this page — and
@@ -258,9 +283,11 @@ This web site is using \`js\`.`)
                 <title>Markdown Previewer - Free Online Markdown Editor & Converter</title>
                 <meta name="description" content="Write GitHub-flavoured Markdown and watch it render live beside the editor, then export the result as a standalone HTML file or print it to PDF. No upload." />
                 <link rel="canonical" href={canonicalUrl} />
+                {toolJsonLdScripts(jsonLd)}
             </Helmet>
 
             <div className="tool-workspace" style={{ maxWidth: '1400px', margin: '0 auto', padding: '2rem' }}>
+                <ToolBreadcrumbs crumbs={crumbs} className="no-print" style={{ marginBottom: '1.5rem' }} />
                 <header className="no-print" style={{ marginBottom: '1.5rem', textAlign: 'center' }}>
                     <h1 style={{ fontSize: '2rem', fontWeight: '800' }}>Markdown Previewer</h1>
                     <p style={{ color: '#64748b' }}>Edit Markdown with real-time preview.</p>
@@ -399,17 +426,10 @@ This web site is using \`js\`.`)
                     <div className="faqs-section" style={{ marginTop: '3rem', background: 'var(--bg-card)', padding: '2rem', borderRadius: '1rem', border: '1px solid var(--border)' }}>
                         <h2 style={{ fontSize: '1.8rem', marginBottom: '1.5rem' }}>Frequently Asked Questions</h2>
                         <div style={{ display: 'grid', gap: '1.5rem' }}>
-                            {[
-                                { q: "How do I make text bold?", a: "Wrap your text with **double asterisks** or __double underscores__." },
-                                { q: "Can I export to PDF?", a: "Yes! Click the 'Save as PDF' button to open the browser's print dialog, then choose 'Save as PDF'." },
-                                { q: "Is GitHub Flavored Markdown supported?", a: "Yes, we support GFM, which includes tables, strikethrough, and task lists." },
-                                { q: "Can I work offline?", a: "Yes, once the page is loaded, the entire editor works offline in your browser." },
-                                { q: "Does it support HTML tags?", a: "Yes, Markdown allows inline HTML, so you can add things like <div> or <span> if needed." },
-                                { q: "Is there a limit on length?", a: "No hard limit. You can edit very long documents, but extremely large files might slow down the live preview." }
-                            ].map((faq, i) => (
+                            {MARKDOWN_PREVIEWER_FAQS.map((faq, i) => (
                                 <div key={i}>
                                     <h3 style={{ fontSize: '1.1rem', fontWeight: '600', marginBottom: '0.5rem' }}>{faq.q}</h3>
-                                    <p style={{ color: 'var(--text-secondary)', lineHeight: '1.5' }}>{faq.a}</p>
+                                    <p style={{ color: 'var(--text-secondary)', lineHeight: '1.5' }}>{renderStyledText(faq.a)}</p>
                                 </div>
                             ))}
                         </div>

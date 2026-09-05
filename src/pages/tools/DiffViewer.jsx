@@ -2,8 +2,9 @@ import { useState } from 'react'
 import RelatedTools from '../../components/tools/RelatedTools'
 import ToolLayout from '../../components/tools/ToolLayout'
 import { DiffEditor } from '@monaco-editor/react'
-// Side-effect import: repoints Monaco at the copy this site hosts instead of cdn.jsdelivr.net.
-import '../../utils/monacoLoader'
+// Repoints Monaco at the copy this site hosts instead of cdn.jsdelivr.net (side effect of the
+// import), and supplies the reserved-box helpers that keep the editor from shifting the page.
+import { EDITOR_SKELETON_CSS, useEditorReveal } from '../../utils/monacoLoader'
 import { Split, Code, Shield } from 'lucide-react'
 
 const features = [
@@ -36,7 +37,7 @@ const faqs = [
     },
     {
         question: 'The comparison pane is blank or stuck. What went wrong?',
-        answer: 'The editor is a few megabytes of JavaScript that has to arrive before the pane can draw, and it is fetched the first time the page opens. It comes from this site rather than a third-party CDN, so a proxy or blocklist that allows this page will allow the editor too, and your browser caches it for later visits. If the pane is still empty after the two input boxes appear, check the browser console for a failed request under /monaco/ and reload.'
+        answer: 'The editor is a few megabytes of JavaScript that has to arrive before the pane can draw, and it is fetched the first time the page opens. Until it lands, the pane holds a placeholder of exactly the same size, so nothing on the page moves when the real thing takes over. It comes from this site rather than a third-party CDN, so a proxy or blocklist that allows this page will allow the editor too, and your browser caches it for later visits. If the placeholder is still there long after the two input boxes appear, check the browser console for a failed request under /monaco/ and reload.'
     },
     {
         question: 'Can I edit inside the comparison pane?',
@@ -60,6 +61,21 @@ const faqs = [
 const DiffViewer = () => {
     const [original, setOriginal] = useState('original text\nline 2\nline 3')
     const [modified, setModified] = useState('modified text\nline 2\nline 3 changed')
+    const [diffReady, revealDiff, diffBoxRef] = useEditorReveal()
+
+    // The comparison pane is handed over before it has drawn anything: the overview ruler on the
+    // right is still a 5px stub and the two scrollable panes have not been positioned. The first
+    // completed comparison is what starts the settle watch, because the comparison runs
+    // asynchronously and would otherwise land after the pane had already been uncovered. The timer
+    // is the escape hatch for the case where no comparison is ever reported, so a stuck editor
+    // shows the skeleton rather than hiding a working one for ever.
+    const handleDiffMount = (editor) => {
+        const subscription = editor.onDidUpdateDiff(() => {
+            subscription.dispose()
+            revealDiff()
+        })
+        setTimeout(revealDiff, 4000)
+    }
 
     return (
         <ToolLayout
@@ -94,20 +110,31 @@ const DiffViewer = () => {
                     </div>
                 </div>
 
-                <div id="diff-output" style={{ height: '600px', border: '1px solid var(--border)', borderRadius: '0.5rem', overflow: 'hidden' }}>
-                    <DiffEditor
-                        height="100%"
-                        original={original}
-                        modified={modified}
-                        language="text"
-                        theme="light"
-                        options={{
-                            renderSideBySide: true,
-                            readOnly: true,
-                            minimap: { enabled: false },
-                            scrollBeyondLastLine: false
-                        }}
-                    />
+                {/* Fixed height, not min-height: the box has to be the size the editor will end
+                    up at before the editor exists, or the page moves when it arrives. */}
+                <div id="diff-output" style={{ position: 'relative', height: '600px', border: '1px solid var(--border)', borderRadius: '0.5rem', overflow: 'hidden' }}>
+                    <div className="editor-mount" ref={diffBoxRef} data-ready={diffReady ? 'true' : 'false'}>
+                        <DiffEditor
+                            height="100%"
+                            original={original}
+                            modified={modified}
+                            language="text"
+                            theme="light"
+                            onMount={handleDiffMount}
+                            options={{
+                                renderSideBySide: true,
+                                readOnly: true,
+                                minimap: { enabled: false },
+                                scrollBeyondLastLine: false,
+                                automaticLayout: true
+                            }}
+                        />
+                    </div>
+                    {!diffReady && (
+                        <div className="editor-skeleton">
+                            <span className="editor-skeleton-note">Loading the comparison view…</span>
+                        </div>
+                    )}
                 </div>
 
                 <div className="tool-content" style={{ marginTop: '4rem' }}>
@@ -178,6 +205,8 @@ const DiffViewer = () => {
                         ))}
                     </div>
                 </div>
+
+                <style>{EDITOR_SKELETON_CSS}</style>
             </div>
         </ToolLayout>
     )

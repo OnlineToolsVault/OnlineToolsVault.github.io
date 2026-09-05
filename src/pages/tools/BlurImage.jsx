@@ -33,6 +33,7 @@ const faqs = [
         answer: "That is a deliberate safety limit. A Gaussian blur needs padding around the image roughly three times the radius, and browsers cap canvas size by both the longest side and the total area — iOS Safari is the tightest at around 16 megapixels. If the padding will not fit, the tool reduces the radius to what does fit rather than failing to produce a file at all."
     },
     {
+        question: "What file format does the blurred image come back as?",
         answer: "The same one you put in, wherever the browser can write it: a JPEG stays a JPEG, a PNG stays a PNG, a WebP stays a WebP. JPEG has no transparency, so the canvas is filled with white first and transparent areas come out white rather than black. Those three are the only formats a canvas can encode — anything else (a GIF, say) comes back as PNG data while the download keeps its original extension, so rename it or convert it with the Image Converter instead."
     },
     {

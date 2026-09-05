@@ -1421,3 +1421,96 @@ export const categories = [
     { id: 'security', name: 'Security' },
     { id: 'utility', name: 'Utilities' }
 ]
+
+/**
+ * CATEGORY HUB PAGES
+ * ------------------
+ * Every tool belongs to exactly one `category`, and every category has exactly one crawlable hub
+ * page at the URL below. Before these existed the six categories were only a client-side filter on
+ * the home page: /pdf-tools/ and its siblings returned 404, and all 107 tools hung off a single
+ * hub with no intermediate level for a crawler (or a visitor) to work through.
+ *
+ * This array is the ONE definition of that mapping. Read it — never re-derive the URL from a
+ * category id — from:
+ *
+ *   - src/pages/hubs/CategoryHub.jsx, which renders the page and its <head>,
+ *   - src/pages/Home.jsx, for the "Browse by category" links,
+ *   - generate-sitemap.js, which bakes `seoTitle`/`seoDescription`/canonical into the prerendered
+ *     HTML and lists `path` in the sitemap,
+ *   - anything that needs a tool's parent, e.g. a breadcrumb: hubForCategory(tool.category).
+ *
+ * `path` is slash-less for the same reason a tool's is: it is the <Route path> key in src/App.jsx
+ * and the join key generate-sitemap.js looks meta up by. `href` is the trailing-slash URL to link
+ * to. `seoTitle` / `seoDescription` follow exactly the rule the tool catalogue follows above — the
+ * prerendered tag and the tag Helmet installs on mount both come from here, so they cannot differ.
+ *
+ * `blurb` is the one-line card copy on the home page; the long-form prose lives in each hub page.
+ */
+const hubCatalogue = [
+    {
+        category: 'pdf',
+        path: '/pdf-tools',
+        name: 'PDF Tools',
+        icon: FileText,
+        blurb: 'Merge, split, convert, sign off and clean up PDF documents.',
+        seoTitle: 'Free PDF Tools - Merge, Split, Convert and Protect PDFs Online',
+        seoDescription: 'Merge, split, compress, convert, protect and repair PDF files in your browser. Every tool runs on your own device, so documents are never uploaded.',
+    },
+    {
+        category: 'image',
+        path: '/image-tools',
+        name: 'Image Tools',
+        icon: ImageIcon,
+        blurb: 'Compress, resize, crop, convert and strip data from photos.',
+        seoTitle: 'Free Image Tools - Compress, Resize, Convert and Crop Photos',
+        seoDescription: 'Compress, resize, crop and convert photos, strip EXIF and GPS data, and process whole batches at once. Everything runs in your browser, with no upload.',
+    },
+    {
+        category: 'text',
+        path: '/text-tools',
+        name: 'Text Tools',
+        icon: Type,
+        blurb: 'Count, compare, clean and convert plain text and Markdown.',
+        seoTitle: 'Free Text Tools - Word Count, Markdown, Diff and Placeholder Text',
+        seoDescription: 'Count words, convert rich text to Markdown, preview Markdown live, compare two drafts line by line and generate placeholder copy. All inside your browser.',
+    },
+    {
+        category: 'developer',
+        path: '/developer-tools',
+        name: 'Developer Tools',
+        icon: Code,
+        blurb: 'Format code and data, test regular expressions, read cron.',
+        seoTitle: 'Free Developer Tools - Format JSON, SQL, XML, Code and Regex',
+        seoDescription: 'Format JSON, SQL, XML, HTML, CSS and JavaScript, test regular expressions, read a cron line in plain English and convert colours. Nothing is sent anywhere.',
+    },
+    {
+        category: 'security',
+        path: '/security-tools',
+        name: 'Security Tools',
+        icon: Shield,
+        blurb: 'Hash, encrypt, encode and inspect secrets and tokens.',
+        seoTitle: 'Free Security Tools - Hashes, Encryption, Base64 and JWT Decoding',
+        seoDescription: 'Generate MD5 and SHA hashes, bcrypt digests and UUIDs, encrypt text and files with AES-256, and decode Base64, URLs and JWTs. Nothing leaves your browser.',
+    },
+    {
+        category: 'utility',
+        path: '/converters',
+        name: 'File Converters',
+        icon: RefreshCw,
+        blurb: 'Move data between CSV, Excel, JSON, audio, video and ZIP.',
+        seoTitle: 'Free File Converters - CSV, Excel, JSON, Audio, Video and ZIP',
+        seoDescription: 'Convert CSV to JSON or Excel, pull audio out of a video, build and inspect ZIP archives, convert timestamps and units, and make QR codes. All done locally.',
+    },
+]
+
+// Derived so `href` can never drift from `path`, exactly as for tools above.
+export const categoryHubs = hubCatalogue.map((hub) => ({ ...hub, href: toHref(hub.path) }))
+
+const hubsByCategory = new Map(categoryHubs.map((hub) => [hub.category, hub]))
+
+/**
+ * The hub a category belongs to, or undefined for a category with no hub.
+ * Use this rather than building "/{category}-tools" by hand: /converters/ does not follow that
+ * shape, and a category that ever loses its hub should return undefined rather than a dead URL.
+ */
+export const hubForCategory = (category) => hubsByCategory.get(category)

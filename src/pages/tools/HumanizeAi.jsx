@@ -26,8 +26,8 @@ const faqs = [
         answer: 'No. All seven substitutions run on every keystroke and there are no checkboxes. If you want to keep one kind of character, the practical approach is to clean the text here and then reinstate that character with a find and replace in your editor, which is quicker than it sounds because the rules are exhaustive and predictable.'
     },
     {
-        question: 'Will this make my text pass an AI detector?',
-        answer: 'No, and it is worth being clear about why. This tool changes characters, not writing. Detectors score how predictable your word choices and sentence rhythms are against a language model, and swapping an em dash for a hyphen does not move that needle. What cleaning does fix is the giveaway a **human** reader notices: a document where every apostrophe curls and every dash is an em dash, pasted into a plain-text medium where the rest of the text is straight. If you need writing that reads as yours, you have to edit the words.'
+        question: 'Will this make my text pass a content detector?',
+        answer: 'No, and it is worth being clear about why. This tool changes characters, not writing. Detection services score how predictable your word choices and sentence rhythms are, and swapping an em dash for a hyphen does not move that number. What cleaning does fix is the giveaway a **human** reader notices: a document where every apostrophe curls and every dash is an em dash, pasted into a plain-text medium where the rest of the text is straight. If you need writing that reads as yours, you have to edit the words yourself — no substitution rule can do it for you.'
     },
     {
         question: 'Does it change my wording or sentence structure?',
@@ -64,10 +64,9 @@ const HumanizeAi = () => {
         const text = e.target.value
         setInputText(text)
 
-        // Auto-humanize immediately
+        // Clean on every keystroke; the library returns { text, count }.
         if (text.trim()) {
             const result = humanizeString(text)
-            // Access the .text property as discovered earlier
             setOutputText(result.text || '')
         } else {
             setOutputText('')
@@ -88,10 +87,10 @@ const HumanizeAi = () => {
 
     return (
         <ToolLayout
-            title="Humanize AI Text"
-            description="Make AI-generated text feel more natural by removing common machine artifacts and formatting quirks."
-            seoTitle="Humanize AI Text - Remove Smart Quotes, Em Dashes and Invisible Characters"
-            seoDescription="Clean AI-generated text in your browser. Straightens curly quotes and apostrophes, converts em and en dashes to hyphens, replaces non-breaking spaces, and deletes zero-width and bidirectional control characters."
+            title="Humanize Text: Clean Quotes, Dashes and Hidden Characters"
+            description="Seven substitution rules straighten curly quotes, flatten em and en dashes and delete the invisible characters that ride along with copied text. It cleans characters, not writing — your words, sentences and paragraph breaks come back exactly as you wrote them."
+            seoTitle="Humanize Text - Remove Smart Quotes, Em Dashes and Invisible Characters"
+            seoDescription="Straighten curly quotes and apostrophes, flatten em and en dashes and strip zero-width characters from pasted text, in your browser. It cleans characters, not wording."
             faqs={faqs}
         >
             <div className="tool-app-workspace">
@@ -111,7 +110,7 @@ const HumanizeAi = () => {
                             </div>
                             <textarea
                                 className="tool-textarea"
-                                placeholder="Paste your AI-generated text here..."
+                                placeholder="Paste your text here..."
                                 value={inputText}
                                 onChange={handleInputChange}
                             />
@@ -150,13 +149,20 @@ const HumanizeAi = () => {
                 <div className="tool-content" style={{ marginTop: '4rem' }}>
                     <RelatedTools />
                     <div className="about-section" style={{ background: 'var(--bg-card)', padding: '2rem', borderRadius: '1rem', border: '1px solid var(--border)', marginBottom: '2rem' }}>
-                        <h2 style={{ fontSize: '1.8rem', marginBottom: '1.5rem' }}>About Humanize AI Text</h2>
+                        <h2 style={{ fontSize: '1.8rem', marginBottom: '1.5rem' }}>About this text cleaner</h2>
                         <p style={{ lineHeight: '1.6', color: 'var(--text-secondary)', marginBottom: '1rem' }}>
                             Paste into the left pane and a cleaned copy appears on the right on the same keystroke.
                             The cleaning is character-level: seven substitution rules normalise the typographic
-                            punctuation that chat assistants and rich-text editors produce, and delete the invisible
-                            formatting characters that ride along with copied text. Your words, sentences and
-                            paragraph breaks are not touched.
+                            punctuation that word processors, web editors and generated drafts leave behind, and
+                            delete the invisible formatting characters that ride along with copied text. Your words,
+                            sentences and paragraph breaks are not touched.
+                        </p>
+                        <p style={{ lineHeight: '1.6', color: 'var(--text-secondary)', marginBottom: '1rem' }}>
+                            If you came here hoping to have a draft rewritten so it reads as though someone else wrote
+                            it, that is a different job and this page does not do it. Nothing below paraphrases a
+                            sentence, varies its rhythm or swaps a word for a synonym. What it fixes is the mechanical
+                            tell — curly apostrophes and em dashes dropped into a plain-text medium — and the hidden
+                            characters that break the tools reading your text afterwards.
                         </p>
 
                         <h3 style={{ fontSize: '1.15rem', fontWeight: '600', margin: '1.75rem 0 0.75rem' }}>The seven rules, in order</h3>

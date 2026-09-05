@@ -318,3 +318,87 @@ button {
   max-width: 20rem;
   text-align: center;
 }
+
+/* -------------------------------------------------------------------------- */
+/*                  Narrow screens: nothing wider than the viewport            */
+/* -------------------------------------------------------------------------- */
+/*
+   The copy on these pages quotes hashes, keys, UUIDs, checksums and URLs, and a token like a
+   60-character bcrypt string contains no space or hyphen — by default it is one unbreakable
+   word. The FAQ answers are laid out in an auto-sized grid track, and an auto track is at
+   least as wide as its content's min-content width, so that single token sized the column:
+   the bcrypt page's FAQ measured 591px inside a 390px viewport (document scrollWidth 615px)
+   and took the whole long-form section off screen with it.
+
+   `anywhere` rather than `break-word` is the load-bearing part. Both break an over-long word
+   at the point where it would otherwise spill out of its box, but only `anywhere` also feeds
+   the shortened result back into min-content — and min-content is exactly what an auto grid
+   or flex track measures. With `break-word` the text stops overflowing while the box around
+   it stays 591px wide, which is the same broken page.
+
+   Neither value changes where ordinary prose wraps, so this is inert on copy that has no
+   giant token in it: at 1366px wide the page height, scroll width and paragraph widths come
+   out identical with and without this rule.
+
+   Tables are left out on purpose. Every table on the site already sits inside its own
+   `overflow-x: auto` wrapper, where scrolling sideways keeps the columns readable and a
+   wrapper whose overflow is not `visible` cannot push the page wide.
+*/
+p,
+li,
+dd,
+dt,
+blockquote,
+figcaption,
+summary,
+label,
+h1,
+h2,
+h3,
+h4,
+h5,
+h6,
+code,
+kbd,
+samp,
+var {
+  overflow-wrap: anywhere;
+}
+
+/*
+   iOS Safari zooms the whole page in when a form control whose text is smaller than 16px
+   takes focus, and it does not zoom back out afterwards — every tap into a field leaves the
+   layout enlarged and scrolled sideways, which reads as the site being broken rather than as
+   a browser behaviour. It was widespread here: 80 controls across 20 routes were under the
+   threshold on first paint alone, most of them because they carry no font-size at all and so
+   render at the user-agent default of about 13.3px.
+
+   The `:not()` chain does two jobs. It skips the controls that display no text — a range,
+   checkbox, radio or colour swatch never triggers the zoom and can change size when its font
+   does — and it lifts the selector to specificity 0,4,1, which is what lets it win over the
+   class rules that set .search-input to 0.95rem and .select-input to 0.875rem from route
+   stylesheets that load after this one.
+
+   The second rule reaches the controls given a sub-16px size in a style attribute, which is
+   most of the shared field styles (0.95rem, 0.9rem, 0.875rem, 0.82rem). Inline styles beat
+   any stylesheet, so `!important` is the only lever, and matching on `font-size:0.` confines
+   it to values below 1rem — a control deliberately set larger, such as the 1.2rem entry field
+   on the colour picker and the converters, keeps its size. The match cannot see a size
+   written in px; no control uses one today, and one added later would need a rule here.
+
+   The coarse-pointer half of the query extends the same floor to tablets in portrait, which
+   are wider than the site's 768px mobile breakpoint but zoom just the same. A desktop window
+   narrowed past 768px is the only other thing it touches, and 16px is right there too.
+*/
+@media (max-width: 767px),
+(pointer: coarse) and (max-width: 1024px) {
+
+  :is(input, select, textarea):not([type='checkbox']):not([type='radio']):not([type='range']):not([type='color']) {
+    font-size: 16px;
+  }
+
+  :is(input, select, textarea)[style*='font-size:0.'],
+  :is(input, select, textarea)[style*='font-size: 0.'] {
+    font-size: 16px !important;
+  }
+}

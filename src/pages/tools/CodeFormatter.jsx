@@ -3,8 +3,9 @@ import RelatedTools from '../../components/tools/RelatedTools'
 import { useState, useEffect, useRef } from 'react'
 import ToolLayout from '../../components/tools/ToolLayout'
 import Editor from '@monaco-editor/react'
-// Side-effect import: repoints Monaco at the copy this site hosts instead of cdn.jsdelivr.net.
-import '../../utils/monacoLoader'
+// Repoints Monaco at the copy this site hosts instead of cdn.jsdelivr.net (side effect of the
+// import), and supplies the reserved-box helpers that keep the editors from shifting the page.
+import { EDITOR_SKELETON_CSS, useEditorReveal } from '../../utils/monacoLoader'
 import { Copy, Trash2, Check, AlertCircle, Upload, Code, Zap, Shield } from 'lucide-react'
 
 // Every formatter below is loaded on demand. Prettier plus its language plugins is several
@@ -241,6 +242,10 @@ const CodeFormatter = ({
     const [error, setError] = useState(null)
     const [copied, setCopied] = useState(false)
     const fileInputRef = useRef(null)
+    // One per editor: the two instances are created independently, so each pane uncovers itself
+    // the moment its own editor has settled.
+    const [sourceReady, revealSource, sourceBoxRef] = useEditorReveal()
+    const [resultReady, revealResult, resultBoxRef] = useEditorReveal()
 
     useEffect(() => {
         const timer = setTimeout(() => {
@@ -369,7 +374,6 @@ const CodeFormatter = ({
                     boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.05)',
                     display: 'flex',
                     flexDirection: 'column',
-                    flex: 1,
                     overflow: 'hidden'
                 }}>
                     <div style={{ display: 'flex', gap: '1rem', marginBottom: '1rem', flexWrap: 'wrap', alignItems: 'center' }}>
@@ -440,45 +444,65 @@ const CodeFormatter = ({
                         </div>
                     )}
 
-                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem', flex: 1, minHeight: '600px', width: '100%', maxWidth: '100%' }}>
+                    {/* A fixed pixel height, not `flex: 1` over a min-height. The editors arrive
+                        seconds after the rest of the page, so the two boxes have to already be the
+                        size the editors will end up at — and a height that depends on how much
+                        room is left over also changes whenever the error banner above appears. */}
+                    <div className="editor-pane-grid" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem', height: '600px', width: '100%', maxWidth: '100%' }}>
                         {/* Editor Input */}
-                        <div id="editor-input-container" style={{ border: '1px solid var(--border)', borderRadius: '0.5rem', overflow: 'hidden', width: '100%', maxWidth: '100%' }}>
-                            <Editor
-                                height="100%"
-                                language={MONACO_LANG_MAP[language] || 'plaintext'}
-                                theme="light"
-                                value={code}
-                                onChange={(value) => setCode(value || '')}
-                                options={{
-                                    ariaLabel: 'Code input',
-                                    minimap: { enabled: false },
-                                    fontSize: 14,
-                                    lineNumbers: 'on',
-                                    scrollBeyondLastLine: false,
-                                    automaticLayout: true,
-                                    wordWrap: 'on'
-                                }}
-                            />
+                        <div id="editor-input-container" style={{ position: 'relative', border: '1px solid var(--border)', borderRadius: '0.5rem', overflow: 'hidden', width: '100%', maxWidth: '100%' }}>
+                            <div className="editor-mount" ref={sourceBoxRef} data-ready={sourceReady ? 'true' : 'false'}>
+                                <Editor
+                                    height="100%"
+                                    language={MONACO_LANG_MAP[language] || 'plaintext'}
+                                    theme="light"
+                                    value={code}
+                                    onChange={(value) => setCode(value || '')}
+                                    onMount={revealSource}
+                                    options={{
+                                        ariaLabel: 'Code input',
+                                        minimap: { enabled: false },
+                                        fontSize: 14,
+                                        lineNumbers: 'on',
+                                        scrollBeyondLastLine: false,
+                                        automaticLayout: true,
+                                        wordWrap: 'on'
+                                    }}
+                                />
+                            </div>
+                            {!sourceReady && (
+                                <div className="editor-skeleton">
+                                    <span className="editor-skeleton-note">Loading the editor…</span>
+                                </div>
+                            )}
                         </div>
 
                         {/* Editor Output (Read Only) */}
-                        <div id="editor-output-container" style={{ border: '1px solid var(--border)', borderRadius: '0.5rem', overflow: 'hidden', background: '#f8fafc', width: '100%', maxWidth: '100%' }}>
-                            <Editor
-                                height="100%"
-                                language={MONACO_LANG_MAP[language] || 'plaintext'}
-                                theme="light"
-                                value={formatted}
-                                options={{
-                                    ariaLabel: 'Formatted code output',
-                                    readOnly: true,
-                                    minimap: { enabled: false },
-                                    fontSize: 14,
-                                    lineNumbers: 'on',
-                                    scrollBeyondLastLine: false,
-                                    automaticLayout: true,
-                                    wordWrap: 'on'
-                                }}
-                            />
+                        <div id="editor-output-container" style={{ position: 'relative', border: '1px solid var(--border)', borderRadius: '0.5rem', overflow: 'hidden', background: '#f8fafc', width: '100%', maxWidth: '100%' }}>
+                            <div className="editor-mount" ref={resultBoxRef} data-ready={resultReady ? 'true' : 'false'}>
+                                <Editor
+                                    height="100%"
+                                    language={MONACO_LANG_MAP[language] || 'plaintext'}
+                                    theme="light"
+                                    value={formatted}
+                                    onMount={revealResult}
+                                    options={{
+                                        ariaLabel: 'Formatted code output',
+                                        readOnly: true,
+                                        minimap: { enabled: false },
+                                        fontSize: 14,
+                                        lineNumbers: 'on',
+                                        scrollBeyondLastLine: false,
+                                        automaticLayout: true,
+                                        wordWrap: 'on'
+                                    }}
+                                />
+                            </div>
+                            {!resultReady && (
+                                <div className="editor-skeleton">
+                                    <span className="editor-skeleton-note">Loading the editor…</span>
+                                </div>
+                            )}
                         </div>
                     </div>
                 </div>
@@ -515,14 +539,21 @@ const CodeFormatter = ({
 
 
             <style>{`
+                ${EDITOR_SKELETON_CSS}
                 @media (max-width: 768px) {
                     div[style*="grid-template-columns"] {
                         grid-template-columns: 1fr !important;
                     }
                     .container { height: auto !important; }
-                    .container > div { height: 600px; }
+                    /* Stacked, the two panes are 400px each plus the 1rem gap. Stated as fixed
+                       rows and a fixed total so the reserved box is exact at this width too —
+                       a min-height here would let the boxes grow when the editors load. */
+                    div.editor-pane-grid {
+                        grid-template-columns: 1fr !important;
+                        grid-template-rows: 400px 400px !important;
+                        height: 816px !important;
+                    }
                     #editor-input-container, #editor-output-container {
-                        min-height: 400px;
                         width: 100% !important;
                         max-width: 100vw !important;
                     }

@@ -82,6 +82,11 @@ const UnitConverter = () => {
                                 key={c}
                                 onClick={() => { setCategory(c); setFromUnit(categories[c].units[0]); setToUnit(categories[c].units[1]); }}
                                 style={{
+                                    // 44px minimum touch target: these four buttons are how the
+                                    // conversion category is chosen, and they measured 34px tall.
+                                    display: 'inline-flex',
+                                    alignItems: 'center',
+                                    minHeight: '44px',
                                     padding: '0.5rem 1rem',
                                     borderRadius: '2rem',
                                     border: '1px solid var(--border)',

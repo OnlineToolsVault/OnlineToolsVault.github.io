@@ -112,10 +112,10 @@ const CompressPdf = () => {
 
     return (
         <ToolLayout
-            title="Compress PDF"
-            description="Optimize your PDF files for faster loading."
-            seoTitle="Compress PDF - Optimize PDF File Size Online"
-            seoDescription="Reduce PDF file size online continuously. Remove metadata and optimize structure for web sharing. Free and secure."
+            title="Compress PDF Without Losing Quality"
+            description="A lossless repack: the container is rebuilt with object streams and the metadata cleared, so every page renders exactly as before and text stays selectable. Scans are mostly image data and barely move — the note below has the route for those."
+            seoTitle="Compress PDF Without Losing Quality - Lossless, In Your Browser"
+            seoDescription="Repack a PDF with object streams and strip its metadata in your browser. Nothing is rasterised, so text stays selectable — but scanned pages barely shrink."
             faqs={faqs}
         >
 
@@ -125,8 +125,10 @@ const CompressPdf = () => {
                     <div style={{ background: '#f0f9ff', border: '1px solid #bae6fd', color: '#0369a1', padding: '1rem', borderRadius: '0.5rem', marginBottom: '2rem', display: 'flex', gap: '0.75rem' }}>
                         <AlertCircle size={20} style={{ flexShrink: 0, marginTop: '2px' }} />
                         <p style={{ fontSize: '0.875rem' }}>
-                            This client-side tool optimizes PDF structure and removes metadata. It does not touch image data,
-                            so a scan will barely shrink. For those, re-render the pages with
+                            <strong>Structure only, no quality loss.</strong> This rebuilds the PDF container and clears
+                            the metadata. Image data is never re-encoded, so pages look identical and text stays
+                            selectable — and a scan, whose bytes are almost all page images, will barely shrink. To get a
+                            scan under an email limit, re-render the pages with
                             <a href="/pdf-to-jpg/" style={{ textDecoration: 'underline', margin: '0 4px' }}>PDF to JPG</a>
                             and rebuild the document with
                             <a href="/image-to-pdf/" style={{ textDecoration: 'underline', marginLeft: '4px' }}>Image to PDF</a>.
@@ -217,9 +219,12 @@ const CompressPdf = () => {
                 <div className="tool-content" style={{ marginTop: '4rem' }}>
                     <RelatedTools />
                     <div className="about-section" style={{ background: 'var(--bg-card)', padding: '2rem', borderRadius: '1rem', border: '1px solid var(--border)', marginBottom: '2rem' }}>
-                        <h2 style={{ fontSize: '1.8rem', marginBottom: '1.5rem' }}>About PDF Compressor</h2>
+                        <h2 style={{ fontSize: '1.8rem', marginBottom: '1.5rem' }}>About lossless PDF compression</h2>
                         <p style={{ lineHeight: '1.6', color: 'var(--text-secondary)', marginBottom: '1rem' }}>
-                            This is a lossless structural optimiser, not an image compressor. It rebuilds the PDF container so the document occupies fewer bytes while every page renders exactly as before, and it shows you the original size, the new size and the percentage change so you can decide whether the result is worth keeping.
+                            This is a lossless structural optimiser, not an image compressor. There is no quality slider here because nothing is ever re-encoded: the PDF container is rebuilt so the document occupies fewer bytes while every page renders exactly as before. The original size, the new size and the percentage change are shown together, so you can decide whether the result is worth keeping before anything is downloaded.
+                        </p>
+                        <p style={{ lineHeight: '1.6', color: 'var(--text-secondary)', marginBottom: '1rem' }}>
+                            Say the limit plainly: if your file is a scan or a photo-heavy brochure, this will not get it under an email cap. Structural savings on a 20 MB scan are measured in kilobytes. The section below on re-rendering pages is the honest route for those files, and it costs you selectable text.
                         </p>
 
                         <h3 style={{ fontSize: '1.15rem', marginTop: '1.75rem', marginBottom: '0.75rem' }}>Where the bytes in a PDF actually live</h3>

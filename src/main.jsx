@@ -74,7 +74,8 @@ const tree = (
  * Readiness is "an <h1> exists in the new tree" rather than "React committed once", because the
  * first commit is usually the Suspense fallback — swapping then would show the spinner we are
  * trying to avoid. prerender.js already hard-fails any route that renders without an h1, so the
- * signal holds for every page.
+ * signal holds for every page. The heading starts the wait rather than ending it; see the settle
+ * window at the swap itself.
  *
  * WHY THERE IS NO TIMEOUT
  * -----------------------
@@ -114,6 +115,7 @@ function renderWithSwap(prerendered) {
         // still a spinner (or a route chunk that failed), and the prerendered page is worth more.
         if (swapped || !staging.querySelector('h1')) return
         swapped = true
+        clearTimeout(settleTimer)
         observer.disconnect()
         staging.removeAttribute('style') // hand layout back to the #root rule
         // Carry the caret over. The swap replaces the DOM the visitor may have been typing into;
@@ -128,11 +130,45 @@ function renderWithSwap(prerendered) {
         }
     }
 
-    const observer = new MutationObserver(swap)
+    /*
+     * WHEN TO SWAP — after the new tree has stopped changing, not the instant it has a heading.
+     *
+     * The heading appears on the commit that renders the route. Anything a page fills in from an
+     * effect — a generated value, a measurement, a parse of the default input — lands on a later
+     * commit, and a MutationObserver callback runs before those effects have. Swapping there put a
+     * tree that was one render short of finished in front of the visitor and let the rest arrive as
+     * a layout shift: /uuid-generator/ measured 0.0228 in four runs of five, the whole of it one
+     * jump of the content block 95 px down the page about 1.5 s in.
+     *
+     * So the heading only starts the clock. The swap happens once nothing inside the staging tree
+     * has changed for SETTLE_MS, which is the same "wait until it has stopped moving" rule the
+     * editor boxes use, and for the same reason: a duration guessed in advance is either too short
+     * on a slow device or wasted time on a fast one.
+     *
+     * SETTLE_CAP_MS bounds the wait for a page that never goes quiet — a clock, an animation, a
+     * progress bar. Reaching the cap costs nothing but the shift this is avoiding: the visitor is
+     * looking at the prerendered page the whole time, which is the complete content, correctly laid
+     * out. Both numbers are small enough to sit inside the window the route chunk was downloading
+     * in anyway.
+     */
+    const SETTLE_MS = 150
+    const SETTLE_CAP_MS = 600
+    let readyAt = 0
+    let settleTimer = 0
+
+    const considerSwap = () => {
+        if (swapped || !staging.querySelector('h1')) return
+        const now = () => (typeof performance === 'undefined' ? Date.now() : performance.now())
+        if (!readyAt) readyAt = now()
+        clearTimeout(settleTimer)
+        settleTimer = setTimeout(swap, Math.max(0, Math.min(SETTLE_MS, readyAt + SETTLE_CAP_MS - now())))
+    }
+
+    const observer = new MutationObserver(considerSwap)
     observer.observe(staging, { childList: true, subtree: true })
 
     // The tree may already be complete before the observer was attached.
-    swap()
+    considerSwap()
 }
 
 if (canHydrate) {

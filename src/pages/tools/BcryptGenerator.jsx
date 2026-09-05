@@ -111,19 +111,42 @@ const BcryptGenerator = () => {
                     {hash && (
                         <div style={{ marginTop: '1.5rem' }}>
                             <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: 'bold' }}>Bcrypt Hash</label>
-                            <div style={{ position: 'relative' }}>
-                                <textarea
-                                    readOnly
-                                    value={hash}
-                                    style={{ width: '100%', minHeight: '80px', padding: '1rem', borderRadius: '0.5rem', border: '1px solid var(--border)', fontSize: '1rem', fontFamily: 'monospace', background: '#f8fafc', color: '#475569' }}
-                                />
-                                <button
-                                    onClick={copyToClipboard}
-                                    style={{ position: 'absolute', top: '10px', right: '10px', padding: '0.5rem', background: 'white', border: '1px solid var(--border)', borderRadius: '0.25rem', cursor: 'pointer' }}
-                                >
-                                    {copied ? <Check size={18} color="green" /> : <Copy size={18} />}
-                                </button>
-                            </div>
+                            {/*
+                                The copy button sits under the hash, not on top of it.
+
+                                It used to be absolutely positioned in the top-right corner of the
+                                box, which on a 390px screen covered the end of the hash's second
+                                line — the text ran 46px past the button's left edge, so characters
+                                of the very string the button copies were hidden behind it. It was
+                                also a 36x39 icon-only target, under the 44px minimum. Placing it
+                                below costs one row and makes it a full-width, labelled control.
+                            */}
+                            <textarea
+                                readOnly
+                                value={hash}
+                                style={{ width: '100%', minHeight: '80px', padding: '1rem', borderRadius: '0.5rem', border: '1px solid var(--border)', fontSize: '1rem', fontFamily: 'monospace', background: '#f8fafc', color: '#475569' }}
+                            />
+                            <button
+                                onClick={copyToClipboard}
+                                style={{
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    justifyContent: 'center',
+                                    gap: '0.5rem',
+                                    width: '100%',
+                                    minHeight: '44px',
+                                    marginTop: '0.5rem',
+                                    padding: '0.5rem 1rem',
+                                    background: 'white',
+                                    border: '1px solid var(--border)',
+                                    borderRadius: '0.5rem',
+                                    fontWeight: '500',
+                                    cursor: 'pointer'
+                                }}
+                            >
+                                {copied ? <Check size={18} color="green" /> : <Copy size={18} />}
+                                {copied ? 'Copied' : 'Copy hash'}
+                            </button>
                         </div>
                     )}
                 </div>

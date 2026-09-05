@@ -2,7 +2,7 @@ import { useState } from 'react'
 import RelatedTools from '../../components/tools/RelatedTools'
 import ToolLayout from '../../components/tools/ToolLayout'
 import FileUploader from '../../components/tools/FileUploader'
-import { FileText, Download, Loader2, AlignLeft, Shield } from 'lucide-react'
+import { FileText, Download, Loader2, AlignLeft, Shield, AlertCircle } from 'lucide-react'
 import * as PDFJS from 'pdfjs-dist'
 // Bundled by Vite from the installed package, so the worker is self-hosted and can never
 // drift from the pdfjs-dist version the way the old cdnjs URL could.
@@ -145,13 +145,29 @@ const PdfToWord = () => {
 
     return (
         <ToolLayout
-            title="PDF to Word Converter"
-            description="Convert your PDF documents into editable Word (DOCX) files instantly."
-            seoTitle="PDF to Word Converter - Free Online Tool"
-            seoDescription="Convert PDF to Word online for free. Extract text from PDF files and save as editable DOCX documents. 100% client-side and secure."
+            title="PDF to Word: Text into an Editable .docx"
+            description="Reads the text layer of a PDF and writes a real Word document, one paragraph per line. Formatting, tables and images are not carried across, and a scanned PDF has no text layer to read."
+            seoTitle="PDF to Word - Extract PDF Text into an Editable DOCX"
+            seoDescription="Turn a PDF's text layer into a real .docx in your browser, one paragraph per line. Fonts, tables and images are not carried across; scans have no text to read."
             faqs={faqs}
         >
             <div className="tool-workspace" style={{ maxWidth: '1000px', margin: '0 auto' }}>
+
+                <div style={{ background: '#f0f9ff', border: '1px solid #bae6fd', color: '#0369a1', padding: '1rem', borderRadius: '0.5rem', marginBottom: '2rem', display: 'flex', gap: '0.75rem' }}>
+                    <AlertCircle size={20} style={{ flexShrink: 0, marginTop: '2px' }} />
+                    <p style={{ fontSize: '0.875rem' }}>
+                        <strong>Words and line breaks, not layout.</strong> The .docx you get back is plain
+                        default-styled text — fonts, bold and italic, columns, tables, headers and images are not
+                        carried across, so treat it as a clean starting point for rewriting rather than a replica.
+                        For a grid-shaped document use
+                        <a href="/pdf-to-excel/" style={{ textDecoration: 'underline', margin: '0 4px' }}>PDF to Excel</a>
+                        instead; for a scan, which holds page images and no text at all, render the pages with
+                        <a href="/pdf-to-png/" style={{ textDecoration: 'underline', margin: '0 4px' }}>PDF to PNG</a>
+                        and read them with
+                        <a href="/image-to-text/" style={{ textDecoration: 'underline', marginLeft: '4px' }}>Image to Text</a>.
+                    </p>
+                </div>
+
                 {!file ? (
                     <div id="pdf-word-dropzone">
                         <FileUploader
@@ -237,9 +253,12 @@ const PdfToWord = () => {
                 <div className="tool-content" style={{ marginTop: '4rem' }}>
                     <RelatedTools />
                     <div className="about-section" style={{ background: 'var(--bg-card)', padding: '2rem', borderRadius: '1rem', border: '1px solid var(--border)', marginBottom: '2rem' }}>
-                        <h2 style={{ fontSize: '1.8rem', marginBottom: '1.5rem' }}>About PDF to Word</h2>
+                        <h2 style={{ fontSize: '1.8rem', marginBottom: '1.5rem' }}>About this PDF to Word conversion</h2>
                         <p style={{ lineHeight: '1.6', color: 'var(--text-secondary)', marginBottom: '1rem' }}>
                             This pulls the text out of a PDF, works out where the lines were, and writes a .docx you can edit in Word, LibreOffice, Pages or Google Docs. Processing runs in this browser tab; the document is never uploaded, and the .docx is only written to disk when you press Download.
+                        </p>
+                        <p style={{ lineHeight: '1.6', color: 'var(--text-secondary)', marginBottom: '1rem' }}>
+                            What it does not do is worth stating before you spend time on it. Nothing here reproduces the appearance of the original: there is no font matching, no style mapping, no table reconstruction, no column detection and no character recognition. If you arrived looking for a converter that hands back a Word file laid out like the PDF, this is not that tool, and the sections below explain both why that job is so hard and which tool to reach for instead in each case.
                         </p>
 
                         <h3 style={{ fontSize: '1.15rem', marginTop: '1.75rem', marginBottom: '0.75rem' }}>Why PDF to Word is genuinely hard</h3>

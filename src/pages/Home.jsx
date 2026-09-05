@@ -3,6 +3,13 @@ import { Link } from 'react-router-dom'
 import { Helmet } from 'react-helmet-async'
 import { Search } from 'lucide-react'
 import { tools, categories } from '../data/tools'
+import {
+    ORGANIZATION_ID,
+    OPERATING_SYSTEM,
+    SITE_URL,
+    applicationCategoryFor
+} from '../components/tools/toolPageSchema'
+import CategoryLinks from './hubs/CategoryLinks'
 import './Home.css'
 
 const Home = () => {
@@ -28,28 +35,68 @@ const Home = () => {
             return (b.popularity || 0) - (a.popularity || 0)
         })
 
+    /*
+     * The home page's own entity, plus the list of everything on the site.
+     *
+     * Three things this had wrong, all of them about the same idea — one URL, one description:
+     *
+     *   - `applicationCategory: "UtilityApplication"` is not a value schema.org defines. The
+     *     utility entry in its vocabulary is UtilitiesApplication, and the string was on all 107
+     *     nodes here while every tool page published a correct one for the same URL. Both sides now
+     *     read applicationCategoryFor() from src/components/tools/toolPageSchema.jsx, so they
+     *     cannot disagree again; the same goes for operatingSystem, which said "Web" here and
+     *     "Any" there.
+     *   - Each node had no @id, so nothing connected it to the SoftwareApplication that the tool's
+     *     own page publishes at that URL. Giving both the same `<canonical>#software` @id makes the
+     *     two descriptions one entity described twice rather than two entities that happen to share
+     *     a url.
+     *   - The page itself was undescribed: an anonymous ItemList and nothing whose url was the home
+     *     page except the site-wide Organization and WebSite. Every other route on the site — the
+     *     six hubs, the 107 tools — got a primary entity; this is the home page's.
+     *
+     * ItemList entries have to be ListItem nodes wrapping the item: putting `position` directly on
+     * a SoftwareApplication is not valid schema.org and Google drops the list.
+     */
     const structuredData = {
-        "@context": "https://schema.org",
-        "@type": "ItemList",
-        // ItemList entries have to be ListItem nodes wrapping the item — putting `position`
-        // directly on a SoftwareApplication is not valid schema.org and Google drops the list.
-        "itemListElement": tools.map((tool, index) => ({
-            "@type": "ListItem",
-            "position": index + 1,
-            "item": {
-                "@type": "SoftwareApplication",
-                "name": tool.name,
-                "description": tool.seoDescription || tool.description,
-                "applicationCategory": "UtilityApplication",
-                "operatingSystem": "Web",
-                "url": `https://onlinetoolsvault.com${tool.path}/`,
-                "offers": {
-                    "@type": "Offer",
-                    "price": "0",
-                    "priceCurrency": "USD"
-                }
+        '@context': 'https://schema.org',
+        '@graph': [
+            {
+                '@type': 'CollectionPage',
+                '@id': `${SITE_URL}/#webpage`,
+                url: `${SITE_URL}/`,
+                name: 'Free Online Tools',
+                description: `${tools.length} free, client-side tools for PDF, image, text, developer and security tasks. Files are processed in the browser and never uploaded.`,
+                isPartOf: { '@id': `${SITE_URL}/#website` },
+                publisher: { '@id': ORGANIZATION_ID },
+                mainEntity: { '@id': `${SITE_URL}/#tool-list` }
+            },
+            {
+                '@type': 'ItemList',
+                '@id': `${SITE_URL}/#tool-list`,
+                name: 'All OnlineToolsVault tools',
+                numberOfItems: tools.length,
+                itemListElement: tools.map((tool, index) => ({
+                    '@type': 'ListItem',
+                    position: index + 1,
+                    item: {
+                        '@type': 'SoftwareApplication',
+                        // The same @id the tool's own page uses, which is what ties this summary to
+                        // the full description rather than duplicating it as a rival entity.
+                        '@id': `${SITE_URL}${tool.href}#software`,
+                        name: tool.name,
+                        description: tool.seoDescription || tool.description,
+                        applicationCategory: applicationCategoryFor(tool.category),
+                        operatingSystem: OPERATING_SYSTEM,
+                        url: `${SITE_URL}${tool.href}`,
+                        offers: {
+                            '@type': 'Offer',
+                            price: '0',
+                            priceCurrency: 'USD'
+                        }
+                    }
+                }))
             }
-        }))
+        ]
     }
 
     return (
@@ -75,6 +122,10 @@ const Home = () => {
                             <br />
                             <span className="glow-text">100% free, client-side, and privacy-focused.</span>
                         </p>
+
+                        {/* Real links to the six category hubs. The filter buttons below are a
+                            client-side convenience; these are the crawlable, shareable route. */}
+                        <CategoryLinks />
 
                         <div className="filter-bar">
                             <div className="search-box">

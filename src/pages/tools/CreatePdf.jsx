@@ -778,17 +778,17 @@ const CreatePdf = () => {
 
                         <h3 style={{ fontSize: '1.15rem', marginTop: '1.75rem', marginBottom: '0.75rem' }}>When another tool fits better</h3>
                         <ul style={{ lineHeight: '1.7', color: 'var(--text-secondary)', marginBottom: '1rem', paddingLeft: '1.25rem' }}>
-                            <li><Link to="/markdown-to-pdf" style={toolLinkStyle}>Markdown to PDF</Link> — for headings, bold, links, quotes, code blocks and tables written in Markdown.</li>
-                            <li><Link to="/html-to-pdf" style={toolLinkStyle}>HTML to PDF</Link> — when you already have markup and want it laid out as it looks in a browser.</li>
-                            <li><Link to="/csv-to-pdf" style={toolLinkStyle}>CSV to PDF</Link> — for tabular data, which becomes a proper ruled table with repeating headers.</li>
-                            <li><Link to="/image-to-pdf" style={toolLinkStyle}>Image to PDF</Link> and <Link to="/jpg-to-pdf" style={toolLinkStyle}>JPG to PDF</Link> — for photographs and scans rather than typed text.</li>
-                            <li><Link to="/word-to-pdf" style={toolLinkStyle}>Word to PDF</Link> — when the content already exists as a .docx.</li>
-                            <li><Link to="/add-page-numbers-pdf" style={toolLinkStyle}>Add Page Numbers to PDF</Link> — for a Page N of M label on a PDF you already have.</li>
+                            <li><Link to="/markdown-to-pdf/" style={toolLinkStyle}>Markdown to PDF</Link> — for headings, bold, links, quotes, code blocks and tables written in Markdown.</li>
+                            <li><Link to="/html-to-pdf/" style={toolLinkStyle}>HTML to PDF</Link> — when you already have markup and want it laid out as it looks in a browser.</li>
+                            <li><Link to="/csv-to-pdf/" style={toolLinkStyle}>CSV to PDF</Link> — for tabular data, which becomes a proper ruled table with repeating headers.</li>
+                            <li><Link to="/image-to-pdf/" style={toolLinkStyle}>Image to PDF</Link> and <Link to="/jpg-to-pdf/" style={toolLinkStyle}>JPG to PDF</Link> — for photographs and scans rather than typed text.</li>
+                            <li><Link to="/word-to-pdf/" style={toolLinkStyle}>Word to PDF</Link> — when the content already exists as a .docx.</li>
+                            <li><Link to="/add-page-numbers-pdf/" style={toolLinkStyle}>Add Page Numbers to PDF</Link> — for a Page N of M label on a PDF you already have.</li>
                         </ul>
 
                         <h3 style={{ fontSize: '1.15rem', marginTop: '1.75rem', marginBottom: '0.75rem' }}>Afterwards, and privacy</h3>
                         <p style={{ lineHeight: '1.6', color: 'var(--text-secondary)' }}>
-                            The finished file behaves like any other PDF: stamp it with <Link to="/add-watermark-pdf" style={toolLinkStyle}>Add Watermark to PDF</Link>, combine it with <Link to="/merge-pdf" style={toolLinkStyle}>Merge PDF</Link>, set its properties in <Link to="/pdf-metadata-editor" style={toolLinkStyle}>PDF Metadata Editor</Link>, or lock it with <Link to="/protect-pdf" style={toolLinkStyle}>Protect PDF</Link>. None of the text you type here is transmitted anywhere. The layout, the font measurements and the file assembly all happen inside this browser tab, and the finished document goes straight to your downloads folder — which is why the tool keeps working with the network switched off.
+                            The finished file behaves like any other PDF: stamp it with <Link to="/add-watermark-pdf/" style={toolLinkStyle}>Add Watermark to PDF</Link>, combine it with <Link to="/merge-pdf/" style={toolLinkStyle}>Merge PDF</Link>, set its properties in <Link to="/pdf-metadata-editor/" style={toolLinkStyle}>PDF Metadata Editor</Link>, or lock it with <Link to="/protect-pdf/" style={toolLinkStyle}>Protect PDF</Link>. None of the text you type here is transmitted anywhere. The layout, the font measurements and the file assembly all happen inside this browser tab, and the finished document goes straight to your downloads folder — which is why the tool keeps working with the network switched off.
                         </p>
                     </div>
 

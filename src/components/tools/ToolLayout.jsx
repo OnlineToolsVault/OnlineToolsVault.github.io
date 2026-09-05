@@ -1,17 +1,19 @@
 import { Helmet } from 'react-helmet-async'
-import { useLocation } from 'react-router-dom'
-import { tools } from '../../data/tools'
+import {
+    ToolBreadcrumbs,
+    renderStyledText,
+    toolJsonLdScripts,
+    useToolPageSchema
+} from './toolPageSchema'
 
-// Route -> catalogue entry, keyed by the slash-less `path` the catalogue stores.
-const toolByPath = new Map(tools.map((tool) => [tool.path, tool]))
-
-// The visible FAQ renderer styles inline markdown (**bold**, [links](url)); the JSON-LD copy of
-// the same answers must be plain text — search engines index the markup characters literally.
-const plainText = (value) => String(value || '')
-    .replace(/\[([^\]]+)\]\([^)]*\)/g, '$1')
-    .replace(/\*\*([^*]+)\*\*/g, '$1')
-    .replace(/`([^`]+)`/g, '$1')
-
+/**
+ * The shell almost every tool page renders through: head tags, breadcrumb, heading, the tool
+ * itself, and the FAQ section.
+ *
+ * The head schema, the crumb array and the FAQ text rendering all come from ./toolPageSchema so
+ * the three workspace pages that cannot use this shell (JsonFormatter, MarkdownPreviewer,
+ * PdfEditor) still publish the same entity, the same trail and the same FAQ markup.
+ */
 const ToolLayout = ({
     title,
     description,
@@ -20,35 +22,13 @@ const ToolLayout = ({
     faqs = [],
     children
 }) => {
-    const location = useLocation()
-    // GitHub Pages serves every route as a directory index and 301s the slash-less form, so the
-    // trailing-slash URL is the one that actually returns 200 — that is what we point canonical at.
-    const routePath = location.pathname.replace(/\/+$/, '')
-    const canonicalUrl = `https://onlinetoolsvault.com${routePath}/`
-
-    // The <title> and <meta name="description"> come from src/data/tools.js, NOT from this
-    // component's props. generate-sitemap.js writes the prerendered head from the same catalogue
-    // entry, so the tags Helmet installs on mount are byte-identical to the ones already in the
-    // document. Sourcing them from the props instead is what made every tool page's title change a
-    // moment after load: the static tag said "<name> | OnlineToolsVault" and React replaced it with
-    // the page's own, differently worded seoTitle.
-    //
-    // The props remain the fallback for anything not in the catalogue, and they still drive the
-    // visible <h1> and subtitle below — a page is free to say something longer on screen than it
-    // says in a search result.
-    const tool = toolByPath.get(routePath)
-    const headTitle = tool?.seoTitle || seoTitle || title
-    const headDescription = tool?.seoDescription || seoDescription || description
-
-    const renderStyledText = (text) => {
-        if (!text || typeof text !== 'string') return text
-        return text.split(/(\*\*.*?\*\*)/g).map((part, index) => {
-            if (part.startsWith('**') && part.endsWith('**')) {
-                return <strong key={index}>{part.slice(2, -2)}</strong>
-            }
-            return part
-        })
-    }
+    const { canonicalUrl, headTitle, headDescription, crumbs, jsonLd } = useToolPageSchema({
+        title,
+        description,
+        seoTitle,
+        seoDescription,
+        faqs
+    })
 
     return (
         <>
@@ -56,26 +36,13 @@ const ToolLayout = ({
                 <title>{headTitle}</title>
                 <meta name="description" content={headDescription} />
                 <link rel="canonical" href={canonicalUrl} />
-                {faqs.length > 0 && (
-                    <script type="application/ld+json">
-                        {JSON.stringify({
-                            "@context": "https://schema.org",
-                            "@type": "FAQPage",
-                            "mainEntity": faqs.map(faq => ({
-                                "@type": "Question",
-                                "name": faq.question,
-                                "acceptedAnswer": {
-                                    "@type": "Answer",
-                                    "text": plainText(faq.answer)
-                                }
-                            }))
-                        })}
-                    </script>
-                )}
+                {toolJsonLdScripts(jsonLd)}
             </Helmet>
 
             <div className="container" style={{ padding: '3rem 1.5rem' }}>
                 <div style={{ maxWidth: '1000px', margin: '0 auto' }}>
+                    <ToolBreadcrumbs crumbs={crumbs} />
+
                     <header style={{ marginBottom: '3rem', textAlign: 'center' }}>
                         <h1 style={{ fontSize: '2.5rem', fontWeight: '800', marginBottom: '0.5rem' }}>{title}</h1>
                         <p style={{ color: '#64748b' }}>{description}</p>
