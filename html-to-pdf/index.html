@@ -3,8 +3,36 @@
 
 <head>
   <meta charset="UTF-8" />
-  <link rel="icon" type="image/svg+xml" href="/vite.svg" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+  <!--
+    Icons.
+
+    The files live in public/ and are copied to the site root verbatim, so every href here is an
+    absolute path from the root and stays correct on the deep routes (/merge-pdf/, /pdf-to-word/)
+    where a relative href would resolve one directory too far down.
+
+    - favicon.ico is the multi-size fallback browsers and crawlers request at the fixed
+      /favicon.ico address whether or not it is declared. `sizes="any"` marks it as the
+      resolution-independent entry so a browser that also understands the PNGs below prefers those.
+    - favicon-32.png is the tab icon, favicon-192.png the Android home-screen icon and
+      favicon-512.png the large icon used for install prompts and as the Organization logo in the
+      structured data further down.
+    - apple-touch-icon.png is what iOS uses for "Add to Home Screen"; it must be a non-transparent
+      180x180 PNG, since iOS composites nothing behind it.
+    - site.webmanifest names the app for installability. It is same-origin, so no `crossorigin`.
+
+    theme-color is the resolved value of the `--primary` token in src/index.css, and it must stay
+    equal to `theme_color` in public/site.webmanifest — the two colour the same browser chrome from
+    different sources, and disagreeing is a reported defect rather than a fallback.
+  -->
+  <link rel="icon" href="/favicon.ico" sizes="any" />
+  <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32.png" />
+  <link rel="icon" type="image/png" sizes="192x192" href="/favicon-192.png" />
+  <link rel="icon" type="image/png" sizes="512x512" href="/favicon-512.png" />
+  <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+  <link rel="manifest" href="/site.webmanifest" />
+  <meta name="theme-color" content="#6E42F0" />
   <title data-rh="true">HTML to PDF Converter - Free Online Tool</title>
   <meta data-rh="true" name="description" content="Convert pasted HTML or an .html file to PDF in your browser. Scripts are stripped, your CSS is applied, and the text stays selectable. Nothing is uploaded." />
 
@@ -29,21 +57,68 @@
   <meta name="twitter:image:alt" content="HTML to PDF — OnlineToolsVault" />
   <meta name="twitter:creator" content="@sourcestrongai" />
 
-  <!-- Structured Data (JSON-LD) -->
+  <!--
+    Structured Data (JSON-LD) — the SITE-LEVEL graph, and nothing else.
+
+    generate-sitemap.js copies this file to dist/<route>/index.html for every route and only
+    rewrites title/description/canonical/og/twitter, so whatever sits here ships on every page
+    unchanged. That is exactly right for Organization and WebSite — they describe the site, not the
+    document — and exactly wrong for a page entity.
+
+    This block used to be a WebApplication whose "url" was the homepage. Because it shipped
+    verbatim on every page, each tool page declared the homepage as its primary entity, so no
+    tool page described itself at all. The per-page entity now comes from
+    src/components/tools/ToolLayout.jsx, which emits a SoftwareApplication pointing at that page's
+    own canonical, plus a BreadcrumbList and the FAQPage. Do not reintroduce a page-scoped type
+    here: two primary entities on one document is worse than none.
+
+    The @id values are what tie the two together and let the per-page nodes reference the publisher
+    without restating it.
+
+    No potentialAction/SearchAction. A SearchAction has to name a URL template that really performs
+    a search, and this site has none — the home page filters an already-loaded list in component
+    state, with no query parameter and no /search route (checked against src/App.jsx). Declaring
+    one anyway would be a claim Google can, and does, test.
+  -->
   <script type="application/ld+json">
     {
       "@context": "https://schema.org",
-      "@type": "WebApplication",
-      "name": "OnlineToolsVault",
-      "url": "https://onlinetoolsvault.com/",
-      "description": "Collection of free online client-side tools for PDF and image processing.",
-      "applicationCategory": "Utility",
-      "operatingSystem": "All",
-      "author": {
-        "@type": "Organization",
-        "name": "Source Strong AI",
-        "url": "https://sourcestrongai.com"
-      }
+      "@graph": [
+        {
+          "@type": "Organization",
+          "@id": "https://onlinetoolsvault.com/#organization",
+          "name": "OnlineToolsVault",
+          "url": "https://onlinetoolsvault.com/",
+          "logo": {
+            "@type": "ImageObject",
+            "@id": "https://onlinetoolsvault.com/#logo",
+            "url": "https://onlinetoolsvault.com/favicon-512.png",
+            "contentUrl": "https://onlinetoolsvault.com/favicon-512.png",
+            "width": 512,
+            "height": 512,
+            "caption": "OnlineToolsVault"
+          },
+          "image": {
+            "@id": "https://onlinetoolsvault.com/#logo"
+          },
+          "sameAs": [
+            "https://github.com/OnlineToolsVault",
+            "https://x.com/sourcestrongai",
+            "https://www.linkedin.com/company/sourcestrongai"
+          ]
+        },
+        {
+          "@type": "WebSite",
+          "@id": "https://onlinetoolsvault.com/#website",
+          "name": "OnlineToolsVault",
+          "url": "https://onlinetoolsvault.com/",
+          "description": "Free, client-side tools for PDF, image, text, developer and security tasks. Files are processed in the browser and never uploaded.",
+          "inLanguage": "en",
+          "publisher": {
+            "@id": "https://onlinetoolsvault.com/#organization"
+          }
+        }
+      ]
     }
   </script>
 
@@ -89,16 +164,80 @@
     }
   </style>
 
-  <!-- Analytics & Ads -->
-  <script async src="https://www.googletagmanager.com/gtag/js?id=G-EVGNTG49J7"></script>
+  <!--
+    Analytics & Ads — requested after first paint, not from the document head.
+
+    Both of these used to be async script tags right here. "async" only means "do not block
+    parsing"; it does nothing about the bandwidth, connection slots and main-thread time the two
+    scripts take, and both were being fetched and executed in the same window the browser needed to
+    render and lay out the largest element. Together they are the biggest third-party payload the
+    site loads, and they were arriving before any of the page a visitor came for.
+
+    So the loading is moved behind the load event and then an idle callback: nothing here competes
+    with first paint or with the work that follows it, and both scripts still end up in the
+    document doing exactly what they did before.
+
+    The gtag command queue stays inline and eager on purpose. It is a three-line stub with no
+    network cost, and `dataLayer` is a queue by design — the `js` and `config` commands pushed here
+    sit in the array until the real tag script arrives and replays them, so the page_view is still
+    recorded with the URL, title and referrer the visitor actually landed on. Removing the stub and
+    configuring after load instead would lose any event fired in between.
+
+    The AdSense loader is unconditional in the same way it was before: nothing in src/ calls
+    `adsbygoogle.push`, so this tag exists for account verification and Auto Ads, neither of which
+    cares when in the page lifecycle it runs.
+
+    requestIdleCallback gets a timeout so a page that never goes idle (an editor route with a
+    busy main thread) still loads them; browsers without it fall back to a plain timer.
+
+    scripts/prerender.js sets window.__PRERENDER__ and blocks every third-party request, so the
+    build would only fire two requests that are immediately aborted. Skip the whole thing there.
+  -->
   <script>
     window.dataLayer = window.dataLayer || [];
     function gtag() { dataLayer.push(arguments); }
     gtag('js', new Date());
     gtag('config', 'G-EVGNTG49J7');
+
+    (function () {
+      if (window.__PRERENDER__) return;
+
+      var deferred = [
+        { src: 'https://www.googletagmanager.com/gtag/js?id=G-EVGNTG49J7' },
+        {
+          src: 'https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-4988388949365963',
+          crossOrigin: 'anonymous'
+        }
+      ];
+
+      var started = false;
+      function loadDeferred() {
+        if (started) return;
+        started = true;
+        for (var i = 0; i < deferred.length; i++) {
+          var script = document.createElement('script');
+          script.async = true;
+          if (deferred[i].crossOrigin) script.crossOrigin = deferred[i].crossOrigin;
+          script.src = deferred[i].src;
+          document.head.appendChild(script);
+        }
+      }
+
+      function scheduleAfterPaint() {
+        if (typeof window.requestIdleCallback === 'function') {
+          window.requestIdleCallback(loadDeferred, { timeout: 3000 });
+        } else {
+          window.setTimeout(loadDeferred, 1500);
+        }
+      }
+
+      if (document.readyState === 'complete') {
+        scheduleAfterPaint();
+      } else {
+        window.addEventListener('load', scheduleAfterPaint, { once: true });
+      }
+    })();
   </script>
-  <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-4988388949365963"
-    crossorigin="anonymous"></script>
 
   <!--
     Retire the old COOP/COEP service worker.
@@ -205,16 +344,18 @@
       }
     })();
   </script>
-  <script type="module" crossorigin src="/assets/index-OUpguYFg.js"></script>
-  <link rel="stylesheet" crossorigin href="/assets/index-Cv0roaG_.css">
+  <script type="module" crossorigin src="/assets/index-DsTeKLg-.js"></script>
+  <link rel="stylesheet" crossorigin href="/assets/index-CGynhGor.css">
   <link data-rh="true" rel="canonical" href="https://onlinetoolsvault.com/html-to-pdf/" />
   <!-- prerender:head -->
-  <script type="application/ld+json" data-rh="true">{"@context":"https://schema.org","@type":"FAQPage","mainEntity":[{"@type":"Question","name":"What is removed from my HTML, and why?","acceptedAnswer":{"@type":"Answer","text":"Script elements, iframes, frames, objects, embeds, applets, noscript blocks, base and meta tags and external stylesheet links are deleted outright; so is every inline event handler attribute such as onclick or onerror, and any href, src or srcset pointing at (or containing, for the comma-separated list srcset accepts) a javascript:, vbscript: or data:text/html URL. The same pass runs inside <template> content, which is a separate document fragment that a plain query would skip. A counter above the editor tells you how many of each went. Two reasons: a PDF is a static document so none of it could run there anyway, and this page has to insert your markup into a real browser document to measure it, which would otherwise be a way to run code in the tool."}},{"@type":"Question","name":"Are my style rules applied?","acceptedAnswer":{"@type":"Answer","text":"Yes. Style blocks are read out of the document, parsed by the browser’s own CSS engine and rewritten so that every selector applies inside the page container — a rule written for body or html becomes a rule for the container, and everything else is nested beneath it. That includes a background colour set on body: it paints the content column in the file exactly as it does in the frame. Selectors keep any comma that sits inside an attribute value or inside :is(), :where() or :has(). Native CSS nesting works too — a selector written inside another rule, with or without an & placeholder, resolves against its enclosing rule the same way it does in your browser, to any depth. Inline style attributes are kept, apart from the same properties listed below. Kept with their conditions: @media, @supports and @container. Flattened: @layer, whose only job is to reorder the cascade — re-emitting it would push your rules underneath this tool’s own defaults, so its contents are used directly instead. Dropped: @import and @font-face, because both fetch a remote file, and @page, because the page box is set by the size selector here. Rewritten: font-family (mapped onto the standard PDF families), @keyframes names (prefixed so they cannot collide with this page’s own animations, and the animation-name that refers to them is renamed with them, in a style attribute as well as in a rule), CSS transforms, and url() image references. The last two are removed wherever they appear — in an ordinary rule, in a style attribute, and inside a @keyframes block — because the PDF cannot hold either, and leaving them in the preview alone would make the frame lie; both are counted above the editor when they occur. Two caveats. A rule inside @media print never matches, because the page is drawn the way it looks on screen — move anything you need into an unconditional rule. And an animation is held at its final keyframe rather than played, in the frame and in the file alike, so that the same markup always converts to the same document."}},{"@type":"Question","name":"My page loads its CSS from a separate file. Will that work?","acceptedAnswer":{"@type":"Answer","text":"No — a link to an external stylesheet is removed, so the document renders unstyled. Inline the CSS into a style block in the markup you paste and it will be applied in full. The same goes for anything else the page would normally fetch: an external script or a web font. The one remote fetch that can still happen is an <img> with an http address, which your browser loads for the preview. A pasted stylesheet does not reach out on its own: url() is taken out of every property that could ask for a file — background-image, list-style-image, border-image, mask-image, shape-outside, clip-path, filter, cursor and the content of a ::before or ::after — because none of them can be drawn into the PDF anyway, so the request would have bought you nothing but a line in that host’s log."}},{"@type":"Question","name":"What about JavaScript that builds the page?","acceptedAnswer":{"@type":"Answer","text":"It never runs, so anything it would have created is absent. A single-page app whose body is an empty div converts to an empty PDF. The fix is to let the page render in your browser first, then copy the resulting DOM — right-click, Inspect, copy the outer HTML of the element you want — and paste that here."}},{"@type":"Question","name":"Do images come through?","acceptedAnswer":{"@type":"Answer","text":"Images with an http or https address are fetched by your browser for the preview and embedded in the PDF, provided the host allows cross-origin reads; when it does not, the image is skipped and everything else still converts. Base64 data URIs in an <img> work everywhere and are the reliable option. Vector graphics are handled too: an inline <svg> and an SVG referenced by an <img> are both converted to a bitmap at twice their layout size just before the file is built, because the PDF format used here cannot take SVG directly — so they appear, but they are pixels rather than curves. Every picture is stored flate-compressed and lossless: the pixels are exactly the ones your browser drew, and a logo that would otherwise have added most of a megabyte to the file adds about ten kilobytes. A large photograph is still large — compression that keeps every pixel can only do so much — so scale a photo down before pasting it if file size matters. Note that loading a remote image is a request from your machine to that server — none of your markup is sent, but the host does see the request."}},{"@type":"Question","name":"Which fonts does the PDF use?","acceptedAnswer":{"@type":"Answer","text":"The standard PDF font set: a Helvetica-like sans, a Times-like serif and a Courier-like monospace, each with bold and italic. No font file is embedded, so your font-family declarations are mapped onto the nearest of those — and the preview is switched to the same substitute, because leaving it in the original face would show word spacing the file cannot reproduce. A page set in a licensed brand font therefore will not look identical here or in the output. The encoding is WinAnsi, which covers Latin-1 plus the curly quotes, en and em dashes, bullet, ellipsis and euro sign; Cyrillic, Greek, Arabic, Hebrew, Devanagari, CJK and emoji have no glyph. Those characters are not left blank — the writer emits whatever byte it can, so they come out as unrelated Latin letters that still look like text. Because the frame uses your system fonts it shows them correctly and the file does not, which is the one place the preview cannot be trusted, so any such character is counted in a red strip above the editor before you download — including one written into a stylesheet as generated content, such as a custom bullet or icon set via the content property on a ::before or ::after, which prints exactly as if it were typed into the document."}},{"@type":"Question","name":"How faithful is the layout, and how are page breaks chosen?","acceptedAnswer":{"@type":"Answer","text":"Straightforward document markup converts well: headings, paragraphs, lists, tables, blockquotes, inline styling, colours, borders and background fills. Complex layout is where it strains — flexbox and grid are laid out by the browser and usually survive, but position: fixed, sticky headers, box shadows and multi-column layouts translate poorly or not at all, and CSS transforms are removed before rendering — including one written inside a @keyframes block, which used to reach the renderer through the running animation and take its whole element out of the file. An element positioned fixed is drawn against the window rather than the page and usually falls off it entirely. A closed <details> prints as its summary line only, the way your browser prints it; add the open attribute to include the body. The rendered column is sliced into pages at boundaries that never cut a line of text in half: a line that will not fit above the bottom margin is moved down to the top of the next page in one piece. That move used to lose the line outright at roughly one page break in three — a six-hundred paragraph document arrived five paragraphs short — which is fixed, and long documents are now checked row by row. You cannot force a break at a chosen place, anything wider than the column is clipped at the right edge, and a single line of text taller than the printable band of the page (a display heading of several hundred points, say) still cannot be placed and will be missing."}},{"@type":"Question","name":"Which files can I load, and is anything uploaded?","acceptedAnswer":{"@type":"Answer","text":"The drop zone takes .html and .htm files, read as UTF-8 text, and pasting into the editor works just as well; anything else is refused with a message rather than ignored. Nothing is uploaded: parsing, sanitising, previewing and PDF generation all happen inside this browser tab, and the file is saved straight to your downloads folder. It is named after the file you loaded, or page.pdf when you typed the markup yourself, when the file you loaded was empty, or once you have emptied the editor."}}]}</script>
+  <script type="application/ld+json" data-rh="true">{"@context":"https://schema.org","@type":"SoftwareApplication","@id":"https://onlinetoolsvault.com/html-to-pdf/#software","name":"HTML to PDF","url":"https://onlinetoolsvault.com/html-to-pdf/","description":"Convert pasted HTML or an .html file to PDF in your browser. Scripts are stripped, your CSS is applied, and the text stays selectable. Nothing is uploaded.","applicationCategory":"UtilitiesApplication","operatingSystem":"Any","browserRequirements":"Requires JavaScript.","isAccessibleForFree":true,"offers":{"@type":"Offer","price":"0","priceCurrency":"USD","availability":"https://schema.org/InStock"},"publisher":{"@id":"https://onlinetoolsvault.com/#organization"}}</script>
+  <script type="application/ld+json" data-rh="true">{"@context":"https://schema.org","@type":"BreadcrumbList","@id":"https://onlinetoolsvault.com/html-to-pdf/#breadcrumb","itemListElement":[{"@type":"ListItem","position":1,"name":"Home","item":"https://onlinetoolsvault.com/"},{"@type":"ListItem","position":2,"name":"PDF Tools","item":"https://onlinetoolsvault.com/pdf-tools/"},{"@type":"ListItem","position":3,"name":"HTML to PDF","item":"https://onlinetoolsvault.com/html-to-pdf/"}]}</script>
+  <script type="application/ld+json" data-rh="true">{"@context":"https://schema.org","@type":"FAQPage","@id":"https://onlinetoolsvault.com/html-to-pdf/#faq","mainEntity":[{"@type":"Question","name":"What is removed from my HTML, and why?","acceptedAnswer":{"@type":"Answer","text":"Script elements, iframes, frames, objects, embeds, applets, noscript blocks, base and meta tags and external stylesheet links are deleted outright; so is every inline event handler attribute such as onclick or onerror, and any href, src or srcset pointing at (or containing, for the comma-separated list srcset accepts) a javascript:, vbscript: or data:text/html URL. The same pass runs inside <template> content, which is a separate document fragment that a plain query would skip. A counter above the editor tells you how many of each went. Two reasons: a PDF is a static document so none of it could run there anyway, and this page has to insert your markup into a real browser document to measure it, which would otherwise be a way to run code in the tool."}},{"@type":"Question","name":"Are my style rules applied?","acceptedAnswer":{"@type":"Answer","text":"Yes. Style blocks are read out of the document, parsed by the browser’s own CSS engine and rewritten so that every selector applies inside the page container — a rule written for body or html becomes a rule for the container, and everything else is nested beneath it. That includes a background colour set on body: it paints the content column in the file exactly as it does in the frame. Selectors keep any comma that sits inside an attribute value or inside :is(), :where() or :has(). Native CSS nesting works too — a selector written inside another rule, with or without an & placeholder, resolves against its enclosing rule the same way it does in your browser, to any depth. Inline style attributes are kept, apart from the same properties listed below. Kept with their conditions: @media, @supports and @container. Flattened: @layer, whose only job is to reorder the cascade — re-emitting it would push your rules underneath this tool’s own defaults, so its contents are used directly instead. Dropped: @import and @font-face, because both fetch a remote file, and @page, because the page box is set by the size selector here. Rewritten: font-family (mapped onto the standard PDF families), @keyframes names (prefixed so they cannot collide with this page’s own animations, and the animation-name that refers to them is renamed with them, in a style attribute as well as in a rule), CSS transforms, and url() image references. The last two are removed wherever they appear — in an ordinary rule, in a style attribute, and inside a @keyframes block — because the PDF cannot hold either, and leaving them in the preview alone would make the frame lie; both are counted above the editor when they occur. Two caveats. A rule inside @media print never matches, because the page is drawn the way it looks on screen — move anything you need into an unconditional rule. And an animation is held at its final keyframe rather than played, in the frame and in the file alike, so that the same markup always converts to the same document."}},{"@type":"Question","name":"My page loads its CSS from a separate file. Will that work?","acceptedAnswer":{"@type":"Answer","text":"No — a link to an external stylesheet is removed, so the document renders unstyled. Inline the CSS into a style block in the markup you paste and it will be applied in full. The same goes for anything else the page would normally fetch: an external script or a web font. The one remote fetch that can still happen is an <img> with an http address, which your browser loads for the preview. A pasted stylesheet does not reach out on its own: url() is taken out of every property that could ask for a file — background-image, list-style-image, border-image, mask-image, shape-outside, clip-path, filter, cursor and the content of a ::before or ::after — because none of them can be drawn into the PDF anyway, so the request would have bought you nothing but a line in that host’s log."}},{"@type":"Question","name":"What about JavaScript that builds the page?","acceptedAnswer":{"@type":"Answer","text":"It never runs, so anything it would have created is absent. A single-page app whose body is an empty div converts to an empty PDF. The fix is to let the page render in your browser first, then copy the resulting DOM — right-click, Inspect, copy the outer HTML of the element you want — and paste that here."}},{"@type":"Question","name":"Do images come through?","acceptedAnswer":{"@type":"Answer","text":"Images with an http or https address are fetched by your browser for the preview and embedded in the PDF, provided the host allows cross-origin reads; when it does not, the image is skipped and everything else still converts. Base64 data URIs in an <img> work everywhere and are the reliable option. Vector graphics are handled too: an inline <svg> and an SVG referenced by an <img> are both converted to a bitmap at twice their layout size just before the file is built, because the PDF format used here cannot take SVG directly — so they appear, but they are pixels rather than curves. Every picture is stored flate-compressed and lossless: the pixels are exactly the ones your browser drew, and a logo that would otherwise have added most of a megabyte to the file adds about ten kilobytes. A large photograph is still large — compression that keeps every pixel can only do so much — so scale a photo down before pasting it if file size matters. Note that loading a remote image is a request from your machine to that server — none of your markup is sent, but the host does see the request."}},{"@type":"Question","name":"Which fonts does the PDF use?","acceptedAnswer":{"@type":"Answer","text":"The standard PDF font set: a Helvetica-like sans, a Times-like serif and a Courier-like monospace, each with bold and italic. No font file is embedded, so your font-family declarations are mapped onto the nearest of those — and the preview is switched to the same substitute, because leaving it in the original face would show word spacing the file cannot reproduce. A page set in a licensed brand font therefore will not look identical here or in the output. The encoding is WinAnsi, which covers Latin-1 plus the curly quotes, en and em dashes, bullet, ellipsis and euro sign; Cyrillic, Greek, Arabic, Hebrew, Devanagari, CJK and emoji have no glyph. Those characters are not left blank — the writer emits whatever byte it can, so they come out as unrelated Latin letters that still look like text. Because the frame uses your system fonts it shows them correctly and the file does not, which is the one place the preview cannot be trusted, so any such character is counted in a red strip above the editor before you download — including one written into a stylesheet as generated content, such as a custom bullet or icon set via the content property on a ::before or ::after, which prints exactly as if it were typed into the document."}},{"@type":"Question","name":"How faithful is the layout, and how are page breaks chosen?","acceptedAnswer":{"@type":"Answer","text":"Straightforward document markup converts well: headings, paragraphs, lists, tables, blockquotes, inline styling, colours, borders and background fills. Complex layout is where it strains — flexbox and grid are laid out by the browser and usually survive, but position: fixed, sticky headers, box shadows and multi-column layouts translate poorly or not at all, and CSS transforms are removed before rendering — including one written inside a @keyframes block, which used to reach the renderer through the running animation and take its whole element out of the file. An element positioned fixed is drawn against the window rather than the page and usually falls off it entirely. A closed <details> prints as its summary line only, the way your browser prints it; add the open attribute to include the body. The rendered column is sliced into pages at boundaries that never cut a line of text in half: a line that will not fit above the bottom margin is moved down to the top of the next page in one piece. That move used to lose the line outright at roughly one page break in three — a six-hundred paragraph document arrived five paragraphs short — which is fixed, and long documents are now checked row by row. You cannot force a break at a chosen place, anything wider than the column is clipped at the right edge, and a single line of text taller than the printable band of the page (a display heading of several hundred points, say) still cannot be placed and will be missing."}},{"@type":"Question","name":"Which files can I load, and is anything uploaded?","acceptedAnswer":{"@type":"Answer","text":"The drop zone takes .html and .htm files, read as UTF-8 text, and pasting into the editor works just as well; anything else is refused with a message rather than ignored. Nothing is uploaded: parsing, sanitising, previewing and PDF generation all happen inside this browser tab, and the file is saved straight to your downloads folder. It is named after the file you loaded, or page.pdf when you typed the markup yourself, when the file you loaded was empty, or once you have emptied the editor."}}]}</script>
   <!-- /prerender:head -->
 </head>
 
 <body>
-  <div id="root" data-prerendered="static"><div class="app-wrapper"><header class="site-header"><div class="container header-container"><a class="logo" href="/"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-rocket logo-icon"><path d="M4.5 16.5c-1.5 1.26-2 5-2 5s3.74-.5 5-2c.71-.84.7-2.13-.09-2.91a2.18 2.18 0 0 0-2.91-.09z"></path><path d="m12 15-3-3a22 22 0 0 1 2-3.95A12.88 12.88 0 0 1 22 2c0 2.72-.78 7.5-6 11a22.35 22.35 0 0 1-4 2z"></path><path d="M9 12H4s.55-3.03 2-4c1.62-1.08 5 0 5 0"></path><path d="M12 15v5s3.03-.55 4-2c1.08-1.62 0-5 0-5"></path></svg><span>OnlineToolsVault</span></a><nav class="nav-desktop"><a class="nav-link" href="/">Home</a><a class="nav-link" href="/about/">About</a><a class="nav-link" href="/contact/">Contact</a><div class="social-icons"><a href="https://x.com/sourcestrongai" target="_blank" rel="noopener noreferrer" class="social-icon" aria-label="Twitter"><svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-twitter "><path d="M22 4s-.7 2.1-2 3.4c1.6 10-9.4 17.3-18 11.6 2.2.1 4.4-.6 6-2C3 15.5.5 9.6 3 5c2.2 2.6 5.6 4.1 9 4-.9-4.2 4-6.6 7-3.8 1.1 0 3-1.2 3-1.2z"></path></svg></a><a href="https://www.linkedin.com/company/sourcestrongai" target="_blank" rel="noopener noreferrer" class="social-icon" aria-label="LinkedIn"><svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-linkedin "><path d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-2-2 2 2 0 0 0-2 2v7h-4v-7a6 6 0 0 1 6-6z"></path><rect width="4" height="12" x="2" y="9"></rect><circle cx="4" cy="4" r="2"></circle></svg></a></div></nav><button class="nav-mobile-btn" aria-label="Open menu" aria-expanded="false" aria-controls="mobile-menu"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-menu "><line x1="4" x2="20" y1="12" y2="12"></line><line x1="4" x2="20" y1="6" y2="6"></line><line x1="4" x2="20" y1="18" y2="18"></line></svg></button></div></header><main class="main-content"><!--$--><div class="container" style="padding: 3rem 1.5rem;"><div style="max-width: 1000px; margin: 0px auto;"><header style="margin-bottom: 3rem; text-align: center;"><h1 style="font-size: 2.5rem; font-weight: 800; margin-bottom: 0.5rem;">HTML to PDF</h1><p style="color: rgb(100, 116, 139);">Paste HTML or drop an .html file, preview it safely, and download it as a PDF.</p></header><div class="tool-workspace" style="max-width: 1000px; margin: 0px auto;"><div style="background: white; border: 1px solid var(--border); border-radius: 1rem; padding: 1.5rem;"><div role="button" tabindex="0" aria-label="Drop an HTML file here, or activate to browse" class="tool-upload-area" style="border: 2px dashed var(--border); border-radius: 0.75rem; padding: 1rem; text-align: center; cursor: pointer; background: rgb(248, 250, 252); margin-bottom: 1rem; display: flex; align-items: center; justify-content: center; gap: 0.6rem; color: rgb(71, 85, 105); font-size: 0.9rem;"><input accept="text/html,.html,.htm" type="file" tabindex="-1" aria-label="Choose an HTML file" style="border: 0px; clip: rect(0px, 0px, 0px, 0px); clip-path: inset(50%); height: 1px; margin: 0px -1px -1px 0px; overflow: hidden; padding: 0px; position: absolute; width: 1px; white-space: nowrap;"><svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-upload "><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="17 8 12 3 7 8"></polyline><line x1="12" x2="12" y1="3" y2="15"></line></svg><span>Drop an <strong>.html</strong> or <strong>.htm</strong> file here, or click to browse</span></div><div style="display: flex; flex-wrap: wrap; gap: 0.75rem; align-items: center; justify-content: space-between; margin-bottom: 1rem;"><div id="html-to-pdf-settings" style="display: flex; gap: 0.75rem; align-items: center;"><label for="html-to-pdf-size" style="font-size: 0.85rem; font-weight: 600; color: rgb(51, 65, 85);">Page size</label><select id="html-to-pdf-size" style="padding: 0.55rem 0.75rem; border-radius: 0.5rem; border: 1px solid var(--border); background: white; font-size: 0.9rem; color: rgb(15, 23, 42); cursor: pointer;"><option value="a4">A4 — 210 x 297 mm</option><option value="letter">Letter — 8.5 x 11 in</option></select></div><div style="display: flex; gap: 0.75rem; flex-wrap: wrap;"><button type="button" style="padding: 0.55rem 0.75rem; border-radius: 0.5rem; border: 1px solid var(--border); background: white; font-size: 0.9rem; color: rgb(185, 28, 28); cursor: pointer; display: flex; align-items: center; gap: 0.4rem;"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-trash2 "><path d="M3 6h18"></path><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"></path><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"></path><line x1="10" x2="10" y1="11" y2="17"></line><line x1="14" x2="14" y1="11" y2="17"></line></svg> Clear</button><button type="button" id="html-to-pdf-download-btn" class="tool-btn-primary" style="padding: 0.55rem 1.1rem; border-radius: 0.5rem; background: var(--primary); color: white; border-width: medium; border-style: none; border-color: currentcolor; border-image: none; cursor: pointer; font-weight: bold; display: flex; align-items: center; gap: 0.5rem;"><svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-download "><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" x2="12" y1="15" y2="3"></line></svg>Download PDF</button></div></div><style>@keyframes spin { 100% { transform: rotate(360deg); } }</style><div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 1rem;"><div><label for="html-to-pdf-source" style="display: block; margin-bottom: 0.4rem; font-weight: 600; font-size: 0.85rem; color: rgb(51, 65, 85);">HTML</label><textarea id="html-to-pdf-source" placeholder="&lt;h1&gt;Paste your HTML here&lt;/h1&gt;" spellcheck="false" style="width: 100%; height: 520px; padding: 1rem; border-radius: 0.5rem; border: 1px solid var(--border); font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 0.82rem; line-height: 1.6; resize: vertical; background: rgb(248, 250, 252); color: rgb(15, 23, 42);">&lt;style&gt;
+  <div id="root" data-prerendered="static"><div class="app-wrapper"><header class="site-header"><div class="container header-container"><a class="logo" href="/"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-rocket logo-icon"><path d="M4.5 16.5c-1.5 1.26-2 5-2 5s3.74-.5 5-2c.71-.84.7-2.13-.09-2.91a2.18 2.18 0 0 0-2.91-.09z"></path><path d="m12 15-3-3a22 22 0 0 1 2-3.95A12.88 12.88 0 0 1 22 2c0 2.72-.78 7.5-6 11a22.35 22.35 0 0 1-4 2z"></path><path d="M9 12H4s.55-3.03 2-4c1.62-1.08 5 0 5 0"></path><path d="M12 15v5s3.03-.55 4-2c1.08-1.62 0-5 0-5"></path></svg><span>OnlineToolsVault</span></a><nav class="nav-desktop"><a class="nav-link" href="/">Home</a><a class="nav-link" href="/about/">About</a><a class="nav-link" href="/contact/">Contact</a><div class="social-icons"><a href="https://x.com/sourcestrongai" target="_blank" rel="noopener noreferrer" class="social-icon" aria-label="Twitter"><svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-twitter "><path d="M22 4s-.7 2.1-2 3.4c1.6 10-9.4 17.3-18 11.6 2.2.1 4.4-.6 6-2C3 15.5.5 9.6 3 5c2.2 2.6 5.6 4.1 9 4-.9-4.2 4-6.6 7-3.8 1.1 0 3-1.2 3-1.2z"></path></svg></a><a href="https://www.linkedin.com/company/sourcestrongai" target="_blank" rel="noopener noreferrer" class="social-icon" aria-label="LinkedIn"><svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-linkedin "><path d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-2-2 2 2 0 0 0-2 2v7h-4v-7a6 6 0 0 1 6-6z"></path><rect width="4" height="12" x="2" y="9"></rect><circle cx="4" cy="4" r="2"></circle></svg></a></div></nav><button class="nav-mobile-btn" aria-label="Open menu" aria-expanded="false" aria-controls="mobile-menu"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-menu "><line x1="4" x2="20" y1="12" y2="12"></line><line x1="4" x2="20" y1="6" y2="6"></line><line x1="4" x2="20" y1="18" y2="18"></line></svg></button></div></header><main class="main-content"><!--$--><div class="container" style="padding: 3rem 1.5rem;"><div style="max-width: 1000px; margin: 0px auto;"><nav aria-label="Breadcrumb" style="margin-bottom: 2rem;"><ol style="display: flex; flex-wrap: wrap; align-items: center; gap: 0.5rem; list-style: none; margin: 0px; padding: 0px; font-size: 0.875rem; color: var(--text-secondary);"><li style="display: flex; align-items: center; gap: 0.5rem; min-width: 0px;"><a href="/" style="color: var(--text-secondary); text-decoration: none;">Home</a></li><li style="display: flex; align-items: center; gap: 0.5rem; min-width: 0px;"><span aria-hidden="true" style="color: var(--text-tertiary);">/</span><a href="/pdf-tools/" style="color: var(--text-secondary); text-decoration: none;">PDF Tools</a></li><li style="display: flex; align-items: center; gap: 0.5rem; min-width: 0px;"><span aria-hidden="true" style="color: var(--text-tertiary);">/</span><span aria-current="page" style="color: var(--text-primary); font-weight: 600;">HTML to PDF</span></li></ol></nav><header style="margin-bottom: 3rem; text-align: center;"><h1 style="font-size: 2.5rem; font-weight: 800; margin-bottom: 0.5rem;">HTML to PDF</h1><p style="color: rgb(100, 116, 139);">Paste HTML or drop an .html file, preview it safely, and download it as a PDF.</p></header><div class="tool-workspace" style="max-width: 1000px; margin: 0px auto;"><div style="background: white; border: 1px solid var(--border); border-radius: 1rem; padding: 1.5rem;"><div role="button" tabindex="0" aria-label="Drop an HTML file here, or activate to browse" class="tool-upload-area" style="border: 2px dashed var(--border); border-radius: 0.75rem; padding: 1rem; text-align: center; cursor: pointer; background: rgb(248, 250, 252); margin-bottom: 1rem; display: flex; align-items: center; justify-content: center; gap: 0.6rem; color: rgb(71, 85, 105); font-size: 0.9rem;"><input accept="text/html,.html,.htm" type="file" tabindex="-1" aria-label="Choose an HTML file" style="border: 0px; clip: rect(0px, 0px, 0px, 0px); clip-path: inset(50%); height: 1px; margin: 0px -1px -1px 0px; overflow: hidden; padding: 0px; position: absolute; width: 1px; white-space: nowrap;"><svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-upload "><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="17 8 12 3 7 8"></polyline><line x1="12" x2="12" y1="3" y2="15"></line></svg><span>Drop an <strong>.html</strong> or <strong>.htm</strong> file here, or click to browse</span></div><div style="display: flex; flex-wrap: wrap; gap: 0.75rem; align-items: center; justify-content: space-between; margin-bottom: 1rem;"><div id="html-to-pdf-settings" style="display: flex; gap: 0.75rem; align-items: center;"><label for="html-to-pdf-size" style="font-size: 0.85rem; font-weight: 600; color: rgb(51, 65, 85);">Page size</label><select id="html-to-pdf-size" style="padding: 0.55rem 0.75rem; border-radius: 0.5rem; border: 1px solid var(--border); background: white; font-size: 0.9rem; color: rgb(15, 23, 42); cursor: pointer;"><option value="a4">A4 — 210 x 297 mm</option><option value="letter">Letter — 8.5 x 11 in</option></select></div><div style="display: flex; gap: 0.75rem; flex-wrap: wrap;"><button type="button" style="padding: 0.55rem 0.75rem; border-radius: 0.5rem; border: 1px solid var(--border); background: white; font-size: 0.9rem; color: rgb(185, 28, 28); cursor: pointer; display: flex; align-items: center; gap: 0.4rem;"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-trash2 "><path d="M3 6h18"></path><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"></path><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"></path><line x1="10" x2="10" y1="11" y2="17"></line><line x1="14" x2="14" y1="11" y2="17"></line></svg> Clear</button><button type="button" id="html-to-pdf-download-btn" class="tool-btn-primary" style="padding: 0.55rem 1.1rem; border-radius: 0.5rem; background: var(--primary); color: white; border-width: medium; border-style: none; border-color: currentcolor; border-image: none; cursor: pointer; font-weight: bold; display: flex; align-items: center; gap: 0.5rem;"><svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-download "><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" x2="12" y1="15" y2="3"></line></svg>Download PDF</button></div></div><style>@keyframes spin { 100% { transform: rotate(360deg); } }</style><div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 1rem;"><div><label for="html-to-pdf-source" style="display: block; margin-bottom: 0.4rem; font-weight: 600; font-size: 0.85rem; color: rgb(51, 65, 85);">HTML</label><textarea id="html-to-pdf-source" placeholder="&lt;h1&gt;Paste your HTML here&lt;/h1&gt;" spellcheck="false" style="width: 100%; height: 520px; padding: 1rem; border-radius: 0.5rem; border: 1px solid var(--border); font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 0.82rem; line-height: 1.6; resize: vertical; background: rgb(248, 250, 252); color: rgb(15, 23, 42);">&lt;style&gt;
   .invoice { font-family: Georgia, "Times New Roman", serif; color: #1f2937; }
   .invoice header { border-bottom: 2px solid #0f172a; padding-bottom: 8px; margin-bottom: 16px; }
   .invoice .muted { color: #64748b; font-size: 13px; }

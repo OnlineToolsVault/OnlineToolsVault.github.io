@@ -6,6 +6,16 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Page Not Found - Redirecting...</title>
     <meta name="robots" content="noindex">
+
+    <!-- The same icon set index.html declares. This page is a noindex redirect shim that a visitor
+         sees for a fraction of a second, but it is a real document with a real tab, and without
+         these the browser falls back to a generic globe (or re-requests /favicon.ico) on every
+         mistyped URL. Keep in step with the block in index.html. -->
+    <link rel="icon" href="/favicon.ico" sizes="any">
+    <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32.png">
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png">
+    <link rel="manifest" href="/site.webmanifest">
+    <meta name="theme-color" content="#6E42F0">
     <script>
         // GitHub Pages serves this file (with a 404 status) for any path that has no
         // pre-rendered index.html — i.e. a genuinely unknown URL.

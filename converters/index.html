@@ -1,0 +1,405 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+  <!--
+    Icons.
+
+    The files live in public/ and are copied to the site root verbatim, so every href here is an
+    absolute path from the root and stays correct on the deep routes (/merge-pdf/, /pdf-to-word/)
+    where a relative href would resolve one directory too far down.
+
+    - favicon.ico is the multi-size fallback browsers and crawlers request at the fixed
+      /favicon.ico address whether or not it is declared. `sizes="any"` marks it as the
+      resolution-independent entry so a browser that also understands the PNGs below prefers those.
+    - favicon-32.png is the tab icon, favicon-192.png the Android home-screen icon and
+      favicon-512.png the large icon used for install prompts and as the Organization logo in the
+      structured data further down.
+    - apple-touch-icon.png is what iOS uses for "Add to Home Screen"; it must be a non-transparent
+      180x180 PNG, since iOS composites nothing behind it.
+    - site.webmanifest names the app for installability. It is same-origin, so no `crossorigin`.
+
+    theme-color is the resolved value of the `--primary` token in src/index.css, and it must stay
+    equal to `theme_color` in public/site.webmanifest — the two colour the same browser chrome from
+    different sources, and disagreeing is a reported defect rather than a fallback.
+  -->
+  <link rel="icon" href="/favicon.ico" sizes="any" />
+  <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32.png" />
+  <link rel="icon" type="image/png" sizes="192x192" href="/favicon-192.png" />
+  <link rel="icon" type="image/png" sizes="512x512" href="/favicon-512.png" />
+  <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+  <link rel="manifest" href="/site.webmanifest" />
+  <meta name="theme-color" content="#6E42F0" />
+  <title data-rh="true">Free File Converters - CSV, Excel, JSON, Audio, Video and ZIP</title>
+  <meta data-rh="true" name="description" content="Convert CSV to JSON or Excel, pull audio out of a video, build and inspect ZIP archives, convert timestamps and units, and make QR codes. All done locally." />
+
+  <!-- SEO & Social Meta Tags -->
+  <meta name="robots" content="index, follow" />
+
+  <meta property="og:type" content="website" />
+  <meta property="og:title" content="Free File Converters - CSV, Excel, JSON, Audio, Video and ZIP" />
+  <meta property="og:description" content="Convert CSV to JSON or Excel, pull audio out of a video, build and inspect ZIP archives, convert timestamps and units, and make QR codes. All done locally." />
+  <meta property="og:url" content="https://onlinetoolsvault.com/converters/" />
+  <meta property="og:site_name" content="OnlineToolsVault" />
+  <meta property="og:image" content="https://onlinetoolsvault.com/og/default.png" />
+  <meta property="og:image:width" content="1200" />
+  <meta property="og:image:height" content="630" />
+  <meta property="og:image:alt" content="File Converters — OnlineToolsVault" />
+
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:site" content="@sourcestrongai" />
+  <meta name="twitter:title" content="Free File Converters - CSV, Excel, JSON, Audio, Video and ZIP" />
+  <meta name="twitter:description" content="Convert CSV to JSON or Excel, pull audio out of a video, build and inspect ZIP archives, convert timestamps and units, and make QR codes. All done locally." />
+  <meta name="twitter:image" content="https://onlinetoolsvault.com/og/default.png" />
+  <meta name="twitter:image:alt" content="File Converters — OnlineToolsVault" />
+  <meta name="twitter:creator" content="@sourcestrongai" />
+
+  <!--
+    Structured Data (JSON-LD) — the SITE-LEVEL graph, and nothing else.
+
+    generate-sitemap.js copies this file to dist/<route>/index.html for every route and only
+    rewrites title/description/canonical/og/twitter, so whatever sits here ships on every page
+    unchanged. That is exactly right for Organization and WebSite — they describe the site, not the
+    document — and exactly wrong for a page entity.
+
+    This block used to be a WebApplication whose "url" was the homepage. Because it shipped
+    verbatim on every page, each tool page declared the homepage as its primary entity, so no
+    tool page described itself at all. The per-page entity now comes from
+    src/components/tools/ToolLayout.jsx, which emits a SoftwareApplication pointing at that page's
+    own canonical, plus a BreadcrumbList and the FAQPage. Do not reintroduce a page-scoped type
+    here: two primary entities on one document is worse than none.
+
+    The @id values are what tie the two together and let the per-page nodes reference the publisher
+    without restating it.
+
+    No potentialAction/SearchAction. A SearchAction has to name a URL template that really performs
+    a search, and this site has none — the home page filters an already-loaded list in component
+    state, with no query parameter and no /search route (checked against src/App.jsx). Declaring
+    one anyway would be a claim Google can, and does, test.
+  -->
+  <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@graph": [
+        {
+          "@type": "Organization",
+          "@id": "https://onlinetoolsvault.com/#organization",
+          "name": "OnlineToolsVault",
+          "url": "https://onlinetoolsvault.com/",
+          "logo": {
+            "@type": "ImageObject",
+            "@id": "https://onlinetoolsvault.com/#logo",
+            "url": "https://onlinetoolsvault.com/favicon-512.png",
+            "contentUrl": "https://onlinetoolsvault.com/favicon-512.png",
+            "width": 512,
+            "height": 512,
+            "caption": "OnlineToolsVault"
+          },
+          "image": {
+            "@id": "https://onlinetoolsvault.com/#logo"
+          },
+          "sameAs": [
+            "https://github.com/OnlineToolsVault",
+            "https://x.com/sourcestrongai",
+            "https://www.linkedin.com/company/sourcestrongai"
+          ]
+        },
+        {
+          "@type": "WebSite",
+          "@id": "https://onlinetoolsvault.com/#website",
+          "name": "OnlineToolsVault",
+          "url": "https://onlinetoolsvault.com/",
+          "description": "Free, client-side tools for PDF, image, text, developer and security tasks. Files are processed in the browser and never uploaded.",
+          "inLanguage": "en",
+          "publisher": {
+            "@id": "https://onlinetoolsvault.com/#organization"
+          }
+        }
+      ]
+    }
+  </script>
+
+  <!--
+    Inter, served from this origin.
+
+    This used to be a <link> to fonts.googleapis.com, which made every route open a connection
+    to Google (and then a second one to fonts.gstatic.com) before it could paint text — the last
+    off-origin request common to all pages, and one that handed a third party the IP of every
+    visitor on a site whose whole pitch is that nothing leaves the browser.
+
+    The two woff2 files are git-tracked under public/fonts. If a face or unicode-range here ever
+    changes, refresh those files by hand from a locally downloaded copy of the font.
+
+    These are the *variable* faces (`font-weight: 100 900`), which is what Google was already
+    serving: css2 answers `wght@400;500;600;700;800` with the same single file declared five times,
+    so all five weights come out of one 48 KB download exactly as before.
+
+    Only latin is preloaded. latin-ext is a further 83 KB that the unicode-range below keeps unread
+    unless a page actually contains one of its characters, which no page currently does — preloading
+    it would cost every visitor 83 KB for nothing. `crossorigin` is required even though the file is
+    same-origin: fonts are always fetched in CORS mode, and without it the preload is discarded and
+    the file downloaded twice.
+  -->
+  <link rel="preload" href="/fonts/inter-latin.woff2" as="font" type="font/woff2" crossorigin>
+  <style>
+    @font-face {
+      font-family: 'Inter';
+      font-style: normal;
+      font-weight: 100 900;
+      font-display: swap;
+      src: url('/fonts/inter-latin.woff2') format('woff2');
+      unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+    }
+
+    @font-face {
+      font-family: 'Inter';
+      font-style: normal;
+      font-weight: 100 900;
+      font-display: swap;
+      src: url('/fonts/inter-latin-ext.woff2') format('woff2');
+      unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF;
+    }
+  </style>
+
+  <!--
+    Analytics & Ads — requested after first paint, not from the document head.
+
+    Both of these used to be async script tags right here. "async" only means "do not block
+    parsing"; it does nothing about the bandwidth, connection slots and main-thread time the two
+    scripts take, and both were being fetched and executed in the same window the browser needed to
+    render and lay out the largest element. Together they are the biggest third-party payload the
+    site loads, and they were arriving before any of the page a visitor came for.
+
+    So the loading is moved behind the load event and then an idle callback: nothing here competes
+    with first paint or with the work that follows it, and both scripts still end up in the
+    document doing exactly what they did before.
+
+    The gtag command queue stays inline and eager on purpose. It is a three-line stub with no
+    network cost, and `dataLayer` is a queue by design — the `js` and `config` commands pushed here
+    sit in the array until the real tag script arrives and replays them, so the page_view is still
+    recorded with the URL, title and referrer the visitor actually landed on. Removing the stub and
+    configuring after load instead would lose any event fired in between.
+
+    The AdSense loader is unconditional in the same way it was before: nothing in src/ calls
+    `adsbygoogle.push`, so this tag exists for account verification and Auto Ads, neither of which
+    cares when in the page lifecycle it runs.
+
+    requestIdleCallback gets a timeout so a page that never goes idle (an editor route with a
+    busy main thread) still loads them; browsers without it fall back to a plain timer.
+
+    scripts/prerender.js sets window.__PRERENDER__ and blocks every third-party request, so the
+    build would only fire two requests that are immediately aborted. Skip the whole thing there.
+  -->
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag() { dataLayer.push(arguments); }
+    gtag('js', new Date());
+    gtag('config', 'G-EVGNTG49J7');
+
+    (function () {
+      if (window.__PRERENDER__) return;
+
+      var deferred = [
+        { src: 'https://www.googletagmanager.com/gtag/js?id=G-EVGNTG49J7' },
+        {
+          src: 'https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-4988388949365963',
+          crossOrigin: 'anonymous'
+        }
+      ];
+
+      var started = false;
+      function loadDeferred() {
+        if (started) return;
+        started = true;
+        for (var i = 0; i < deferred.length; i++) {
+          var script = document.createElement('script');
+          script.async = true;
+          if (deferred[i].crossOrigin) script.crossOrigin = deferred[i].crossOrigin;
+          script.src = deferred[i].src;
+          document.head.appendChild(script);
+        }
+      }
+
+      function scheduleAfterPaint() {
+        if (typeof window.requestIdleCallback === 'function') {
+          window.requestIdleCallback(loadDeferred, { timeout: 3000 });
+        } else {
+          window.setTimeout(loadDeferred, 1500);
+        }
+      }
+
+      if (document.readyState === 'complete') {
+        scheduleAfterPaint();
+      } else {
+        window.addEventListener('load', scheduleAfterPaint, { once: true });
+      }
+    })();
+  </script>
+
+  <!--
+    Retire the old COOP/COEP service worker.
+
+    It was added for SharedArrayBuffer, but the FFmpeg tools load the single-threaded
+    @ffmpeg/core build, which never touches SharedArrayBuffer — verified by running a
+    conversion with crossOriginIsolated === false. Meanwhile cross-origin isolation blocked
+    every third-party image a user pastes into the Markdown Previewer, and forced a full page
+    reload on each visitor's first page view.
+
+    Returning visitors still have the worker installed and would keep getting the COEP headers
+    forever, so unregister it once and reload to drop out of the isolated context.
+  -->
+  <script>
+    (function () {
+      if (!('serviceWorker' in navigator)) return;
+      navigator.serviceWorker.getRegistrations().then(function (registrations) {
+        var removed = false;
+        for (var i = 0; i < registrations.length; i++) {
+          var url = (registrations[i].active && registrations[i].active.scriptURL) || '';
+          if (url.indexOf('coi-serviceworker') !== -1) {
+            registrations[i].unregister();
+            removed = true;
+          }
+        }
+        if (removed && window.crossOriginIsolated) window.location.reload();
+      }).catch(function () { /* nothing to clean up */ });
+    })();
+  </script>
+
+  <!--
+    Restore the URL that 404.html forwarded here, before React Router reads location.
+    GitHub Pages cannot rewrite unknown paths itself, so 404.html bounces them to
+    /?notfound=<path>; putting the real path back lets the app's "*" route render NotFound
+    at the address the visitor actually typed.
+  -->
+  <script>
+    (function () {
+      try {
+        var params = new URLSearchParams(window.location.search);
+        var requested = params.get('notfound');
+        if (requested && requested.charAt(0) === '/' && requested.charAt(1) !== '/') {
+          window.history.replaceState(null, '', requested);
+        }
+      } catch (error) {
+        console.error('[NotFound Restore] Error:', error);
+      }
+    })();
+  </script>
+
+  <!-- Smart Hash URL Redirect (handles legacy #/ URLs) -->
+  <script>
+    (function () {
+      try {
+        var hash = window.location.hash;
+
+        // Check if this is a hash-based route (e.g., #/word-counter)
+        if (hash && hash.startsWith('#/')) {
+          var path = hash.slice(2); // Remove '#/'
+          var search = window.location.search || '';
+
+          // A legacy link can carry its own query or fragment inside the hash
+          // (#/word-counter?tab=2). Split that off before the path is touched, otherwise the
+          // trailing slash below lands after the query string and produces "word-counter?tab=2/".
+          var extra = '';
+          var cut = path.search(/[?#]/);
+          if (cut !== -1) {
+            extra = path.slice(cut);
+            path = path.slice(0, cut);
+          }
+          // Two query strings concatenated would give "?a=1?b=2"; the second '?' becomes '&'.
+          if (search && extra.charAt(0) === '?') extra = '&' + extra.slice(1);
+
+          // The site is served from the root of a domain — onlinetoolsvault.com via dist/CNAME,
+          // and the OnlineToolsVault.github.io user-pages root — so this is '/' in production
+          // and in dev. Honour a <base href> if one is ever added; do not sniff the pathname.
+          var base = document.querySelector('base')?.getAttribute('href') || '/';
+
+          // Clean up the path (remove trailing/leading slashes)
+          path = path.replace(/^\/+|\/+$/g, '');
+
+          // Build redirect URL.
+          //
+          // The trailing slash is not cosmetic. GitHub Pages serves each route from
+          // dist/<route>/index.html, so /word-counter answers with a 301 to /word-counter/ —
+          // meaning the slash-less form this used to emit turned every legacy hash link into two
+          // navigations, and any of them that ended up in a canonical, a sitemap or an inbound
+          // link pointed at the redirecting URL rather than the real one. Every other internal
+          // link on the site was normalised to the trailing-slash form; this was the last hole.
+          var redirectUrl;
+          if (path) {
+            redirectUrl = base + path + '/' + search + extra;
+          } else {
+            // Just '#/' with no path - go to home
+            redirectUrl = base + search + extra;
+          }
+
+          // Redirect using replace (doesn't add to history)
+          window.location.replace(redirectUrl);
+        }
+      } catch (error) {
+        // Silently fail - the app will load normally
+        console.error('[Hash Redirect] Error:', error);
+      }
+    })();
+  </script>
+  <script type="module" crossorigin src="/assets/index-DsTeKLg-.js"></script>
+  <link rel="stylesheet" crossorigin href="/assets/index-CGynhGor.css">
+  <link data-rh="true" rel="canonical" href="https://onlinetoolsvault.com/converters/" />
+  <!-- prerender:head -->
+  <link rel="stylesheet" crossorigin href="/assets/CategoryHub-Dl5tr1ZY.css">
+  <script type="application/ld+json" data-rh="true">{"@context":"https://schema.org","@graph":[{"@type":"CollectionPage","@id":"https://onlinetoolsvault.com/converters/#webpage","name":"File Converters","description":"Convert CSV to JSON or Excel, pull audio out of a video, build and inspect ZIP archives, convert timestamps and units, and make QR codes. All done locally.","url":"https://onlinetoolsvault.com/converters/","isPartOf":{"@id":"https://onlinetoolsvault.com/#website"},"publisher":{"@id":"https://onlinetoolsvault.com/#organization"},"mainEntity":{"@type":"ItemList","@id":"https://onlinetoolsvault.com/converters/#tool-list","name":"File Converters","numberOfItems":15,"itemListElement":[{"@type":"ListItem","position":1,"name":"Video to Audio","url":"https://onlinetoolsvault.com/video-to-audio/"},{"@type":"ListItem","position":2,"name":"Audio Converter","url":"https://onlinetoolsvault.com/audio-converter/"},{"@type":"ListItem","position":3,"name":"QR Generator","url":"https://onlinetoolsvault.com/qr-generator/"},{"@type":"ListItem","position":4,"name":"CSV to JSON","url":"https://onlinetoolsvault.com/csv-to-json/"},{"@type":"ListItem","position":5,"name":"CSV to Excel","url":"https://onlinetoolsvault.com/csv-to-excel/"},{"@type":"ListItem","position":6,"name":"Excel to CSV","url":"https://onlinetoolsvault.com/excel-to-csv/"},{"@type":"ListItem","position":7,"name":"Timestamp Converter","url":"https://onlinetoolsvault.com/timestamp-converter/"},{"@type":"ListItem","position":8,"name":"Unit Converter","url":"https://onlinetoolsvault.com/unit-converter/"},{"@type":"ListItem","position":9,"name":"ZIP Creator","url":"https://onlinetoolsvault.com/zip-file-creator/"},{"@type":"ListItem","position":10,"name":"ZIP Viewer","url":"https://onlinetoolsvault.com/zip-viewer/"},{"@type":"ListItem","position":11,"name":"File Size Calculator","url":"https://onlinetoolsvault.com/file-size-calculator/"},{"@type":"ListItem","position":12,"name":"Batch File Renamer","url":"https://onlinetoolsvault.com/batch-file-renamer/"},{"@type":"ListItem","position":13,"name":"File Metadata","url":"https://onlinetoolsvault.com/file-metadata-viewer/"},{"@type":"ListItem","position":14,"name":"GST Invoice Generator","url":"https://onlinetoolsvault.com/gst-invoice-generator/"},{"@type":"ListItem","position":15,"name":"POS Billing","url":"https://onlinetoolsvault.com/pos-billing/"}]}},{"@type":"BreadcrumbList","@id":"https://onlinetoolsvault.com/converters/#breadcrumb","itemListElement":[{"@type":"ListItem","position":1,"name":"Home","item":"https://onlinetoolsvault.com/"},{"@type":"ListItem","position":2,"name":"File Converters","item":"https://onlinetoolsvault.com/converters/"}]}]}</script>
+  <!-- /prerender:head -->
+</head>
+
+<body>
+  <div id="root" data-prerendered="static"><div class="app-wrapper"><header class="site-header"><div class="container header-container"><a class="logo" href="/"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-rocket logo-icon"><path d="M4.5 16.5c-1.5 1.26-2 5-2 5s3.74-.5 5-2c.71-.84.7-2.13-.09-2.91a2.18 2.18 0 0 0-2.91-.09z"></path><path d="m12 15-3-3a22 22 0 0 1 2-3.95A12.88 12.88 0 0 1 22 2c0 2.72-.78 7.5-6 11a22.35 22.35 0 0 1-4 2z"></path><path d="M9 12H4s.55-3.03 2-4c1.62-1.08 5 0 5 0"></path><path d="M12 15v5s3.03-.55 4-2c1.08-1.62 0-5 0-5"></path></svg><span>OnlineToolsVault</span></a><nav class="nav-desktop"><a class="nav-link" href="/">Home</a><a class="nav-link" href="/about/">About</a><a class="nav-link" href="/contact/">Contact</a><div class="social-icons"><a href="https://x.com/sourcestrongai" target="_blank" rel="noopener noreferrer" class="social-icon" aria-label="Twitter"><svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-twitter "><path d="M22 4s-.7 2.1-2 3.4c1.6 10-9.4 17.3-18 11.6 2.2.1 4.4-.6 6-2C3 15.5.5 9.6 3 5c2.2 2.6 5.6 4.1 9 4-.9-4.2 4-6.6 7-3.8 1.1 0 3-1.2 3-1.2z"></path></svg></a><a href="https://www.linkedin.com/company/sourcestrongai" target="_blank" rel="noopener noreferrer" class="social-icon" aria-label="LinkedIn"><svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-linkedin "><path d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-2-2 2 2 0 0 0-2 2v7h-4v-7a6 6 0 0 1 6-6z"></path><rect width="4" height="12" x="2" y="9"></rect><circle cx="4" cy="4" r="2"></circle></svg></a></div></nav><button class="nav-mobile-btn" aria-label="Open menu" aria-expanded="false" aria-controls="mobile-menu"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-menu "><line x1="4" x2="20" y1="12" y2="12"></line><line x1="4" x2="20" y1="6" y2="6"></line><line x1="4" x2="20" y1="18" y2="18"></line></svg></button></div></header><main class="main-content"><!--$--><div class="hub-page"><div class="container"><nav aria-label="Breadcrumb" style="margin-bottom: 2rem;"><ol style="display: flex; flex-wrap: wrap; align-items: center; gap: 0.5rem; list-style: none; margin: 0px; padding: 0px; font-size: 0.875rem; color: var(--text-secondary);"><li style="display: flex; align-items: center; gap: 0.5rem; min-width: 0px;"><a href="/" style="color: var(--text-secondary); text-decoration: none;">Home</a></li><li style="display: flex; align-items: center; gap: 0.5rem; min-width: 0px;"><span aria-hidden="true" style="color: var(--text-tertiary);">/</span><span aria-current="page" style="color: var(--text-primary); font-weight: 600;">File Converters</span></li></ol></nav><header class="hub-header"><h1>File Converters</h1><p class="hub-lede">15 tools for moving data from the shape it arrived in to the shape you need:
+spreadsheets to JSON and back, video to audio, files into and out of ZIP archives, timestamps to
+dates, units to other units. They are the errands that interrupt real work, and every one of them
+finishes in this tab without an upload.</p></header><h2 class="hub-section-heading">All File Converters (15)</h2><div class="hub-tools-grid"><a class="hub-tool-card" href="/video-to-audio/"><div class="hub-tool-card-header"><span class="hub-tool-icon"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-file-audio " aria-hidden="true"><path d="M17.5 22h.5a2 2 0 0 0 2-2V7l-5-5H6a2 2 0 0 0-2 2v3"></path><path d="M14 2v4a2 2 0 0 0 2 2h4"></path><path d="M2 19a2 2 0 1 1 4 0v1a2 2 0 1 1-4 0v-4a6 6 0 0 1 12 0v4a2 2 0 1 1-4 0v-1a2 2 0 1 1 4 0"></path></svg></span><h3 class="hub-tool-name">Video to Audio</h3></div><p class="hub-tool-desc">Extract MP3 audio from any video file.</p></a><a class="hub-tool-card" href="/audio-converter/"><div class="hub-tool-card-header"><span class="hub-tool-icon"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-music " aria-hidden="true"><path d="M9 18V5l12-2v13"></path><circle cx="6" cy="18" r="3"></circle><circle cx="18" cy="16" r="3"></circle></svg></span><h3 class="hub-tool-name">Audio Converter</h3></div><p class="hub-tool-desc">Convert audio to MP3, WAV, FLAC, etc.</p></a><a class="hub-tool-card" href="/qr-generator/"><div class="hub-tool-card-header"><span class="hub-tool-icon"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-qr-code " aria-hidden="true"><rect width="5" height="5" x="3" y="3" rx="1"></rect><rect width="5" height="5" x="16" y="3" rx="1"></rect><rect width="5" height="5" x="3" y="16" rx="1"></rect><path d="M21 16h-3a2 2 0 0 0-2 2v3"></path><path d="M21 21v.01"></path><path d="M12 7v3a2 2 0 0 1-2 2H7"></path><path d="M3 12h.01"></path><path d="M12 3h.01"></path><path d="M12 16v.01"></path><path d="M16 12h1"></path><path d="M21 12v.01"></path><path d="M12 21v-1"></path></svg></span><h3 class="hub-tool-name">QR Generator</h3></div><p class="hub-tool-desc">Create customizable QR codes for URLs and text.</p></a><a class="hub-tool-card" href="/csv-to-json/"><div class="hub-tool-card-header"><span class="hub-tool-icon"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-file-json " aria-hidden="true"><path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z"></path><path d="M14 2v4a2 2 0 0 0 2 2h4"></path><path d="M10 12a1 1 0 0 0-1 1v1a1 1 0 0 1-1 1 1 1 0 0 1 1 1v1a1 1 0 0 0 1 1"></path><path d="M14 18a1 1 0 0 0 1-1v-1a1 1 0 0 1 1-1 1 1 0 0 1-1-1v-1a1 1 0 0 0-1-1"></path></svg></span><h3 class="hub-tool-name">CSV to JSON</h3></div><p class="hub-tool-desc">Convert CSV data to JSON objects.</p></a><a class="hub-tool-card" href="/csv-to-excel/"><div class="hub-tool-card-header"><span class="hub-tool-icon"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-file-spreadsheet " aria-hidden="true"><path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z"></path><path d="M14 2v4a2 2 0 0 0 2 2h4"></path><path d="M8 13h2"></path><path d="M14 13h2"></path><path d="M8 17h2"></path><path d="M14 17h2"></path></svg></span><h3 class="hub-tool-name">CSV to Excel</h3></div><p class="hub-tool-desc">Convert CSV files to Excel (.XLSX).</p></a><a class="hub-tool-card" href="/excel-to-csv/"><div class="hub-tool-card-header"><span class="hub-tool-icon"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-file-text " aria-hidden="true"><path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z"></path><path d="M14 2v4a2 2 0 0 0 2 2h4"></path><path d="M10 9H8"></path><path d="M16 13H8"></path><path d="M16 17H8"></path></svg></span><h3 class="hub-tool-name">Excel to CSV</h3></div><p class="hub-tool-desc">Convert Excel spreadsheets to CSV text.</p></a><a class="hub-tool-card" href="/timestamp-converter/"><div class="hub-tool-card-header"><span class="hub-tool-icon"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-clock " aria-hidden="true"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg></span><h3 class="hub-tool-name">Timestamp Converter</h3></div><p class="hub-tool-desc">Convert Unix timestamps to human dates.</p></a><a class="hub-tool-card" href="/unit-converter/"><div class="hub-tool-card-header"><span class="hub-tool-icon"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-refresh-cw " aria-hidden="true"><path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8"></path><path d="M21 3v5h-5"></path><path d="M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16"></path><path d="M8 16H3v5"></path></svg></span><h3 class="hub-tool-name">Unit Converter</h3></div><p class="hub-tool-desc">Convert length, weight, temperature and data size.</p></a><a class="hub-tool-card" href="/zip-file-creator/"><div class="hub-tool-card-header"><span class="hub-tool-icon"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-archive " aria-hidden="true"><rect width="20" height="5" x="2" y="3" rx="1"></rect><path d="M4 8v11a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8"></path><path d="M10 12h4"></path></svg></span><h3 class="hub-tool-name">ZIP Creator</h3></div><p class="hub-tool-desc">Create ZIP archives from multiple files.</p></a><a class="hub-tool-card" href="/zip-viewer/"><div class="hub-tool-card-header"><span class="hub-tool-icon"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-search " aria-hidden="true"><circle cx="11" cy="11" r="8"></circle><path d="m21 21-4.3-4.3"></path></svg></span><h3 class="hub-tool-name">ZIP Viewer</h3></div><p class="hub-tool-desc">Browse the contents of a ZIP archive.</p></a><a class="hub-tool-card" href="/file-size-calculator/"><div class="hub-tool-card-header"><span class="hub-tool-icon"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-file-digit " aria-hidden="true"><path d="M4 22h14a2 2 0 0 0 2-2V7l-5-5H6a2 2 0 0 0-2 2v4"></path><path d="M14 2v4a2 2 0 0 0 2 2h4"></path><rect width="4" height="6" x="2" y="12" rx="2"></rect><path d="M10 12h2v6"></path><path d="M10 18h4"></path></svg></span><h3 class="hub-tool-name">File Size Calculator</h3></div><p class="hub-tool-desc">Convert file sizes between bytes, KB, MB, GB and TB.</p></a><a class="hub-tool-card" href="/batch-file-renamer/"><div class="hub-tool-card-header"><span class="hub-tool-icon"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-pen-line " aria-hidden="true"><path d="M12 20h9"></path><path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4Z"></path></svg></span><h3 class="hub-tool-name">Batch File Renamer</h3></div><p class="hub-tool-desc">Rename multiple files instantly.</p></a><a class="hub-tool-card" href="/file-metadata-viewer/"><div class="hub-tool-card-header"><span class="hub-tool-icon"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-search " aria-hidden="true"><circle cx="11" cy="11" r="8"></circle><path d="m21 21-4.3-4.3"></path></svg></span><h3 class="hub-tool-name">File Metadata</h3></div><p class="hub-tool-desc">Check file type, size, and MIME info.</p></a><a class="hub-tool-card" href="/gst-invoice-generator/"><div class="hub-tool-card-header"><span class="hub-tool-icon"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-receipt-indian-rupee " aria-hidden="true"><path d="M4 2v20l2-1 2 1 2-1 2 1 2-1 2 1 2-1 2 1V2l-2 1-2-1-2 1-2-1-2 1-2-1-2 1Z"></path><path d="M8 7h8"></path><path d="M12 17.5 8 15h1a4 4 0 0 0 0-8"></path><path d="M8 11h8"></path></svg></span><h3 class="hub-tool-name">GST Invoice Generator</h3></div><p class="hub-tool-desc">Indian GST invoice with the right CGST/SGST or IGST split.</p></a><a class="hub-tool-card" href="/pos-billing/"><div class="hub-tool-card-header"><span class="hub-tool-icon"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-shopping-cart " aria-hidden="true"><circle cx="8" cy="21" r="1"></circle><circle cx="19" cy="21" r="1"></circle><path d="M2.05 2.05h2l2.66 12.42a2 2 0 0 0 2 1.58h9.78a2 2 0 0 0 1.95-1.57l1.65-7.43H5.12"></path></svg></span><h3 class="hub-tool-name">POS Billing</h3></div><p class="hub-tool-desc">A browser till: tap products, print 80mm or A4 receipts.</p></a></div><div class="hub-prose"><section><h2>Spreadsheets, CSV and JSON</h2><p><a href="/csv-to-json/">CSV to JSON</a> reads a CSV and returns an array of objects keyed by the header row —
+            paste the text or drop the file, whichever is to hand. <a href="/json-to-csv/">JSON to CSV</a>, over with the
+            <a href="/developer-tools/">developer tools</a>, goes the other way and flattens nested objects
+            into dotted column names.</p><p><a href="/csv-to-excel/">CSV to Excel</a> produces a real <code>.xlsx</code> workbook, which matters more than it
+            sounds: renaming a CSV does not work, and opening one in Excel means an import dialogue
+            that decides your product codes are numbers. A genuine workbook opens straight into
+            Excel, Sheets and Numbers.</p><p><a href="/excel-to-csv/">Excel to CSV</a> is the return trip and is deliberately narrow: it takes the <strong>first
+            sheet</strong> of an <code>.xlsx</code> or <code>.xls</code> workbook and writes the <strong>displayed</strong> cell values,
+            so what you get is what the spreadsheet showed rather than the formulas underneath. If
+            the data needs to end up as a printed table instead, <a href="/csv-to-pdf/">CSV to PDF</a> and
+            <a href="/excel-to-pdf/">Excel to PDF</a> typeset it onto real pages with selectable text.</p></section><section><h2>Audio and video</h2><p><a href="/video-to-audio/">Video to Audio</a> pulls the audio track out of an MP4, MOV or AVI and saves it as a
+            192 kbps stereo MP3 — the usual reason being a recorded talk, interview or lecture you
+            want on a phone without carrying the picture. <a href="/audio-converter/">Audio Converter</a> moves an existing
+            audio file between MP3, WAV, Ogg Vorbis, FLAC and M4A, preserving the sample rate and
+            channel count rather than quietly resampling.</p><p>Both run FFmpeg compiled to WebAssembly inside the page, which has a visible cost and a
+            real benefit. The cost: the first conversion downloads the codec bundle, so the initial
+            run is slow. The benefit: a two-gigabyte video is never uploaded, so there is no wait on
+            your connection, no server-imposed size cap, and no copy of your footage anywhere.</p></section><section><h2>Archives, and looking before you extract</h2><p><a href="/zip-file-creator/">ZIP Creator</a> builds a ZIP from files on your machine — add and remove entries,
+            name the archive, then pack at deflate level six, a middle setting that compresses well
+            without a long wait.</p><p><a href="/zip-viewer/">ZIP Viewer</a> is the more interesting half. It lists what is inside an archive with
+            each entry's size by reading <strong>only the archive index</strong>: nothing is decompressed,
+            nothing is written to disk and nothing is executed. That makes it the safe way to answer
+            "what is actually in this attachment?" before you commit to extracting it.</p></section><section><h2>Numbers, times and sizes</h2><p><a href="/timestamp-converter/">Timestamp Converter</a> converts a Unix epoch timestamp into a readable date and back,
+            with the current timestamp ticking live and an ISO 8601 form alongside — enough to settle
+            most "is this seconds or milliseconds?" arguments at a glance.</p><p><a href="/unit-converter/">Unit Converter</a> covers four families and says so up front: length, weight,
+            temperature and digital storage. There is no area, speed or currency conversion here, so
+            you will not waste time hunting for a tab that is not there.</p><p><a href="/file-size-calculator/">File Size Calculator</a> takes one figure and shows it simultaneously in bytes, KB,
+            MB, GB, TB and bits, on 1024-based units. It is a pure converter — there is no
+            transfer-time estimate, because that would need a link speed it has no way to know.</p></section><section><h2>Working with the files themselves</h2><p><a href="/batch-file-renamer/">Batch File Renamer</a> applies a find-and-replace, a prefix, a suffix and a counter
+            across a list of files and shows you the resulting names <strong>before</strong> anything happens.
+            Because a browser cannot rewrite your disk, it hands back renamed copies in a ZIP and
+            leaves your originals exactly where they were — which is a limitation on paper and a
+            safety net in practice.</p><p><a href="/file-metadata-viewer/">File Metadata</a> reports a file's name, MIME type, size, extension and last
+            modified date without reading a single byte of its contents. A 60 GB video therefore
+            reports as instantly as a text file. To read the metadata <strong>inside</strong> a file rather than
+            around it, use <a href="/image-metadata-editor/">Image Metadata</a> for photographs or
+            <a href="/pdf-privacy-scanner/">PDF Privacy Scanner</a> for documents.</p></section><section><h2>Producing something new</h2><p>Three tools here generate a document rather than convert one. <a href="/qr-generator/">QR Generator</a> turns
+            a URL or any text into a QR code in your own colours and downloads it as a PNG; Wi-Fi and
+            vCard codes work if you type the standard string yourself, as there is no wizard.</p><p><a href="/gst-invoice-generator/">GST Invoice Generator</a> produces an Indian GST tax invoice with the CGST/SGST or
+            IGST split chosen automatically, HSN codes, rate-wise totals and the amount in words.
+            <a href="/pos-billing/">POS Billing</a> is a browser till: keep a product list, ring up a sale, apply a
+            discount and print an 80 mm thermal or A4 receipt as a PDF. Both keep every figure on
+            your own device.</p></section></div><nav class="hub-siblings" aria-label="Other tool categories"><h2>Other categories</h2><ul><li><a class="hub-sibling-link" href="/pdf-tools/">PDF Tools</a></li><li><a class="hub-sibling-link" href="/image-tools/">Image Tools</a></li><li><a class="hub-sibling-link" href="/text-tools/">Text Tools</a></li><li><a class="hub-sibling-link" href="/developer-tools/">Developer Tools</a></li><li><a class="hub-sibling-link" href="/security-tools/">Security Tools</a></li></ul></nav></div></div><!--/$--></main><footer class="site-footer"><div class="container footer-content"><div class="footer-brand"><h3>OnlineToolsVault</h3><p>Premium, free-to-use online tools for everyone. Free, Fast, Secure and Privacy Focused<br>You can check the source code <a href="https://github.com/OnlineToolsVault/OnlineToolsVault.github.io" target="_blank" rel="noopener noreferrer" style="color: var(--primary); text-decoration: underline;">here</a>.</p></div><div class="footer-links"><div class="footer-col"><h4>Popular Tools</h4><ul><li><a href="/merge-pdf/">Merge PDF</a></li><li><a href="/compress-pdf/">Compress PDF</a></li><li><a href="/image-compressor/">Image Compressor</a></li><li><a href="/qr-generator/">QR Generator</a></li></ul></div><div class="footer-col"><h4>Company</h4><ul><li><a href="/about/">About Us</a></li><li><a href="/contact/">Contact</a></li><li><a href="/privacy/">Privacy Policy</a></li><li><a href="/terms/">Terms of Service</a></li></ul></div><div class="footer-col"><h4>Connect</h4><ul><li><a href="https://x.com/sourcestrongai" target="_blank" rel="noopener noreferrer">Twitter</a></li><li><a href="https://github.com/OnlineToolsVault" target="_blank" rel="noopener noreferrer">GitHub</a></li><li><a href="https://www.linkedin.com/company/sourcestrongai" target="_blank" rel="noopener noreferrer">LinkedIn</a></li></ul></div></div></div><div class="container footer-bottom"><p>© 2026 Source Strong AI. All Rights Reserved. Managed under <a href="/terms/" style="color: inherit; text-decoration: underline;">Proprietary License</a>.</p><p style="display: flex; align-items: center; gap: 0.25rem;">Made with <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-heart "><path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z"></path></svg> for the web</p></div></footer></div></div>
+</body>
+
+</html>

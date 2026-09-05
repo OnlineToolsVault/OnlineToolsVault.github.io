@@ -1,0 +1,17 @@
+import { j as e, H as b, a as p, r as g } from "./index-DsTeKLg-.js";
+import { D as f, g as u, O as N, G as d, T as y, J as I, K as $ } from "./toolPageSchema-BVedbqe3.js";
+const L = new Map(u.map((i) => [i.href, i])), E = /(\[[^\]]*\]\([^)]+\)|\*\*[^*]+\*\*|`[^`]+`)/g, T = /^\[([^\]]*)\]\(([^)]+)\)$/, j = (i) => String(i).split(E).filter((r) => r !== "").map((r, t) => {
+  var _a;
+  const n = r.match(T);
+  if (n) {
+    const [, c, a] = n, h = a.startsWith("/"), l = h ? $(a) : a, m = c || ((_a = L.get(l)) == null ? void 0 : _a.name) || l;
+    return h ? e.jsx(p, { to: l, children: m }, t) : e.jsx("a", { href: a, rel: "noopener noreferrer", children: m }, t);
+  }
+  return r.startsWith("**") && r.endsWith("**") ? e.jsx("strong", { children: r.slice(2, -2) }, t) : r.startsWith("`") && r.endsWith("`") ? e.jsx("code", { children: r.slice(1, -1) }, t) : e.jsx(g.Fragment, { children: r }, t);
+}), v = ({ category: i, lede: r, sections: t = [] }) => {
+  const n = f(i), c = u.filter((s) => s.category === i), a = `https://onlinetoolsvault.com${n.href}`, h = (s) => String(s).replace(/\{count\}/g, c.length), l = [{ name: "Home", href: "/" }, { name: n.name, href: n.href }], m = { "@context": "https://schema.org", "@graph": [{ "@type": "CollectionPage", "@id": `${a}#webpage`, name: n.name, description: n.seoDescription, url: a, isPartOf: { "@id": `${d}/#website` }, publisher: { "@id": N }, mainEntity: { "@type": "ItemList", "@id": `${a}#tool-list`, name: n.name, numberOfItems: c.length, itemListElement: c.map((s, o) => ({ "@type": "ListItem", position: o + 1, name: s.name, url: `${d}${s.href}` })) } }, { "@type": "BreadcrumbList", "@id": `${a}#breadcrumb`, itemListElement: l.map((s, o) => ({ "@type": "ListItem", position: o + 1, name: s.name, item: `${d}${s.href}` })) }] };
+  return e.jsxs(e.Fragment, { children: [e.jsxs(b, { children: [e.jsx("title", { children: n.seoTitle }), e.jsx("meta", { name: "description", content: n.seoDescription }), e.jsx("link", { rel: "canonical", href: a }), e.jsx("script", { type: "application/ld+json", children: JSON.stringify(m) })] }), e.jsx("div", { className: "hub-page", children: e.jsxs("div", { className: "container", children: [e.jsx(y, { crumbs: l }), e.jsxs("header", { className: "hub-header", children: [e.jsx("h1", { children: n.name }), e.jsx("p", { className: "hub-lede", children: j(h(r)) })] }), e.jsx("h2", { className: "hub-section-heading", children: `All ${n.name} (${c.length})` }), e.jsx("div", { className: "hub-tools-grid", children: c.map((s) => e.jsxs(p, { to: s.href, className: "hub-tool-card", children: [e.jsxs("div", { className: "hub-tool-card-header", children: [e.jsx("span", { className: "hub-tool-icon", children: e.jsx(s.icon, { size: 20, "aria-hidden": "true" }) }), e.jsx("h3", { className: "hub-tool-name", children: s.name })] }), e.jsx("p", { className: "hub-tool-desc", children: s.description })] }, s.id)) }), e.jsx("div", { className: "hub-prose", children: t.map((s) => e.jsxs("section", { children: [e.jsx("h2", { children: s.heading }), s.paragraphs.map((o, x) => e.jsx("p", { children: j(h(o)) }, x))] }, s.heading)) }), e.jsxs("nav", { className: "hub-siblings", "aria-label": "Other tool categories", children: [e.jsx("h2", { children: "Other categories" }), e.jsx("ul", { children: I.filter((s) => s.category !== i).map((s) => e.jsx("li", { children: e.jsx(p, { to: s.href, className: "hub-sibling-link", children: s.name }) }, s.category)) })] })] }) })] });
+};
+export {
+  v as C
+};

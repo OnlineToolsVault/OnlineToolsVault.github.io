@@ -3,8 +3,36 @@
 
 <head>
   <meta charset="UTF-8" />
-  <link rel="icon" type="image/svg+xml" href="/vite.svg" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+  <!--
+    Icons.
+
+    The files live in public/ and are copied to the site root verbatim, so every href here is an
+    absolute path from the root and stays correct on the deep routes (/merge-pdf/, /pdf-to-word/)
+    where a relative href would resolve one directory too far down.
+
+    - favicon.ico is the multi-size fallback browsers and crawlers request at the fixed
+      /favicon.ico address whether or not it is declared. `sizes="any"` marks it as the
+      resolution-independent entry so a browser that also understands the PNGs below prefers those.
+    - favicon-32.png is the tab icon, favicon-192.png the Android home-screen icon and
+      favicon-512.png the large icon used for install prompts and as the Organization logo in the
+      structured data further down.
+    - apple-touch-icon.png is what iOS uses for "Add to Home Screen"; it must be a non-transparent
+      180x180 PNG, since iOS composites nothing behind it.
+    - site.webmanifest names the app for installability. It is same-origin, so no `crossorigin`.
+
+    theme-color is the resolved value of the `--primary` token in src/index.css, and it must stay
+    equal to `theme_color` in public/site.webmanifest — the two colour the same browser chrome from
+    different sources, and disagreeing is a reported defect rather than a fallback.
+  -->
+  <link rel="icon" href="/favicon.ico" sizes="any" />
+  <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32.png" />
+  <link rel="icon" type="image/png" sizes="192x192" href="/favicon-192.png" />
+  <link rel="icon" type="image/png" sizes="512x512" href="/favicon-512.png" />
+  <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+  <link rel="manifest" href="/site.webmanifest" />
+  <meta name="theme-color" content="#6E42F0" />
   <title data-rh="true">CSV to PDF Converter - Make a PDF Table Online</title>
   <meta data-rh="true" name="description" content="Convert CSV to a formatted PDF table with repeating headers, portrait or landscape pages and page numbers. The delimiter is detected for you; no uploads." />
 
@@ -29,21 +57,68 @@
   <meta name="twitter:image:alt" content="CSV to PDF — OnlineToolsVault" />
   <meta name="twitter:creator" content="@sourcestrongai" />
 
-  <!-- Structured Data (JSON-LD) -->
+  <!--
+    Structured Data (JSON-LD) — the SITE-LEVEL graph, and nothing else.
+
+    generate-sitemap.js copies this file to dist/<route>/index.html for every route and only
+    rewrites title/description/canonical/og/twitter, so whatever sits here ships on every page
+    unchanged. That is exactly right for Organization and WebSite — they describe the site, not the
+    document — and exactly wrong for a page entity.
+
+    This block used to be a WebApplication whose "url" was the homepage. Because it shipped
+    verbatim on every page, each tool page declared the homepage as its primary entity, so no
+    tool page described itself at all. The per-page entity now comes from
+    src/components/tools/ToolLayout.jsx, which emits a SoftwareApplication pointing at that page's
+    own canonical, plus a BreadcrumbList and the FAQPage. Do not reintroduce a page-scoped type
+    here: two primary entities on one document is worse than none.
+
+    The @id values are what tie the two together and let the per-page nodes reference the publisher
+    without restating it.
+
+    No potentialAction/SearchAction. A SearchAction has to name a URL template that really performs
+    a search, and this site has none — the home page filters an already-loaded list in component
+    state, with no query parameter and no /search route (checked against src/App.jsx). Declaring
+    one anyway would be a claim Google can, and does, test.
+  -->
   <script type="application/ld+json">
     {
       "@context": "https://schema.org",
-      "@type": "WebApplication",
-      "name": "OnlineToolsVault",
-      "url": "https://onlinetoolsvault.com/",
-      "description": "Collection of free online client-side tools for PDF and image processing.",
-      "applicationCategory": "Utility",
-      "operatingSystem": "All",
-      "author": {
-        "@type": "Organization",
-        "name": "Source Strong AI",
-        "url": "https://sourcestrongai.com"
-      }
+      "@graph": [
+        {
+          "@type": "Organization",
+          "@id": "https://onlinetoolsvault.com/#organization",
+          "name": "OnlineToolsVault",
+          "url": "https://onlinetoolsvault.com/",
+          "logo": {
+            "@type": "ImageObject",
+            "@id": "https://onlinetoolsvault.com/#logo",
+            "url": "https://onlinetoolsvault.com/favicon-512.png",
+            "contentUrl": "https://onlinetoolsvault.com/favicon-512.png",
+            "width": 512,
+            "height": 512,
+            "caption": "OnlineToolsVault"
+          },
+          "image": {
+            "@id": "https://onlinetoolsvault.com/#logo"
+          },
+          "sameAs": [
+            "https://github.com/OnlineToolsVault",
+            "https://x.com/sourcestrongai",
+            "https://www.linkedin.com/company/sourcestrongai"
+          ]
+        },
+        {
+          "@type": "WebSite",
+          "@id": "https://onlinetoolsvault.com/#website",
+          "name": "OnlineToolsVault",
+          "url": "https://onlinetoolsvault.com/",
+          "description": "Free, client-side tools for PDF, image, text, developer and security tasks. Files are processed in the browser and never uploaded.",
+          "inLanguage": "en",
+          "publisher": {
+            "@id": "https://onlinetoolsvault.com/#organization"
+          }
+        }
+      ]
     }
   </script>
 
@@ -89,16 +164,80 @@
     }
   </style>
 
-  <!-- Analytics & Ads -->
-  <script async src="https://www.googletagmanager.com/gtag/js?id=G-EVGNTG49J7"></script>
+  <!--
+    Analytics & Ads — requested after first paint, not from the document head.
+
+    Both of these used to be async script tags right here. "async" only means "do not block
+    parsing"; it does nothing about the bandwidth, connection slots and main-thread time the two
+    scripts take, and both were being fetched and executed in the same window the browser needed to
+    render and lay out the largest element. Together they are the biggest third-party payload the
+    site loads, and they were arriving before any of the page a visitor came for.
+
+    So the loading is moved behind the load event and then an idle callback: nothing here competes
+    with first paint or with the work that follows it, and both scripts still end up in the
+    document doing exactly what they did before.
+
+    The gtag command queue stays inline and eager on purpose. It is a three-line stub with no
+    network cost, and `dataLayer` is a queue by design — the `js` and `config` commands pushed here
+    sit in the array until the real tag script arrives and replays them, so the page_view is still
+    recorded with the URL, title and referrer the visitor actually landed on. Removing the stub and
+    configuring after load instead would lose any event fired in between.
+
+    The AdSense loader is unconditional in the same way it was before: nothing in src/ calls
+    `adsbygoogle.push`, so this tag exists for account verification and Auto Ads, neither of which
+    cares when in the page lifecycle it runs.
+
+    requestIdleCallback gets a timeout so a page that never goes idle (an editor route with a
+    busy main thread) still loads them; browsers without it fall back to a plain timer.
+
+    scripts/prerender.js sets window.__PRERENDER__ and blocks every third-party request, so the
+    build would only fire two requests that are immediately aborted. Skip the whole thing there.
+  -->
   <script>
     window.dataLayer = window.dataLayer || [];
     function gtag() { dataLayer.push(arguments); }
     gtag('js', new Date());
     gtag('config', 'G-EVGNTG49J7');
+
+    (function () {
+      if (window.__PRERENDER__) return;
+
+      var deferred = [
+        { src: 'https://www.googletagmanager.com/gtag/js?id=G-EVGNTG49J7' },
+        {
+          src: 'https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-4988388949365963',
+          crossOrigin: 'anonymous'
+        }
+      ];
+
+      var started = false;
+      function loadDeferred() {
+        if (started) return;
+        started = true;
+        for (var i = 0; i < deferred.length; i++) {
+          var script = document.createElement('script');
+          script.async = true;
+          if (deferred[i].crossOrigin) script.crossOrigin = deferred[i].crossOrigin;
+          script.src = deferred[i].src;
+          document.head.appendChild(script);
+        }
+      }
+
+      function scheduleAfterPaint() {
+        if (typeof window.requestIdleCallback === 'function') {
+          window.requestIdleCallback(loadDeferred, { timeout: 3000 });
+        } else {
+          window.setTimeout(loadDeferred, 1500);
+        }
+      }
+
+      if (document.readyState === 'complete') {
+        scheduleAfterPaint();
+      } else {
+        window.addEventListener('load', scheduleAfterPaint, { once: true });
+      }
+    })();
   </script>
-  <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-4988388949365963"
-    crossorigin="anonymous"></script>
 
   <!--
     Retire the old COOP/COEP service worker.
@@ -205,16 +344,18 @@
       }
     })();
   </script>
-  <script type="module" crossorigin src="/assets/index-OUpguYFg.js"></script>
-  <link rel="stylesheet" crossorigin href="/assets/index-Cv0roaG_.css">
+  <script type="module" crossorigin src="/assets/index-DsTeKLg-.js"></script>
+  <link rel="stylesheet" crossorigin href="/assets/index-CGynhGor.css">
   <link data-rh="true" rel="canonical" href="https://onlinetoolsvault.com/csv-to-pdf/" />
   <!-- prerender:head -->
-  <script type="application/ld+json" data-rh="true">{"@context":"https://schema.org","@type":"FAQPage","mainEntity":[{"@type":"Question","name":"Which delimiters are recognised?","acceptedAnswer":{"@type":"Answer","text":"Comma, semicolon, tab and pipe. Each one is tried against the file with the full parser, and the winner is the one that produces the most columns most consistently across the first twenty-five rows — a comma wins any tie. The delimiter in use and the column count are shown under the editor, so you can see what was decided before you generate anything. A semicolon file exported from a European locale, or a tab-separated export saved with a .csv extension, both convert with nothing to set. Detection is still a guess and can be beaten — a tab-separated file whose address column carries two commas per row scores higher on comma than on tab and would be split in the wrong places — so the Delimiter box lets you pin it to one character instead. The readout then says \"Using\" rather than \"Detected\"."}},{"@type":"Question","name":"Is anything converted or reformatted on the way through?","acceptedAnswer":{"@type":"Answer","text":"Almost nothing. No cell is parsed into a number or a date, so leading zeros survive, long identifiers are not turned into scientific notation, and a date written as 03/04 stays as written rather than being guessed as March or April. Two things are decided for you. Alignment: a column in which every populated cell is a number is right-aligned so the figures line up, heading included, and every other column is left-aligned — the preview lines columns up exactly the same way, so what you see before downloading is what prints. And characters: text is composed first, so an accent typed as a separate combining mark becomes the single accented letter it looks like; then the standard PDF fonts cover Latin-1 only, so anything outside that — Cyrillic, Greek, CJK, emoji and the like — is swapped for a question mark, with the total shown after the download rather than being allowed to corrupt the rest of the cell."}},{"@type":"Question","name":"My table has thirty columns and the text is unreadable.","acceptedAnswer":{"@type":"Answer","text":"By default the whole table is squeezed into the page width, wrapping cell text as needed, which stops being comfortable somewhere around a dozen columns. Switching to landscape is the first thing to try, and then the option to continue wide tables on further pages: that stops squeezing and instead prints the columns that do not fit on subsequent pages, repeating the first column on each so the rows can still be identified. On those continuation pages the repeated first column is never allowed more than half the page and no other column more than the rest, so a column holding a paragraph of text wraps instead of shouldering the columns beside it off the edge of the paper. Note that the text size does not change how many columns fit — the squeeze has a hard floor of 10 points per column whatever the font size, so it only changes how tall the rows are and how much text wraps. Past that floor (52 columns on A4 portrait, 76 on A4 landscape) squeezing is impossible, and the continuation pages are turned on automatically with a notice rather than letting the far side of the table run off the paper. The same thing happens sooner if the headings are long: once a squeezed heading would wrap into a band taking most of the page, continuation pages are used instead, because a table whose heading band is deeper than its rows is not readable and the layout engine cannot fit a row beneath it."}},{"@type":"Question","name":"What happens to the first row?","acceptedAnswer":{"@type":"Answer","text":"With the header option ticked, the first row becomes the table heading — white on a blue band in the striped and grid styles, black and bold with no band in the plain one — and it is repeated at the top of every page unless you turn that off. An empty heading cell is labelled Column 1, Column 2 and so on rather than being left blank, in the preview as well as in the PDF. Untick the option when the file has no header and the first line is real data: no heading row is printed at all, invented names are not added, and every line in the file including the first is set as an ordinary body row."}},{"@type":"Question","name":"How are rows split across pages?","acceptedAnswer":{"@type":"Answer","text":"A row is never cut in half. Rows are placed until the next one would cross the bottom margin, and then a new page starts. Because a cell wraps rather than clipping, one row containing a long paragraph can be several lines tall, and a single row taller than a whole page will be split as a last resort. Page numbers, if enabled, are stamped at the bottom of every page after the table is laid out, so the count is right."}},{"@type":"Question","name":"Which files can I drop in, and how big can they be?","acceptedAnswer":{"@type":"Answer","text":"Files with a .csv, .tsv or .txt extension; anything else is refused with a message rather than ignored. The byte-order mark decides the encoding: a UTF-16 mark means the file is decoded as UTF-16 — that is what Excel's \"Unicode Text\" export writes — and otherwise it is read as UTF-8 with any mark stripped. If those bytes are not valid UTF-8 the file is re-read as Windows-1252, what a plain \"Save as CSV\" in Excel still writes, and you are told so, because that is the difference between Besançon and Besan?on. A file that still contains NUL bytes after all that is not text at all and is refused by name rather than converted into a page of question marks. You can also paste straight into the editor. There is no coded size limit, but the whole file is held in memory as text, parsed into an array of rows and then laid out cell by cell — a few thousand rows is comfortable, tens of thousands will make the browser work hard and produce a document nobody wants to read. Physically blank lines are skipped; a line of nothing but delimiters is a row of empty cells and is kept, so the rows after it are not renumbered. Ragged rows are padded so every row has the same number of cells."}},{"@type":"Question","name":"Can I get a spreadsheet instead of a PDF?","acceptedAnswer":{"@type":"Answer","text":"Yes, with a different tool. CSV to Excel writes a real .xlsx workbook and CSV to JSON produces an array of objects — though both of those infer types, which is exactly what this tool avoids. Going the other way, PDF to Excel pulls tables back out of a PDF. Choose the PDF when the table is going to be read, printed, attached to an email or signed off, rather than edited."}},{"@type":"Question","name":"Is my data uploaded?","acceptedAnswer":{"@type":"Answer","text":"No. The file is read in the browser with the File API, parsed in page memory and laid out into a PDF in the same tab, which is then handed to your downloads folder. Nothing is transmitted at any point — worth knowing when the spreadsheet is a payroll export, a customer list or a set of transactions."}}]}</script>
+  <script type="application/ld+json" data-rh="true">{"@context":"https://schema.org","@type":"SoftwareApplication","@id":"https://onlinetoolsvault.com/csv-to-pdf/#software","name":"CSV to PDF","url":"https://onlinetoolsvault.com/csv-to-pdf/","description":"Convert CSV to a formatted PDF table with repeating headers, portrait or landscape pages and page numbers. The delimiter is detected for you; no uploads.","applicationCategory":"UtilitiesApplication","operatingSystem":"Any","browserRequirements":"Requires JavaScript.","isAccessibleForFree":true,"offers":{"@type":"Offer","price":"0","priceCurrency":"USD","availability":"https://schema.org/InStock"},"publisher":{"@id":"https://onlinetoolsvault.com/#organization"}}</script>
+  <script type="application/ld+json" data-rh="true">{"@context":"https://schema.org","@type":"BreadcrumbList","@id":"https://onlinetoolsvault.com/csv-to-pdf/#breadcrumb","itemListElement":[{"@type":"ListItem","position":1,"name":"Home","item":"https://onlinetoolsvault.com/"},{"@type":"ListItem","position":2,"name":"PDF Tools","item":"https://onlinetoolsvault.com/pdf-tools/"},{"@type":"ListItem","position":3,"name":"CSV to PDF","item":"https://onlinetoolsvault.com/csv-to-pdf/"}]}</script>
+  <script type="application/ld+json" data-rh="true">{"@context":"https://schema.org","@type":"FAQPage","@id":"https://onlinetoolsvault.com/csv-to-pdf/#faq","mainEntity":[{"@type":"Question","name":"Which delimiters are recognised?","acceptedAnswer":{"@type":"Answer","text":"Comma, semicolon, tab and pipe. Each one is tried against the file with the full parser, and the winner is the one that produces the most columns most consistently across the first twenty-five rows — a comma wins any tie. The delimiter in use and the column count are shown under the editor, so you can see what was decided before you generate anything. A semicolon file exported from a European locale, or a tab-separated export saved with a .csv extension, both convert with nothing to set. Detection is still a guess and can be beaten — a tab-separated file whose address column carries two commas per row scores higher on comma than on tab and would be split in the wrong places — so the Delimiter box lets you pin it to one character instead. The readout then says \"Using\" rather than \"Detected\"."}},{"@type":"Question","name":"Is anything converted or reformatted on the way through?","acceptedAnswer":{"@type":"Answer","text":"Almost nothing. No cell is parsed into a number or a date, so leading zeros survive, long identifiers are not turned into scientific notation, and a date written as 03/04 stays as written rather than being guessed as March or April. Two things are decided for you. Alignment: a column in which every populated cell is a number is right-aligned so the figures line up, heading included, and every other column is left-aligned — the preview lines columns up exactly the same way, so what you see before downloading is what prints. And characters: text is composed first, so an accent typed as a separate combining mark becomes the single accented letter it looks like; then the standard PDF fonts cover Latin-1 only, so anything outside that — Cyrillic, Greek, CJK, emoji and the like — is swapped for a question mark, with the total shown after the download rather than being allowed to corrupt the rest of the cell."}},{"@type":"Question","name":"My table has thirty columns and the text is unreadable.","acceptedAnswer":{"@type":"Answer","text":"By default the whole table is squeezed into the page width, wrapping cell text as needed, which stops being comfortable somewhere around a dozen columns. Switching to landscape is the first thing to try, and then the option to continue wide tables on further pages: that stops squeezing and instead prints the columns that do not fit on subsequent pages, repeating the first column on each so the rows can still be identified. On those continuation pages the repeated first column is never allowed more than half the page and no other column more than the rest, so a column holding a paragraph of text wraps instead of shouldering the columns beside it off the edge of the paper. Note that the text size does not change how many columns fit — the squeeze has a hard floor of 10 points per column whatever the font size, so it only changes how tall the rows are and how much text wraps. Past that floor (52 columns on A4 portrait, 76 on A4 landscape) squeezing is impossible, and the continuation pages are turned on automatically with a notice rather than letting the far side of the table run off the paper. The same thing happens sooner if the headings are long: once a squeezed heading would wrap into a band taking most of the page, continuation pages are used instead, because a table whose heading band is deeper than its rows is not readable and the layout engine cannot fit a row beneath it."}},{"@type":"Question","name":"What happens to the first row?","acceptedAnswer":{"@type":"Answer","text":"With the header option ticked, the first row becomes the table heading — white on a blue band in the striped and grid styles, black and bold with no band in the plain one — and it is repeated at the top of every page unless you turn that off. An empty heading cell is labelled Column 1, Column 2 and so on rather than being left blank, in the preview as well as in the PDF. Untick the option when the file has no header and the first line is real data: no heading row is printed at all, invented names are not added, and every line in the file including the first is set as an ordinary body row."}},{"@type":"Question","name":"How are rows split across pages?","acceptedAnswer":{"@type":"Answer","text":"A row is never cut in half. Rows are placed until the next one would cross the bottom margin, and then a new page starts. Because a cell wraps rather than clipping, one row containing a long paragraph can be several lines tall, and a single row taller than a whole page will be split as a last resort. Page numbers, if enabled, are stamped at the bottom of every page after the table is laid out, so the count is right."}},{"@type":"Question","name":"Which files can I drop in, and how big can they be?","acceptedAnswer":{"@type":"Answer","text":"Files with a .csv, .tsv or .txt extension; anything else is refused with a message rather than ignored. The byte-order mark decides the encoding: a UTF-16 mark means the file is decoded as UTF-16 — that is what Excel's \"Unicode Text\" export writes — and otherwise it is read as UTF-8 with any mark stripped. If those bytes are not valid UTF-8 the file is re-read as Windows-1252, what a plain \"Save as CSV\" in Excel still writes, and you are told so, because that is the difference between Besançon and Besan?on. A file that still contains NUL bytes after all that is not text at all and is refused by name rather than converted into a page of question marks. You can also paste straight into the editor. There is no coded size limit, but the whole file is held in memory as text, parsed into an array of rows and then laid out cell by cell — a few thousand rows is comfortable, tens of thousands will make the browser work hard and produce a document nobody wants to read. Physically blank lines are skipped; a line of nothing but delimiters is a row of empty cells and is kept, so the rows after it are not renumbered. Ragged rows are padded so every row has the same number of cells."}},{"@type":"Question","name":"Can I get a spreadsheet instead of a PDF?","acceptedAnswer":{"@type":"Answer","text":"Yes, with a different tool. CSV to Excel writes a real .xlsx workbook and CSV to JSON produces an array of objects — though both of those infer types, which is exactly what this tool avoids. Going the other way, PDF to Excel pulls tables back out of a PDF. Choose the PDF when the table is going to be read, printed, attached to an email or signed off, rather than edited."}},{"@type":"Question","name":"Is my data uploaded?","acceptedAnswer":{"@type":"Answer","text":"No. The file is read in the browser with the File API, parsed in page memory and laid out into a PDF in the same tab, which is then handed to your downloads folder. Nothing is transmitted at any point — worth knowing when the spreadsheet is a payroll export, a customer list or a set of transactions."}}]}</script>
   <!-- /prerender:head -->
 </head>
 
 <body>
-  <div id="root" data-prerendered="static"><div class="app-wrapper"><header class="site-header"><div class="container header-container"><a class="logo" href="/"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-rocket logo-icon"><path d="M4.5 16.5c-1.5 1.26-2 5-2 5s3.74-.5 5-2c.71-.84.7-2.13-.09-2.91a2.18 2.18 0 0 0-2.91-.09z"></path><path d="m12 15-3-3a22 22 0 0 1 2-3.95A12.88 12.88 0 0 1 22 2c0 2.72-.78 7.5-6 11a22.35 22.35 0 0 1-4 2z"></path><path d="M9 12H4s.55-3.03 2-4c1.62-1.08 5 0 5 0"></path><path d="M12 15v5s3.03-.55 4-2c1.08-1.62 0-5 0-5"></path></svg><span>OnlineToolsVault</span></a><nav class="nav-desktop"><a class="nav-link" href="/">Home</a><a class="nav-link" href="/about/">About</a><a class="nav-link" href="/contact/">Contact</a><div class="social-icons"><a href="https://x.com/sourcestrongai" target="_blank" rel="noopener noreferrer" class="social-icon" aria-label="Twitter"><svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-twitter "><path d="M22 4s-.7 2.1-2 3.4c1.6 10-9.4 17.3-18 11.6 2.2.1 4.4-.6 6-2C3 15.5.5 9.6 3 5c2.2 2.6 5.6 4.1 9 4-.9-4.2 4-6.6 7-3.8 1.1 0 3-1.2 3-1.2z"></path></svg></a><a href="https://www.linkedin.com/company/sourcestrongai" target="_blank" rel="noopener noreferrer" class="social-icon" aria-label="LinkedIn"><svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-linkedin "><path d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-2-2 2 2 0 0 0-2 2v7h-4v-7a6 6 0 0 1 6-6z"></path><rect width="4" height="12" x="2" y="9"></rect><circle cx="4" cy="4" r="2"></circle></svg></a></div></nav><button class="nav-mobile-btn" aria-label="Open menu" aria-expanded="false" aria-controls="mobile-menu"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-menu "><line x1="4" x2="20" y1="12" y2="12"></line><line x1="4" x2="20" y1="6" y2="6"></line><line x1="4" x2="20" y1="18" y2="18"></line></svg></button></div></header><main class="main-content"><!--$--><div class="container" style="padding: 3rem 1.5rem;"><div style="max-width: 1000px; margin: 0px auto;"><header style="margin-bottom: 3rem; text-align: center;"><h1 style="font-size: 2.5rem; font-weight: 800; margin-bottom: 0.5rem;">CSV to PDF</h1><p style="color: rgb(100, 116, 139);">Turn a CSV, TSV or pipe-separated file into a formatted, paginated PDF table.</p></header><div class="tool-workspace" style="max-width: 1000px; margin: 0px auto;"><div style="background: white; border: 1px solid var(--border); border-radius: 1rem; padding: 1.5rem;"><div role="presentation" tabindex="0" class="tool-upload-area" style="border: 2px dashed var(--border); border-radius: 0.75rem; padding: 1rem; text-align: center; cursor: pointer; background: rgb(248, 250, 252); margin-bottom: 1rem; display: flex; align-items: center; justify-content: center; gap: 0.6rem; color: rgb(71, 85, 105); font-size: 0.9rem;"><input accept="text/csv,.csv,text/tab-separated-values,.tsv,text/plain,.txt" type="file" tabindex="-1" aria-label="Choose a CSV file" style="border: 0px; clip: rect(0px, 0px, 0px, 0px); clip-path: inset(50%); height: 1px; margin: 0px -1px -1px 0px; overflow: hidden; padding: 0px; position: absolute; width: 1px; white-space: nowrap;"><svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-upload "><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="17 8 12 3 7 8"></polyline><line x1="12" x2="12" y1="3" y2="15"></line></svg><span>Drop a <strong>.csv</strong>, <strong>.tsv</strong> or <strong>.txt</strong> file here, or click to browse</span></div><div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 1.5rem;"><div><label for="csv-to-pdf-source" style="display: block; margin-bottom: 0.35rem; font-weight: 600; font-size: 0.8rem; color: rgb(51, 65, 85);">CSV data</label><textarea id="csv-to-pdf-source" placeholder="Name,Role,Started
+  <div id="root" data-prerendered="static"><div class="app-wrapper"><header class="site-header"><div class="container header-container"><a class="logo" href="/"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-rocket logo-icon"><path d="M4.5 16.5c-1.5 1.26-2 5-2 5s3.74-.5 5-2c.71-.84.7-2.13-.09-2.91a2.18 2.18 0 0 0-2.91-.09z"></path><path d="m12 15-3-3a22 22 0 0 1 2-3.95A12.88 12.88 0 0 1 22 2c0 2.72-.78 7.5-6 11a22.35 22.35 0 0 1-4 2z"></path><path d="M9 12H4s.55-3.03 2-4c1.62-1.08 5 0 5 0"></path><path d="M12 15v5s3.03-.55 4-2c1.08-1.62 0-5 0-5"></path></svg><span>OnlineToolsVault</span></a><nav class="nav-desktop"><a class="nav-link" href="/">Home</a><a class="nav-link" href="/about/">About</a><a class="nav-link" href="/contact/">Contact</a><div class="social-icons"><a href="https://x.com/sourcestrongai" target="_blank" rel="noopener noreferrer" class="social-icon" aria-label="Twitter"><svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-twitter "><path d="M22 4s-.7 2.1-2 3.4c1.6 10-9.4 17.3-18 11.6 2.2.1 4.4-.6 6-2C3 15.5.5 9.6 3 5c2.2 2.6 5.6 4.1 9 4-.9-4.2 4-6.6 7-3.8 1.1 0 3-1.2 3-1.2z"></path></svg></a><a href="https://www.linkedin.com/company/sourcestrongai" target="_blank" rel="noopener noreferrer" class="social-icon" aria-label="LinkedIn"><svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-linkedin "><path d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-2-2 2 2 0 0 0-2 2v7h-4v-7a6 6 0 0 1 6-6z"></path><rect width="4" height="12" x="2" y="9"></rect><circle cx="4" cy="4" r="2"></circle></svg></a></div></nav><button class="nav-mobile-btn" aria-label="Open menu" aria-expanded="false" aria-controls="mobile-menu"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-menu "><line x1="4" x2="20" y1="12" y2="12"></line><line x1="4" x2="20" y1="6" y2="6"></line><line x1="4" x2="20" y1="18" y2="18"></line></svg></button></div></header><main class="main-content"><!--$--><div class="container" style="padding: 3rem 1.5rem;"><div style="max-width: 1000px; margin: 0px auto;"><nav aria-label="Breadcrumb" style="margin-bottom: 2rem;"><ol style="display: flex; flex-wrap: wrap; align-items: center; gap: 0.5rem; list-style: none; margin: 0px; padding: 0px; font-size: 0.875rem; color: var(--text-secondary);"><li style="display: flex; align-items: center; gap: 0.5rem; min-width: 0px;"><a href="/" style="color: var(--text-secondary); text-decoration: none;">Home</a></li><li style="display: flex; align-items: center; gap: 0.5rem; min-width: 0px;"><span aria-hidden="true" style="color: var(--text-tertiary);">/</span><a href="/pdf-tools/" style="color: var(--text-secondary); text-decoration: none;">PDF Tools</a></li><li style="display: flex; align-items: center; gap: 0.5rem; min-width: 0px;"><span aria-hidden="true" style="color: var(--text-tertiary);">/</span><span aria-current="page" style="color: var(--text-primary); font-weight: 600;">CSV to PDF</span></li></ol></nav><header style="margin-bottom: 3rem; text-align: center;"><h1 style="font-size: 2.5rem; font-weight: 800; margin-bottom: 0.5rem;">CSV to PDF</h1><p style="color: rgb(100, 116, 139);">Turn a CSV, TSV or pipe-separated file into a formatted, paginated PDF table.</p></header><div class="tool-workspace" style="max-width: 1000px; margin: 0px auto;"><div style="background: white; border: 1px solid var(--border); border-radius: 1rem; padding: 1.5rem;"><div role="presentation" tabindex="0" class="tool-upload-area" style="border: 2px dashed var(--border); border-radius: 0.75rem; padding: 1rem; text-align: center; cursor: pointer; background: rgb(248, 250, 252); margin-bottom: 1rem; display: flex; align-items: center; justify-content: center; gap: 0.6rem; color: rgb(71, 85, 105); font-size: 0.9rem;"><input accept="text/csv,.csv,text/tab-separated-values,.tsv,text/plain,.txt" type="file" tabindex="-1" aria-label="Choose a CSV file" style="border: 0px; clip: rect(0px, 0px, 0px, 0px); clip-path: inset(50%); height: 1px; margin: 0px -1px -1px 0px; overflow: hidden; padding: 0px; position: absolute; width: 1px; white-space: nowrap;"><svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-upload "><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="17 8 12 3 7 8"></polyline><line x1="12" x2="12" y1="3" y2="15"></line></svg><span>Drop a <strong>.csv</strong>, <strong>.tsv</strong> or <strong>.txt</strong> file here, or click to browse</span></div><div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 1.5rem;"><div><label for="csv-to-pdf-source" style="display: block; margin-bottom: 0.35rem; font-weight: 600; font-size: 0.8rem; color: rgb(51, 65, 85);">CSV data</label><textarea id="csv-to-pdf-source" placeholder="Name,Role,Started
 Ada,Engineer,2024-01-09" spellcheck="false" style="width: 100%; height: 260px; padding: 0.9rem; border-radius: 0.5rem; border: 1px solid var(--border); font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 0.82rem; line-height: 1.6; resize: vertical; background: rgb(248, 250, 252); color: rgb(15, 23, 42);">Invoice,Client,Issued,Due,Currency,Amount,Status
 INV-1041,"Northwind Ltd, Bristol",2026-01-08,2026-02-07,GBP,4820.00,Paid
 INV-1042,Harbour &amp; Sons,2026-01-11,2026-02-10,GBP,1290.50,Paid

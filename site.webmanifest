@@ -1,0 +1,24 @@
+{
+  "name": "OnlineToolsVault — Free Online Tools",
+  "short_name": "ToolsVault",
+  "description": "Free PDF, image, text, developer and security tools that run entirely in your browser.",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "theme_color": "#6E42F0",
+  "background_color": "#FFFFFF",
+  "icons": [
+    {
+      "src": "/favicon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/favicon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}

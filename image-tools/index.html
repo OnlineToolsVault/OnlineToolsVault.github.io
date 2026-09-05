@@ -1,0 +1,403 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+  <!--
+    Icons.
+
+    The files live in public/ and are copied to the site root verbatim, so every href here is an
+    absolute path from the root and stays correct on the deep routes (/merge-pdf/, /pdf-to-word/)
+    where a relative href would resolve one directory too far down.
+
+    - favicon.ico is the multi-size fallback browsers and crawlers request at the fixed
+      /favicon.ico address whether or not it is declared. `sizes="any"` marks it as the
+      resolution-independent entry so a browser that also understands the PNGs below prefers those.
+    - favicon-32.png is the tab icon, favicon-192.png the Android home-screen icon and
+      favicon-512.png the large icon used for install prompts and as the Organization logo in the
+      structured data further down.
+    - apple-touch-icon.png is what iOS uses for "Add to Home Screen"; it must be a non-transparent
+      180x180 PNG, since iOS composites nothing behind it.
+    - site.webmanifest names the app for installability. It is same-origin, so no `crossorigin`.
+
+    theme-color is the resolved value of the `--primary` token in src/index.css, and it must stay
+    equal to `theme_color` in public/site.webmanifest — the two colour the same browser chrome from
+    different sources, and disagreeing is a reported defect rather than a fallback.
+  -->
+  <link rel="icon" href="/favicon.ico" sizes="any" />
+  <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32.png" />
+  <link rel="icon" type="image/png" sizes="192x192" href="/favicon-192.png" />
+  <link rel="icon" type="image/png" sizes="512x512" href="/favicon-512.png" />
+  <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+  <link rel="manifest" href="/site.webmanifest" />
+  <meta name="theme-color" content="#6E42F0" />
+  <title data-rh="true">Free Image Tools - Compress, Resize, Convert and Crop Photos</title>
+  <meta data-rh="true" name="description" content="Compress, resize, crop and convert photos, strip EXIF and GPS data, and process whole batches at once. Everything runs in your browser, with no upload." />
+
+  <!-- SEO & Social Meta Tags -->
+  <meta name="robots" content="index, follow" />
+
+  <meta property="og:type" content="website" />
+  <meta property="og:title" content="Free Image Tools - Compress, Resize, Convert and Crop Photos" />
+  <meta property="og:description" content="Compress, resize, crop and convert photos, strip EXIF and GPS data, and process whole batches at once. Everything runs in your browser, with no upload." />
+  <meta property="og:url" content="https://onlinetoolsvault.com/image-tools/" />
+  <meta property="og:site_name" content="OnlineToolsVault" />
+  <meta property="og:image" content="https://onlinetoolsvault.com/og/default.png" />
+  <meta property="og:image:width" content="1200" />
+  <meta property="og:image:height" content="630" />
+  <meta property="og:image:alt" content="Image Tools — OnlineToolsVault" />
+
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:site" content="@sourcestrongai" />
+  <meta name="twitter:title" content="Free Image Tools - Compress, Resize, Convert and Crop Photos" />
+  <meta name="twitter:description" content="Compress, resize, crop and convert photos, strip EXIF and GPS data, and process whole batches at once. Everything runs in your browser, with no upload." />
+  <meta name="twitter:image" content="https://onlinetoolsvault.com/og/default.png" />
+  <meta name="twitter:image:alt" content="Image Tools — OnlineToolsVault" />
+  <meta name="twitter:creator" content="@sourcestrongai" />
+
+  <!--
+    Structured Data (JSON-LD) — the SITE-LEVEL graph, and nothing else.
+
+    generate-sitemap.js copies this file to dist/<route>/index.html for every route and only
+    rewrites title/description/canonical/og/twitter, so whatever sits here ships on every page
+    unchanged. That is exactly right for Organization and WebSite — they describe the site, not the
+    document — and exactly wrong for a page entity.
+
+    This block used to be a WebApplication whose "url" was the homepage. Because it shipped
+    verbatim on every page, each tool page declared the homepage as its primary entity, so no
+    tool page described itself at all. The per-page entity now comes from
+    src/components/tools/ToolLayout.jsx, which emits a SoftwareApplication pointing at that page's
+    own canonical, plus a BreadcrumbList and the FAQPage. Do not reintroduce a page-scoped type
+    here: two primary entities on one document is worse than none.
+
+    The @id values are what tie the two together and let the per-page nodes reference the publisher
+    without restating it.
+
+    No potentialAction/SearchAction. A SearchAction has to name a URL template that really performs
+    a search, and this site has none — the home page filters an already-loaded list in component
+    state, with no query parameter and no /search route (checked against src/App.jsx). Declaring
+    one anyway would be a claim Google can, and does, test.
+  -->
+  <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@graph": [
+        {
+          "@type": "Organization",
+          "@id": "https://onlinetoolsvault.com/#organization",
+          "name": "OnlineToolsVault",
+          "url": "https://onlinetoolsvault.com/",
+          "logo": {
+            "@type": "ImageObject",
+            "@id": "https://onlinetoolsvault.com/#logo",
+            "url": "https://onlinetoolsvault.com/favicon-512.png",
+            "contentUrl": "https://onlinetoolsvault.com/favicon-512.png",
+            "width": 512,
+            "height": 512,
+            "caption": "OnlineToolsVault"
+          },
+          "image": {
+            "@id": "https://onlinetoolsvault.com/#logo"
+          },
+          "sameAs": [
+            "https://github.com/OnlineToolsVault",
+            "https://x.com/sourcestrongai",
+            "https://www.linkedin.com/company/sourcestrongai"
+          ]
+        },
+        {
+          "@type": "WebSite",
+          "@id": "https://onlinetoolsvault.com/#website",
+          "name": "OnlineToolsVault",
+          "url": "https://onlinetoolsvault.com/",
+          "description": "Free, client-side tools for PDF, image, text, developer and security tasks. Files are processed in the browser and never uploaded.",
+          "inLanguage": "en",
+          "publisher": {
+            "@id": "https://onlinetoolsvault.com/#organization"
+          }
+        }
+      ]
+    }
+  </script>
+
+  <!--
+    Inter, served from this origin.
+
+    This used to be a <link> to fonts.googleapis.com, which made every route open a connection
+    to Google (and then a second one to fonts.gstatic.com) before it could paint text — the last
+    off-origin request common to all pages, and one that handed a third party the IP of every
+    visitor on a site whose whole pitch is that nothing leaves the browser.
+
+    The two woff2 files are git-tracked under public/fonts. If a face or unicode-range here ever
+    changes, refresh those files by hand from a locally downloaded copy of the font.
+
+    These are the *variable* faces (`font-weight: 100 900`), which is what Google was already
+    serving: css2 answers `wght@400;500;600;700;800` with the same single file declared five times,
+    so all five weights come out of one 48 KB download exactly as before.
+
+    Only latin is preloaded. latin-ext is a further 83 KB that the unicode-range below keeps unread
+    unless a page actually contains one of its characters, which no page currently does — preloading
+    it would cost every visitor 83 KB for nothing. `crossorigin` is required even though the file is
+    same-origin: fonts are always fetched in CORS mode, and without it the preload is discarded and
+    the file downloaded twice.
+  -->
+  <link rel="preload" href="/fonts/inter-latin.woff2" as="font" type="font/woff2" crossorigin>
+  <style>
+    @font-face {
+      font-family: 'Inter';
+      font-style: normal;
+      font-weight: 100 900;
+      font-display: swap;
+      src: url('/fonts/inter-latin.woff2') format('woff2');
+      unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+    }
+
+    @font-face {
+      font-family: 'Inter';
+      font-style: normal;
+      font-weight: 100 900;
+      font-display: swap;
+      src: url('/fonts/inter-latin-ext.woff2') format('woff2');
+      unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF;
+    }
+  </style>
+
+  <!--
+    Analytics & Ads — requested after first paint, not from the document head.
+
+    Both of these used to be async script tags right here. "async" only means "do not block
+    parsing"; it does nothing about the bandwidth, connection slots and main-thread time the two
+    scripts take, and both were being fetched and executed in the same window the browser needed to
+    render and lay out the largest element. Together they are the biggest third-party payload the
+    site loads, and they were arriving before any of the page a visitor came for.
+
+    So the loading is moved behind the load event and then an idle callback: nothing here competes
+    with first paint or with the work that follows it, and both scripts still end up in the
+    document doing exactly what they did before.
+
+    The gtag command queue stays inline and eager on purpose. It is a three-line stub with no
+    network cost, and `dataLayer` is a queue by design — the `js` and `config` commands pushed here
+    sit in the array until the real tag script arrives and replays them, so the page_view is still
+    recorded with the URL, title and referrer the visitor actually landed on. Removing the stub and
+    configuring after load instead would lose any event fired in between.
+
+    The AdSense loader is unconditional in the same way it was before: nothing in src/ calls
+    `adsbygoogle.push`, so this tag exists for account verification and Auto Ads, neither of which
+    cares when in the page lifecycle it runs.
+
+    requestIdleCallback gets a timeout so a page that never goes idle (an editor route with a
+    busy main thread) still loads them; browsers without it fall back to a plain timer.
+
+    scripts/prerender.js sets window.__PRERENDER__ and blocks every third-party request, so the
+    build would only fire two requests that are immediately aborted. Skip the whole thing there.
+  -->
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag() { dataLayer.push(arguments); }
+    gtag('js', new Date());
+    gtag('config', 'G-EVGNTG49J7');
+
+    (function () {
+      if (window.__PRERENDER__) return;
+
+      var deferred = [
+        { src: 'https://www.googletagmanager.com/gtag/js?id=G-EVGNTG49J7' },
+        {
+          src: 'https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-4988388949365963',
+          crossOrigin: 'anonymous'
+        }
+      ];
+
+      var started = false;
+      function loadDeferred() {
+        if (started) return;
+        started = true;
+        for (var i = 0; i < deferred.length; i++) {
+          var script = document.createElement('script');
+          script.async = true;
+          if (deferred[i].crossOrigin) script.crossOrigin = deferred[i].crossOrigin;
+          script.src = deferred[i].src;
+          document.head.appendChild(script);
+        }
+      }
+
+      function scheduleAfterPaint() {
+        if (typeof window.requestIdleCallback === 'function') {
+          window.requestIdleCallback(loadDeferred, { timeout: 3000 });
+        } else {
+          window.setTimeout(loadDeferred, 1500);
+        }
+      }
+
+      if (document.readyState === 'complete') {
+        scheduleAfterPaint();
+      } else {
+        window.addEventListener('load', scheduleAfterPaint, { once: true });
+      }
+    })();
+  </script>
+
+  <!--
+    Retire the old COOP/COEP service worker.
+
+    It was added for SharedArrayBuffer, but the FFmpeg tools load the single-threaded
+    @ffmpeg/core build, which never touches SharedArrayBuffer — verified by running a
+    conversion with crossOriginIsolated === false. Meanwhile cross-origin isolation blocked
+    every third-party image a user pastes into the Markdown Previewer, and forced a full page
+    reload on each visitor's first page view.
+
+    Returning visitors still have the worker installed and would keep getting the COEP headers
+    forever, so unregister it once and reload to drop out of the isolated context.
+  -->
+  <script>
+    (function () {
+      if (!('serviceWorker' in navigator)) return;
+      navigator.serviceWorker.getRegistrations().then(function (registrations) {
+        var removed = false;
+        for (var i = 0; i < registrations.length; i++) {
+          var url = (registrations[i].active && registrations[i].active.scriptURL) || '';
+          if (url.indexOf('coi-serviceworker') !== -1) {
+            registrations[i].unregister();
+            removed = true;
+          }
+        }
+        if (removed && window.crossOriginIsolated) window.location.reload();
+      }).catch(function () { /* nothing to clean up */ });
+    })();
+  </script>
+
+  <!--
+    Restore the URL that 404.html forwarded here, before React Router reads location.
+    GitHub Pages cannot rewrite unknown paths itself, so 404.html bounces them to
+    /?notfound=<path>; putting the real path back lets the app's "*" route render NotFound
+    at the address the visitor actually typed.
+  -->
+  <script>
+    (function () {
+      try {
+        var params = new URLSearchParams(window.location.search);
+        var requested = params.get('notfound');
+        if (requested && requested.charAt(0) === '/' && requested.charAt(1) !== '/') {
+          window.history.replaceState(null, '', requested);
+        }
+      } catch (error) {
+        console.error('[NotFound Restore] Error:', error);
+      }
+    })();
+  </script>
+
+  <!-- Smart Hash URL Redirect (handles legacy #/ URLs) -->
+  <script>
+    (function () {
+      try {
+        var hash = window.location.hash;
+
+        // Check if this is a hash-based route (e.g., #/word-counter)
+        if (hash && hash.startsWith('#/')) {
+          var path = hash.slice(2); // Remove '#/'
+          var search = window.location.search || '';
+
+          // A legacy link can carry its own query or fragment inside the hash
+          // (#/word-counter?tab=2). Split that off before the path is touched, otherwise the
+          // trailing slash below lands after the query string and produces "word-counter?tab=2/".
+          var extra = '';
+          var cut = path.search(/[?#]/);
+          if (cut !== -1) {
+            extra = path.slice(cut);
+            path = path.slice(0, cut);
+          }
+          // Two query strings concatenated would give "?a=1?b=2"; the second '?' becomes '&'.
+          if (search && extra.charAt(0) === '?') extra = '&' + extra.slice(1);
+
+          // The site is served from the root of a domain — onlinetoolsvault.com via dist/CNAME,
+          // and the OnlineToolsVault.github.io user-pages root — so this is '/' in production
+          // and in dev. Honour a <base href> if one is ever added; do not sniff the pathname.
+          var base = document.querySelector('base')?.getAttribute('href') || '/';
+
+          // Clean up the path (remove trailing/leading slashes)
+          path = path.replace(/^\/+|\/+$/g, '');
+
+          // Build redirect URL.
+          //
+          // The trailing slash is not cosmetic. GitHub Pages serves each route from
+          // dist/<route>/index.html, so /word-counter answers with a 301 to /word-counter/ —
+          // meaning the slash-less form this used to emit turned every legacy hash link into two
+          // navigations, and any of them that ended up in a canonical, a sitemap or an inbound
+          // link pointed at the redirecting URL rather than the real one. Every other internal
+          // link on the site was normalised to the trailing-slash form; this was the last hole.
+          var redirectUrl;
+          if (path) {
+            redirectUrl = base + path + '/' + search + extra;
+          } else {
+            // Just '#/' with no path - go to home
+            redirectUrl = base + search + extra;
+          }
+
+          // Redirect using replace (doesn't add to history)
+          window.location.replace(redirectUrl);
+        }
+      } catch (error) {
+        // Silently fail - the app will load normally
+        console.error('[Hash Redirect] Error:', error);
+      }
+    })();
+  </script>
+  <script type="module" crossorigin src="/assets/index-DsTeKLg-.js"></script>
+  <link rel="stylesheet" crossorigin href="/assets/index-CGynhGor.css">
+  <link data-rh="true" rel="canonical" href="https://onlinetoolsvault.com/image-tools/" />
+  <!-- prerender:head -->
+  <link rel="stylesheet" crossorigin href="/assets/CategoryHub-Dl5tr1ZY.css">
+  <script type="application/ld+json" data-rh="true">{"@context":"https://schema.org","@graph":[{"@type":"CollectionPage","@id":"https://onlinetoolsvault.com/image-tools/#webpage","name":"Image Tools","description":"Compress, resize, crop and convert photos, strip EXIF and GPS data, and process whole batches at once. Everything runs in your browser, with no upload.","url":"https://onlinetoolsvault.com/image-tools/","isPartOf":{"@id":"https://onlinetoolsvault.com/#website"},"publisher":{"@id":"https://onlinetoolsvault.com/#organization"},"mainEntity":{"@type":"ItemList","@id":"https://onlinetoolsvault.com/image-tools/#tool-list","name":"Image Tools","numberOfItems":18,"itemListElement":[{"@type":"ListItem","position":1,"name":"Image Compressor","url":"https://onlinetoolsvault.com/image-compressor/"},{"@type":"ListItem","position":2,"name":"Background Remover","url":"https://onlinetoolsvault.com/background-remover/"},{"@type":"ListItem","position":3,"name":"Image Converter","url":"https://onlinetoolsvault.com/image-converter/"},{"@type":"ListItem","position":4,"name":"Image Resizer","url":"https://onlinetoolsvault.com/image-resizer/"},{"@type":"ListItem","position":5,"name":"Image Cropper","url":"https://onlinetoolsvault.com/image-cropper/"},{"@type":"ListItem","position":6,"name":"HEIC to JPG","url":"https://onlinetoolsvault.com/heic-to-jpg/"},{"@type":"ListItem","position":7,"name":"WebP to JPG","url":"https://onlinetoolsvault.com/webp-to-jpg/"},{"@type":"ListItem","position":8,"name":"Blur Image","url":"https://onlinetoolsvault.com/blur-image/"},{"@type":"ListItem","position":9,"name":"Watermark Image","url":"https://onlinetoolsvault.com/add-watermark-to-image/"},{"@type":"ListItem","position":10,"name":"Image to Text","url":"https://onlinetoolsvault.com/image-to-text/"},{"@type":"ListItem","position":11,"name":"Passport Photo Maker","url":"https://onlinetoolsvault.com/passport-photo-maker/"},{"@type":"ListItem","position":12,"name":"Image Metadata","url":"https://onlinetoolsvault.com/image-metadata-editor/"},{"@type":"ListItem","position":13,"name":"Remove Image Metadata","url":"https://onlinetoolsvault.com/remove-image-metadata/"},{"@type":"ListItem","position":14,"name":"YouTube Thumbnail","url":"https://onlinetoolsvault.com/youtube-thumbnail-downloader/"},{"@type":"ListItem","position":15,"name":"Social Media Resizer","url":"https://onlinetoolsvault.com/instagram-twitter-resizer/"},{"@type":"ListItem","position":16,"name":"Bulk Image Compressor","url":"https://onlinetoolsvault.com/bulk-image-compressor/"},{"@type":"ListItem","position":17,"name":"Bulk Image Resizer","url":"https://onlinetoolsvault.com/bulk-image-resizer/"},{"@type":"ListItem","position":18,"name":"Merge Images","url":"https://onlinetoolsvault.com/merge-images/"}]}},{"@type":"BreadcrumbList","@id":"https://onlinetoolsvault.com/image-tools/#breadcrumb","itemListElement":[{"@type":"ListItem","position":1,"name":"Home","item":"https://onlinetoolsvault.com/"},{"@type":"ListItem","position":2,"name":"Image Tools","item":"https://onlinetoolsvault.com/image-tools/"}]}]}</script>
+  <!-- /prerender:head -->
+</head>
+
+<body>
+  <div id="root" data-prerendered="static"><div class="app-wrapper"><header class="site-header"><div class="container header-container"><a class="logo" href="/"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-rocket logo-icon"><path d="M4.5 16.5c-1.5 1.26-2 5-2 5s3.74-.5 5-2c.71-.84.7-2.13-.09-2.91a2.18 2.18 0 0 0-2.91-.09z"></path><path d="m12 15-3-3a22 22 0 0 1 2-3.95A12.88 12.88 0 0 1 22 2c0 2.72-.78 7.5-6 11a22.35 22.35 0 0 1-4 2z"></path><path d="M9 12H4s.55-3.03 2-4c1.62-1.08 5 0 5 0"></path><path d="M12 15v5s3.03-.55 4-2c1.08-1.62 0-5 0-5"></path></svg><span>OnlineToolsVault</span></a><nav class="nav-desktop"><a class="nav-link" href="/">Home</a><a class="nav-link" href="/about/">About</a><a class="nav-link" href="/contact/">Contact</a><div class="social-icons"><a href="https://x.com/sourcestrongai" target="_blank" rel="noopener noreferrer" class="social-icon" aria-label="Twitter"><svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-twitter "><path d="M22 4s-.7 2.1-2 3.4c1.6 10-9.4 17.3-18 11.6 2.2.1 4.4-.6 6-2C3 15.5.5 9.6 3 5c2.2 2.6 5.6 4.1 9 4-.9-4.2 4-6.6 7-3.8 1.1 0 3-1.2 3-1.2z"></path></svg></a><a href="https://www.linkedin.com/company/sourcestrongai" target="_blank" rel="noopener noreferrer" class="social-icon" aria-label="LinkedIn"><svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-linkedin "><path d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-2-2 2 2 0 0 0-2 2v7h-4v-7a6 6 0 0 1 6-6z"></path><rect width="4" height="12" x="2" y="9"></rect><circle cx="4" cy="4" r="2"></circle></svg></a></div></nav><button class="nav-mobile-btn" aria-label="Open menu" aria-expanded="false" aria-controls="mobile-menu"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-menu "><line x1="4" x2="20" y1="12" y2="12"></line><line x1="4" x2="20" y1="6" y2="6"></line><line x1="4" x2="20" y1="18" y2="18"></line></svg></button></div></header><main class="main-content"><!--$--><div class="hub-page"><div class="container"><nav aria-label="Breadcrumb" style="margin-bottom: 2rem;"><ol style="display: flex; flex-wrap: wrap; align-items: center; gap: 0.5rem; list-style: none; margin: 0px; padding: 0px; font-size: 0.875rem; color: var(--text-secondary);"><li style="display: flex; align-items: center; gap: 0.5rem; min-width: 0px;"><a href="/" style="color: var(--text-secondary); text-decoration: none;">Home</a></li><li style="display: flex; align-items: center; gap: 0.5rem; min-width: 0px;"><span aria-hidden="true" style="color: var(--text-tertiary);">/</span><span aria-current="page" style="color: var(--text-primary); font-weight: 600;">Image Tools</span></li></ol></nav><header class="hub-header"><h1>Image Tools</h1><p class="hub-lede">18 tools for photographs and screenshots, from shrinking a file that will not fit
+an upload limit to cutting a subject out of its background. They decode your picture in this tab,
+work on it with the browser's own canvas, and hand back a new file — no account, no watermark, and
+no copy left on somebody else's disk.</p></header><h2 class="hub-section-heading">All Image Tools (18)</h2><div class="hub-tools-grid"><a class="hub-tool-card" href="/image-compressor/"><div class="hub-tool-card-header"><span class="hub-tool-icon"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-minimize2 " aria-hidden="true"><polyline points="4 14 10 14 10 20"></polyline><polyline points="20 10 14 10 14 4"></polyline><line x1="14" x2="21" y1="10" y2="3"></line><line x1="3" x2="10" y1="21" y2="14"></line></svg></span><h3 class="hub-tool-name">Image Compressor</h3></div><p class="hub-tool-desc">Compress PNG, JPG, and WebP images.</p></a><a class="hub-tool-card" href="/background-remover/"><div class="hub-tool-card-header"><span class="hub-tool-icon"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-scissors " aria-hidden="true"><circle cx="6" cy="6" r="3"></circle><path d="M8.12 8.12 12 12"></path><path d="M20 4 8.12 15.88"></path><circle cx="6" cy="18" r="3"></circle><path d="M14.8 14.8 20 20"></path></svg></span><h3 class="hub-tool-name">Background Remover</h3></div><p class="hub-tool-desc">Remove image backgrounds automatically with AI.</p></a><a class="hub-tool-card" href="/image-converter/"><div class="hub-tool-card-header"><span class="hub-tool-icon"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-refresh-cw " aria-hidden="true"><path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8"></path><path d="M21 3v5h-5"></path><path d="M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16"></path><path d="M8 16H3v5"></path></svg></span><h3 class="hub-tool-name">Image Converter</h3></div><p class="hub-tool-desc">Convert images between PNG, JPG, WebP, BMP, and SVG formats.</p></a><a class="hub-tool-card" href="/image-resizer/"><div class="hub-tool-card-header"><span class="hub-tool-icon"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-maximize " aria-hidden="true"><path d="M8 3H5a2 2 0 0 0-2 2v3"></path><path d="M21 8V5a2 2 0 0 0-2-2h-3"></path><path d="M3 16v3a2 2 0 0 0 2 2h3"></path><path d="M16 21h3a2 2 0 0 0 2-2v-3"></path></svg></span><h3 class="hub-tool-name">Image Resizer</h3></div><p class="hub-tool-desc">Resize images to exact pixel dimensions.</p></a><a class="hub-tool-card" href="/image-cropper/"><div class="hub-tool-card-header"><span class="hub-tool-icon"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-crop " aria-hidden="true"><path d="M6 2v14a2 2 0 0 0 2 2h14"></path><path d="M18 22V8a2 2 0 0 0-2-2H2"></path></svg></span><h3 class="hub-tool-name">Image Cropper</h3></div><p class="hub-tool-desc">Crop images to custom sizes and aspect ratios.</p></a><a class="hub-tool-card" href="/heic-to-jpg/"><div class="hub-tool-card-header"><span class="hub-tool-icon"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-file-image " aria-hidden="true"><path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z"></path><path d="M14 2v4a2 2 0 0 0 2 2h4"></path><circle cx="10" cy="12" r="2"></circle><path d="m20 17-1.296-1.296a2.41 2.41 0 0 0-3.408 0L9 22"></path></svg></span><h3 class="hub-tool-name">HEIC to JPG</h3></div><p class="hub-tool-desc">Convert iPhone HEIC photos to JPG format.</p></a><a class="hub-tool-card" href="/webp-to-jpg/"><div class="hub-tool-card-header"><span class="hub-tool-icon"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-file-image " aria-hidden="true"><path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z"></path><path d="M14 2v4a2 2 0 0 0 2 2h4"></path><circle cx="10" cy="12" r="2"></circle><path d="m20 17-1.296-1.296a2.41 2.41 0 0 0-3.408 0L9 22"></path></svg></span><h3 class="hub-tool-name">WebP to JPG</h3></div><p class="hub-tool-desc">Convert WebP images to standard JPG.</p></a><a class="hub-tool-card" href="/blur-image/"><div class="hub-tool-card-header"><span class="hub-tool-icon"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-wand2 " aria-hidden="true"><path d="m21.64 3.64-1.28-1.28a1.21 1.21 0 0 0-1.72 0L2.36 18.64a1.21 1.21 0 0 0 0 1.72l1.28 1.28a1.2 1.2 0 0 0 1.72 0L21.64 5.36a1.2 1.2 0 0 0 0-1.72Z"></path><path d="m14 7 3 3"></path><path d="M5 6v4"></path><path d="M19 14v4"></path><path d="M10 2v2"></path><path d="M7 8H3"></path><path d="M21 16h-4"></path><path d="M11 3H9"></path></svg></span><h3 class="hub-tool-name">Blur Image</h3></div><p class="hub-tool-desc">Apply a Gaussian blur to a whole image.</p></a><a class="hub-tool-card" href="/add-watermark-to-image/"><div class="hub-tool-card-header"><span class="hub-tool-icon"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-wand2 " aria-hidden="true"><path d="m21.64 3.64-1.28-1.28a1.21 1.21 0 0 0-1.72 0L2.36 18.64a1.21 1.21 0 0 0 0 1.72l1.28 1.28a1.2 1.2 0 0 0 1.72 0L21.64 5.36a1.2 1.2 0 0 0 0-1.72Z"></path><path d="m14 7 3 3"></path><path d="M5 6v4"></path><path d="M19 14v4"></path><path d="M10 2v2"></path><path d="M7 8H3"></path><path d="M21 16h-4"></path><path d="M11 3H9"></path></svg></span><h3 class="hub-tool-name">Watermark Image</h3></div><p class="hub-tool-desc">Add a text watermark to your photos.</p></a><a class="hub-tool-card" href="/image-to-text/"><div class="hub-tool-card-header"><span class="hub-tool-icon"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-file-text " aria-hidden="true"><path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z"></path><path d="M14 2v4a2 2 0 0 0 2 2h4"></path><path d="M10 9H8"></path><path d="M16 13H8"></path><path d="M16 17H8"></path></svg></span><h3 class="hub-tool-name">Image to Text</h3></div><p class="hub-tool-desc">Extract text from images using OCR.</p></a><a class="hub-tool-card" href="/passport-photo-maker/"><div class="hub-tool-card-header"><span class="hub-tool-icon"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-file-image " aria-hidden="true"><path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z"></path><path d="M14 2v4a2 2 0 0 0 2 2h4"></path><circle cx="10" cy="12" r="2"></circle><path d="m20 17-1.296-1.296a2.41 2.41 0 0 0-3.408 0L9 22"></path></svg></span><h3 class="hub-tool-name">Passport Photo Maker</h3></div><p class="hub-tool-desc">Create ID and passport photos fast.</p></a><a class="hub-tool-card" href="/image-metadata-editor/"><div class="hub-tool-card-header"><span class="hub-tool-icon"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-search " aria-hidden="true"><circle cx="11" cy="11" r="8"></circle><path d="m21 21-4.3-4.3"></path></svg></span><h3 class="hub-tool-name">Image Metadata</h3></div><p class="hub-tool-desc">View and edit EXIF metadata in photos.</p></a><a class="hub-tool-card" href="/remove-image-metadata/"><div class="hub-tool-card-header"><span class="hub-tool-icon"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-search " aria-hidden="true"><circle cx="11" cy="11" r="8"></circle><path d="m21 21-4.3-4.3"></path></svg></span><h3 class="hub-tool-name">Remove Image Metadata</h3></div><p class="hub-tool-desc">Scrub GPS and camera data from photos.</p></a><a class="hub-tool-card" href="/youtube-thumbnail-downloader/"><div class="hub-tool-card-header"><span class="hub-tool-icon"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-file-image " aria-hidden="true"><path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z"></path><path d="M14 2v4a2 2 0 0 0 2 2h4"></path><circle cx="10" cy="12" r="2"></circle><path d="m20 17-1.296-1.296a2.41 2.41 0 0 0-3.408 0L9 22"></path></svg></span><h3 class="hub-tool-name">YouTube Thumbnail</h3></div><p class="hub-tool-desc">Download thumbnails from YouTube videos.</p></a><a class="hub-tool-card" href="/instagram-twitter-resizer/"><div class="hub-tool-card-header"><span class="hub-tool-icon"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-maximize " aria-hidden="true"><path d="M8 3H5a2 2 0 0 0-2 2v3"></path><path d="M21 8V5a2 2 0 0 0-2-2h-3"></path><path d="M3 16v3a2 2 0 0 0 2 2h3"></path><path d="M16 21h3a2 2 0 0 0 2-2v-3"></path></svg></span><h3 class="hub-tool-name">Social Media Resizer</h3></div><p class="hub-tool-desc">Resize images for Instagram, Twitter, etc.</p></a><a class="hub-tool-card" href="/bulk-image-compressor/"><div class="hub-tool-card-header"><span class="hub-tool-icon"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-minimize2 " aria-hidden="true"><polyline points="4 14 10 14 10 20"></polyline><polyline points="20 10 14 10 14 4"></polyline><line x1="14" x2="21" y1="10" y2="3"></line><line x1="3" x2="10" y1="21" y2="14"></line></svg></span><h3 class="hub-tool-name">Bulk Image Compressor</h3></div><p class="hub-tool-desc">Compress dozens of images at once.</p></a><a class="hub-tool-card" href="/bulk-image-resizer/"><div class="hub-tool-card-header"><span class="hub-tool-icon"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-maximize " aria-hidden="true"><path d="M8 3H5a2 2 0 0 0-2 2v3"></path><path d="M21 8V5a2 2 0 0 0-2-2h-3"></path><path d="M3 16v3a2 2 0 0 0 2 2h3"></path><path d="M16 21h3a2 2 0 0 0 2-2v-3"></path></svg></span><h3 class="hub-tool-name">Bulk Image Resizer</h3></div><p class="hub-tool-desc">Resize multiple images in one go.</p></a><a class="hub-tool-card" href="/merge-images/"><div class="hub-tool-card-header"><span class="hub-tool-icon"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-panels-top-left " aria-hidden="true"><rect width="18" height="18" x="3" y="3" rx="2"></rect><path d="M3 9h18"></path><path d="M9 21V9"></path></svg></span><h3 class="hub-tool-name">Merge Images</h3></div><p class="hub-tool-desc">Join images horizontally or vertically.</p></a></div><div class="hub-prose"><section><h2>Two different meanings of "make it smaller"</h2><p>"This image is too big" is really one of two different jobs, and picking the wrong one
+            wastes quality.</p><p><strong>File size</strong> is what <a href="/image-compressor/">Image Compressor</a> changes. It re-encodes the picture at a
+            quality you choose and shows the new size beside the preview as you move the slider. The
+            pixel dimensions do not change, so the image still fills the same space on a page — it
+            just costs less to download. This is the tool for an email attachment or an upload cap.</p><p><strong>Pixel dimensions</strong> are what <a href="/image-resizer/">Image Resizer</a> changes. Type an exact width and
+            height, with an aspect-ratio lock that keeps the other axis in proportion so nothing
+            stretches. Downscaling uses the canvas high-quality smoothing path, which is what stops
+            a shrunken photo going crunchy.</p><p>Both have a batch twin: <a href="/bulk-image-compressor/">Bulk Image Compressor</a> applies one quality setting to a
+            whole folder and returns a ZIP, and <a href="/bulk-image-resizer/">Bulk Image Resizer</a> does the same for size.</p></section><section><h2>Cropping to a shape somebody else specified</h2><p><a href="/image-cropper/">Image Cropper</a> is the free-hand option: drag a selection and watch the output
+            dimensions update as you go. The region is copied from the source one-to-one with no
+            rescaling step, so what you keep is exactly the original pixels.</p><p>When a form or a platform dictates the shape, use the tool that knows the numbers.
+            <a href="/passport-photo-maker/">Passport Photo Maker</a> locks the frame to the official ID ratios — 35×45 mm
+            for the UK, EU and India, 2×2 inches for the US, 33×48 mm for China — with zoom,
+            repositioning and a plain backdrop colour. <a href="/instagram-twitter-resizer/">Social Media Resizer</a> does the same
+            for seven social formats, from the Instagram story to the Facebook cover.</p><p><a href="/merge-images/">Merge Images</a> goes the other way and joins pictures into one, stacked vertically or
+            side by side, with control over the border, the gap and a drop shadow. Screenshots can be
+            pasted straight in, which makes it the quickest way to put a before beside an after.</p></section><section><h2>Changing format</h2><p><a href="/heic-to-jpg/">HEIC to JPG</a> exists because iPhones save HEIC and many sites, printers and older
+            applications refuse it. Decoding happens in the page, so it works even on a machine
+            with no HEIC support installed. <a href="/webp-to-jpg/">WebP to JPG</a> solves the same problem from the other
+            direction, and paints transparent areas white rather than letting them come out black.</p><p><a href="/image-converter/">Image Converter</a> is the general case, moving a picture between JPG, PNG, WebP and
+            BMP. Understand its SVG option before picking it: it wraps your bitmap inside an SVG
+            document rather than tracing real vector paths, so the file opens anywhere an SVG is
+            expected but will not scale up crisply. To put pictures into a document instead,
+            <a href="/image-to-pdf/">Image to PDF</a> lays JPG, PNG, WebP, GIF and BMP onto A4, Letter or Legal pages.</p></section><section><h2>What a photo says about you</h2><p>A picture taken on a phone usually carries EXIF data: camera make and model, the exact
+            time, and very often the GPS coordinates of where you were standing.
+            <a href="/remove-image-metadata/">Remove Image Metadata</a> strips that before you share it. Upright JPEGs are rewritten
+            losslessly and the colour profile and orientation survive, so the photo looks exactly as
+            it did — it simply stops volunteering your home address.</p><p><a href="/image-metadata-editor/">Image Metadata</a> is the deliberate opposite, rewriting six tags — Artist,
+            Copyright, Date, Software, Camera Make and Model — while leaving GPS, exposure and the
+            pixels untouched, for when a photo should carry a credit rather than nothing.</p><p>Two tools change what a picture shows rather than what it records. <a href="/blur-image/">Blur Image</a>
+            applies an adjustable 0 to 50 pixel Gaussian blur to the <strong>whole frame</strong> rather than a
+            selection, which makes it a background effect and not a way to censor one face.
+            <a href="/add-watermark-to-image/">Watermark Image</a> lays text across a photo — wording, size, colour and
+            opacity are yours, diagonally through the centre or in a corner. Text only, not logos.</p></section><section><h2>Pulling something out of a picture</h2><p><a href="/image-to-text/">Image to Text</a> reads printed English out of a screenshot, scan or photograph with a
+            recognition engine that runs in your browser, turning unselectable text into text you can
+            copy. English only — no other language models are loaded.</p><p><a href="/background-remover/">Background Remover</a> uses automatic subject detection to separate the foreground
+            from everything behind it and returns a transparent PNG at the full resolution of the
+            source. The model runs on your machine, so the first run fetches it; after that a
+            portrait takes seconds and the photo never leaves the tab.</p><p><a href="/youtube-thumbnail-downloader/">YouTube Thumbnail</a> is the odd one out: paste a YouTube link or bare
+            video ID and it returns the thumbnail at 1280×720, 640×480 or 480×360, fetched from
+            YouTube directly.</p></section></div><nav class="hub-siblings" aria-label="Other tool categories"><h2>Other categories</h2><ul><li><a class="hub-sibling-link" href="/pdf-tools/">PDF Tools</a></li><li><a class="hub-sibling-link" href="/text-tools/">Text Tools</a></li><li><a class="hub-sibling-link" href="/developer-tools/">Developer Tools</a></li><li><a class="hub-sibling-link" href="/security-tools/">Security Tools</a></li><li><a class="hub-sibling-link" href="/converters/">File Converters</a></li></ul></nav></div></div><!--/$--></main><footer class="site-footer"><div class="container footer-content"><div class="footer-brand"><h3>OnlineToolsVault</h3><p>Premium, free-to-use online tools for everyone. Free, Fast, Secure and Privacy Focused<br>You can check the source code <a href="https://github.com/OnlineToolsVault/OnlineToolsVault.github.io" target="_blank" rel="noopener noreferrer" style="color: var(--primary); text-decoration: underline;">here</a>.</p></div><div class="footer-links"><div class="footer-col"><h4>Popular Tools</h4><ul><li><a href="/merge-pdf/">Merge PDF</a></li><li><a href="/compress-pdf/">Compress PDF</a></li><li><a href="/image-compressor/">Image Compressor</a></li><li><a href="/qr-generator/">QR Generator</a></li></ul></div><div class="footer-col"><h4>Company</h4><ul><li><a href="/about/">About Us</a></li><li><a href="/contact/">Contact</a></li><li><a href="/privacy/">Privacy Policy</a></li><li><a href="/terms/">Terms of Service</a></li></ul></div><div class="footer-col"><h4>Connect</h4><ul><li><a href="https://x.com/sourcestrongai" target="_blank" rel="noopener noreferrer">Twitter</a></li><li><a href="https://github.com/OnlineToolsVault" target="_blank" rel="noopener noreferrer">GitHub</a></li><li><a href="https://www.linkedin.com/company/sourcestrongai" target="_blank" rel="noopener noreferrer">LinkedIn</a></li></ul></div></div></div><div class="container footer-bottom"><p>© 2026 Source Strong AI. All Rights Reserved. Managed under <a href="/terms/" style="color: inherit; text-decoration: underline;">Proprietary License</a>.</p><p style="display: flex; align-items: center; gap: 0.25rem;">Made with <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-heart "><path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z"></path></svg> for the web</p></div></footer></div></div>
+</body>
+
+</html>
